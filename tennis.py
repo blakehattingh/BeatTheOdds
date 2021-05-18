@@ -66,7 +66,7 @@ def TennisSet():
     P2G = pow(P2S, 2) / (pow(P2S, 2) + pow((1-P2S), 2))
 
     # Compute the probability of winning a TB using the MarkovTB Simulation:
-    Iter = 1000
+    Iter = 100000
     FirstTo = 7 # Need to update this to include all possibilities, e.g. 'if Tournament = US Open then firstTo = 7'
 
     # Player A serving first:
@@ -147,8 +147,8 @@ def TennisSet():
             InitialSeq = [1,1,1,1,1,1,1,1,1,1,1,1,1]
 
             # Place the '2's in each possible combination:
-            for spots in j:
-                InitialSeq[spots-1] = 2
+            for games in j:
+                InitialSeq[games-1] = 2
 
             # Assign the correct winner:
             InitialSeq = tuple(InitialSeq)
@@ -200,10 +200,11 @@ def main():
     # Max Number of Iterations until Steady State reached:
     Iterations = 100
     # Tolerance level on Steady States:
-    Tol = 0.001
+    Tol = 0.0001
 
     # Set up the model and run it with no first server info:
     [nodes, dist, parents, outcomes, info] = TennisSet()
+    info['ServerOdd'] = choose(outcomes['ServerOdd'], "P1Serves")
     DistNoServer = beliefpropagation(nodes,dist,parents,outcomes,info,Iterations,Tol)
 
     # In-match betting:
