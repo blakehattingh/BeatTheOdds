@@ -143,12 +143,13 @@ def beliefpropagation(nodes, dist, parents, outcomes, info, iterations, toleranc
                                         prob*=msg_v_to_f[k][f][index]
                                 msg_f_to_v[f][v][i]+=prob
                     msg_f_to_v[f][v]/=sum(msg_f_to_v[f][v])
-
-    for v in nodes:
-        print(v+': Outcomes ',end='')
-        print(outcomes[v],end='')
-        print(', Distribution ',end='')
-        print(variable_data[v])
     
+    for v in nodes:
+        if (v == 'Set' or v == 'TB'):
+            print(v+': Outcomes ',end='')
+            print(outcomes[v],end='')
+            print(', Distribution ',end='')
+            print(variable_data[v])
+
     # Return the distributions of interest:
     return variable_data['Set']
