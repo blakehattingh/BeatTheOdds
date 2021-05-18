@@ -18,6 +18,22 @@ def combine_dfs(n, k, start, path, result):
     for i in range(start, n + 1):
         combine_dfs(n, k, i + 1, path + [i], result)
 
+def TieBreakerProbability(P1S, P2S, Iter, FirstTo):
+    # Compute the probability of winning a TB using the MarkovTB Simulation:
+
+    # Player A serving first:
+    Count1 = 0
+    Count2 = 0
+    for i in range(Iter):
+        Winner1 = MarkovChainTieBreaker(P1S, P2S, 'i', FirstTo)
+        Winner2 = MarkovChainTieBreaker(P1S, P2S, 'j', FirstTo)
+        if (Winner1 == 'i'):
+            Count1 = Count1 + 1
+        if (Winner2 == 'j'):
+            Count2 = Count2 + 1
+    
+    # Compute their probability of winning when they start the TB serving:
+    return [Count1/Iter, Count2/Iter] # Prob Player 1 winning if he serves first, Prob Player 2 winning if he serves first
 
 def TennisSet():
     # Specify the names of the nodes in the Bayesian network
@@ -66,24 +82,8 @@ def TennisSet():
     P1G = pow(P1S, 2) / (pow(P1S, 2) + pow((1-P1S), 2))
     P2G = pow(P2S, 2) / (pow(P2S, 2) + pow((1-P2S), 2))
 
-    # Compute the probability of winning a TB using the MarkovTB Simulation:
-    Iter = 100000
-    FirstTo = 7 # Need to update this to include all possibilities, e.g. 'if Tournament = US Open then firstTo = 7'
-
-    # Player A serving first:
-    Count1 = 0
-    Count2 = 0
-    for i in range(Iter):
-        Winner1 = MarkovChainTieBreaker(P1S, P2S, 'i', FirstTo)
-        Winner2 = MarkovChainTieBreaker(P1S, P2S, 'j', FirstTo)
-        if (Winner1 == 'i'):
-            Count1 = Count1 + 1
-        if (Winner2 == 'j'):
-            Count2 = Count2 + 1
-    
-    # Compute their probability of winning when they start the TB serving:
-    P1TB = Count1/Iter
-    P2TB = Count2/Iter
+    # Compute the probability of winning a tie-breaker:
+    [P1TB, P2TB] = TieBreakerProbability(P1S, P2S, Iter = 10000, FirstTo = 7)
 
     # Equal chance of each player serving the first game: (Can update if the toss has been done)
     dist={}
@@ -207,12 +207,18 @@ def main():
     
     for i in range(3):
     # Set up the model and run it with no first server info:
+<<<<<<< HEAD
         [nodes, dist, parents, outcomes, info] = TennisSet()
         #info['ServerOdd'] = choose(outcomes['ServerOdd'], "P1Serves")
         DistNoServer = beliefpropagation(nodes,dist,parents,outcomes,info,Iterations,Tol)
         distNoServers.append(DistNoServer[0])
 
     #print("variance = " + stats.variance(distNoServers))
+=======
+    [nodes, dist, parents, outcomes, info] = TennisSet()
+    info['ServerOdd'] = choose(outcomes['ServerOdd'], "P2Serves")
+    DistNoServer = beliefpropagation(nodes,dist,parents,outcomes,info,Iterations,Tol)
+>>>>>>> cfaee32630b9c77f9dbcd59d34fcfa772e1f600f
 
     # In-match betting:
     # Known Events: 
