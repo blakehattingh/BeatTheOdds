@@ -1,5 +1,6 @@
 import numpy as np
 import math
+import statistics as stats
 # import matplotlib.pyplot as plt
 from loopybeliefprop import beliefpropagation, noinfo, choose
 from MarkovSimulations import MarkovChainTieBreaker
@@ -202,10 +203,16 @@ def main():
     # Tolerance level on Steady States:
     Tol = 0.0001
 
+    distNoServers = []
+    
+    for i in range(3):
     # Set up the model and run it with no first server info:
-    [nodes, dist, parents, outcomes, info] = TennisSet()
-    info['ServerOdd'] = choose(outcomes['ServerOdd'], "P1Serves")
-    DistNoServer = beliefpropagation(nodes,dist,parents,outcomes,info,Iterations,Tol)
+        [nodes, dist, parents, outcomes, info] = TennisSet()
+        #info['ServerOdd'] = choose(outcomes['ServerOdd'], "P1Serves")
+        DistNoServer = beliefpropagation(nodes,dist,parents,outcomes,info,Iterations,Tol)
+        distNoServers.append(DistNoServer[0])
+
+    #print("variance = " + stats.variance(distNoServers))
 
     # In-match betting:
     # Known Events: 
