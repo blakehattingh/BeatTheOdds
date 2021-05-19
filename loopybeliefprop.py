@@ -145,7 +145,7 @@ def beliefpropagation(nodes, dist, parents, outcomes, info, iterations, toleranc
                     msg_f_to_v[f][v]/=sum(msg_f_to_v[f][v])
     
     for v in nodes:
-        if (v == 'Set' or v == 'TB'):
+        if (v == 'Set' or v == 'NumGames' or v == 'SetScore'):
             print(v+': Outcomes ',end='')
             print(outcomes[v],end='')
             print(', Distribution ',end='')
