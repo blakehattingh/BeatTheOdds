@@ -43,7 +43,7 @@ def TieBreakerProbability(P1S, P2S, Iter, FirstTo):
     # Compute their probability of winning when they start the TB serving:
     return [Count1/Iter, Count2/Iter] # Prob Player 1 winning if he serves first, Prob Player 2 winning if he serves first
 
-def TennisSet():
+def TennisSet(InitServerDist = [0.5, 0.5], P1S, P2S, P1TB, P2TB):
     # Specify the names of the nodes in the Bayesian network
     nodes=['ServerOdd','ServerEven','Set','NumGames','SetScore','G1','G2','G3','G4','G5','G6','G7','G8','G9','G10','G11','G12','TB']
 
@@ -89,17 +89,12 @@ def TennisSet():
     outcomes['SetScore']=["6-0","6-1","6-2","6-3","6-4","7-5","7-6","0-6","1-6","2-6","3-6","4-6","5-7","6-7"]
 
     # Compute the probability of winning a game on serve from the on-serve point probabilities:
-    P1S = 0.7
-    P2S = 0.60
     P1G = pow(P1S, 2) / (pow(P1S, 2) + pow((1-P1S), 2))
     P2G = pow(P2S, 2) / (pow(P2S, 2) + pow((1-P2S), 2))
 
-    # Compute the probability of winning a tie-breaker:
-    [P1TB, P2TB] = TieBreakerProbability(P1S, P2S, Iter = 10000, FirstTo = 7)
-
     # Equal chance of each player serving the first game: (Can update if the toss has been done)
     dist={}
-    dist['ServerOdd'] = [0.5,0.5]
+    dist['ServerOdd'] = InitServerDist
     dist['ServerEven'] = {}
     dist['ServerEven']["P1Serves"] = [0.,1.]
     dist['ServerEven']["P2Serves"] = [1.,0.]
@@ -304,10 +299,13 @@ def main():
     Iterations = 100
     # Tolerance level on Steady States:
     Tol = 0.0001
+    
+    # Compute the Tie-Breaker probabilities using a simulation approach:
+    [P1TB, P2TB] = TieBreakerProbability(P1S, P2S, Iter = 10000, FirstTo = 7)
 
     # Set up the model and run it with no first server info:
     [nodes, dist, parents, outcomes, info] = TennisSet()
-    # info['ServerOdd'] = choose(outcomes['ServerOdd'], "P2Serves")
+    # info['Set'] = choose(outcomes['Set'], "1")
     DistNoServer = beliefpropagation(nodes,dist,parents,outcomes,info,Iterations,Tol)
 
     # In-match betting:
@@ -320,15 +318,55 @@ def main():
     # We Still need to specify the "info" for each node in our network
     # - Use any name/number not in the list of outcomes as your choice (done in Tennis function)    
 
-def TennisMatch(NumSets):
+def TennisMatch(P1S, P2S, NumSets, FirstToSets, FirstToTBPoints):
 
-    # Tasks:
-    # 1) Get beliefprop to output the probability distribution for the number of games played in the set 
-    #       - This allows us to compute a more accurate inital probability distribution for the first server in the next set
-    # 2) Run the beliefprop 3 times
-    # 3) From the 3 probability distributions, compute the overall match probability distribution
+    # Model Parameters:
+    # - Max Number of Iterations allowed to reach Steady State.
+    # - Tolerance level to check for convergence.
+    Iterations = 100
+    Tol = 0.0001
+    
+    # Compute the Tie-Breaker probabilities using a simulation approach:
+    [P1TB, P2TB] = TieBreakerProbability(P1S, P2S, Iter = 100000, FirstTo = 7)
+    
+    # Set up the Bayesian Network and run the blief propagation algorithm for each set played:
+    # Set 1:
+    [nodes, dist, parents, outcomes, info] = TennisSet(P1S, P2S, P1TB, P2TB)
+    [SetDist, NumGamesDist, SetScoreDist] = beliefpropagation(nodes, dist, parents, outcomes, info, Iterations, Tol)
+    # Compute the initial probability distribution for the first server of the next set from the number of games played in the previous set:
+    InitServerDist = [sum(NumGamesDist[0,2,4,5]), sum(NumGamesDist[1,3,6])]
 
-    x = 10
+    # Set 2:
+    [nodes, dist, parents, outcomes, info] = TennisSet(InitServerDist, P1S, P2S, P1TB, P2TB)
+    [SetDist2, NumGamesDist2, SetScoreDist2] = beliefpropagation(nodes, dist, parents, outcomes, info, Iterations, Tol)
+    # Compute the initial probability distribution for the first server of the next set from the number of games played in the previous set:
+    Prob1Serve = InitServerDist[0]*sum(NumGamesDist2[0,2,4,5]) + InitServerDist[1]*sum(NumGamesDist2[1,3,6])
+    Prob2Serve = InitServerDist[1]*sum(NumGamesDist2[0,2,4,5]) + InitServerDist[0]*sum(NumGamesDist2[1,3,6])
+    InitServerDist = [Prob1Serve, Prob2Serve]
+    
+    # Set 3:
+    [nodes, dist, parents, outcomes, info] = TennisSet(InitServerDist, P1S, P2S, P1TB, P2TB)
+    [SetDist3, NumGamesDist3, SetScoreDist3] = beliefpropagation(nodes, dist, parents, outcomes, info, Iterations, Tol)
+
+    if (FirstToSets == 5):
+        # Compute the initial probability distribution for the first server of the next set from the number of games played in the previous set:
+        Prob1Serve = InitServerDist[0]*sum(NumGamesDist3[0,2,4,5]) + InitServerDist[1]*sum(NumGamesDist3[1,3,6])
+        Prob2Serve = InitServerDist[1]*sum(NumGamesDist3[0,2,4,5]) + InitServerDist[0]*sum(NumGamesDist3[1,3,6])
+        InitServerDist = [Prob1Serve, Prob2Serve]
+
+        # Set 4:
+        [nodes, dist, parents, outcomes, info] = TennisSet(InitServerDist, P1S, P2S, P1TB, P2TB)
+        [SetDist4, NumGamesDist4, SetScoreDist4] = beliefpropagation(nodes, dist, parents, outcomes, info, Iterations, Tol)
+
+        # Compute the initial probability distribution for the first server of the next set from the number of games played in the previous set:
+        Prob1Serve = InitServerDist[0]*sum(NumGamesDist4[0,2,4,5]) + InitServerDist[1]*sum(NumGamesDist4[1,3,6])
+        Prob2Serve = InitServerDist[1]*sum(NumGamesDist4[0,2,4,5]) + InitServerDist[0]*sum(NumGamesDist4[1,3,6])
+        InitServerDist = [Prob1Serve, Prob2Serve]
+
+        # Set 5:
+        [nodes, dist, parents, outcomes, info] = TennisSet(InitServerDist, P1S, P2S, P1TB, P2TB)
+        [SetDist5, NumGamesDist5, SetScoreDist5] = beliefpropagation(nodes, dist, parents, outcomes, info, Iterations, Tol)
+
 ######################### USER INPUT ENDS HERE ############################
 
 if __name__ == "__main__":
