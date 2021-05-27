@@ -78,12 +78,12 @@ def TennisSet():
 
     # Compute the probability of winning a game on serve from the on-serve point probabilities:
     P1S = 0.7
-    P2S = 0.65
+    P2S = 0.7
     P1G = pow(P1S, 2) / (pow(P1S, 2) + pow((1-P1S), 2))
     P2G = pow(P2S, 2) / (pow(P2S, 2) + pow((1-P2S), 2))
 
     # Compute the probability of winning a tie-breaker:
-    [P1TB, P2TB] = TieBreakerProbability(P1S, P2S, Iter = 10000, FirstTo = 7)
+    [P1TB, P2TB] = TieBreakerProbability(P1S, P2S, Iter = 200000, FirstTo = 7)
 
     # Equal chance of each player serving the first game: (Can update if the toss has been done)
     dist={}
@@ -201,24 +201,95 @@ def main():
     # Max Number of Iterations until Steady State reached:
     Iterations = 100
     # Tolerance level on Steady States:
-    Tol = 0.0001
+    Tol = 0.00001
 
-    distNoServers = []
+    distNoServersNoInfo = []
+    distNoServersP1S = []
+    distNoServersP2S = []
+    distNoServersAll = []
+
+    distTBNoInfo = []
+    distTBP1S = []
+    distTBP2S = []
+    distTBAll = []
+
+    trialRuns = 2
+
+    # [nodes, dist, parents, outcomes, info] = TennisSet()
+    # #info['Set'] = choose(outcomes['Set'], 1)
+    # info['ServerOdd'] = choose(outcomes['ServerOdd'], "P2Serves")
+    # [DistNoServer, distTB] = beliefpropagation(nodes,dist,parents,outcomes,info,Iterations,Tol)
     
-    for i in range(3):
+    for i in range(trialRuns):
     # Set up the model and run it with no first server info:
-<<<<<<< HEAD
         [nodes, dist, parents, outcomes, info] = TennisSet()
         #info['ServerOdd'] = choose(outcomes['ServerOdd'], "P1Serves")
-        DistNoServer = beliefpropagation(nodes,dist,parents,outcomes,info,Iterations,Tol)
-        distNoServers.append(DistNoServer[0])
+        [DistNoServer, distTB] = beliefpropagation(nodes,dist,parents,outcomes,info,Iterations,Tol)
+        distNoServersNoInfo.append(DistNoServer[0])
+        distTBNoInfo.append(distTB[0])
 
-    #print("variance = " + stats.variance(distNoServers))
-=======
-    [nodes, dist, parents, outcomes, info] = TennisSet()
-    info['ServerOdd'] = choose(outcomes['ServerOdd'], "P2Serves")
-    DistNoServer = beliefpropagation(nodes,dist,parents,outcomes,info,Iterations,Tol)
->>>>>>> cfaee32630b9c77f9dbcd59d34fcfa772e1f600f
+
+    for i in range(trialRuns):
+    # Set up the model and run it with no first server info:
+        [nodes, dist, parents, outcomes, info] = TennisSet()
+        info['ServerOdd'] = choose(outcomes['ServerOdd'], "P1Serves")
+        [DistNoServer, distTB] = beliefpropagation(nodes,dist,parents,outcomes,info,Iterations,Tol)
+        distNoServersP1S.append(DistNoServer[0])
+        distTBP1S.append(distTB[0])
+
+
+    for i in range(trialRuns):
+    # Set up the model and run it with no first server info:
+        [nodes, dist, parents, outcomes, info] = TennisSet()
+        info['ServerOdd'] = choose(outcomes['ServerOdd'], "P2Serves")
+        [DistNoServer, distTB] = beliefpropagation(nodes,dist,parents,outcomes,info,Iterations,Tol)
+        distNoServersP2S.append(DistNoServer[0])
+        distTBP2S.append(distTB[0]) 
+
+    distNoServersAll = distNoServersNoInfo + distNoServersP1S + distNoServersP2S
+    distTBAll = distTBNoInfo + distTBP1S + distTBP2S
+
+    print("")
+    print("Variance (no info) = " + str(stats.variance(distNoServersNoInfo)))
+    print("Mean (no info) = " + str(stats.mean(distNoServersNoInfo)))
+    print("Spread (no info) = " + str((max(distNoServersNoInfo)- min(distNoServersNoInfo))*100) + "%")
+    print("")
+
+    print("Variance TB (no info) = " + str(stats.variance(distTBNoInfo)))
+    print("Mean TB (no info) = " + str(stats.mean(distTBNoInfo)))
+    print("Spread TB (no info) = " + str((max(distTBNoInfo)- min(distTBNoInfo))*100) + "%")
+    print("")
+
+    print("Variance (P1Serves) = " + str(stats.variance(distNoServersP1S)))
+    print("Mean (P1Serves) = " + str(stats.mean(distNoServersP1S)))
+    print("Spread (P1Serves) = " + str((max(distNoServersP1S)- min(distNoServersP1S))*100) + "%")
+    print("")
+
+    print("Variance TB (P1Serves) = " + str(stats.variance(distTBP1S)))
+    print("Mean TB (P1Serves) = " + str(stats.mean(distTBP1S)))
+    print("Spread TB (P1Serves) = " + str((max(distTBP1S)- min(distTBP1S))*100) + "%")
+    print("")
+
+    print("Variance (P2Serves) = " + str(stats.variance(distNoServersP2S)))
+    print("Mean (P2Serves) = " + str(stats.mean(distNoServersP2S)))
+    print("Spread (P2Serves) = " + str((max(distNoServersP2S)- min(distNoServersP2S))*100) + "%")
+    print("")
+
+    print("Variance TB (P2Serves) = " + str(stats.variance(distTBP2S)))
+    print("Mean TB (P2Serves) = " + str(stats.mean(distTBP2S)))
+    print("Spread TB (P2Serves) = " + str((max(distTBP2S)- min(distTBP2S))*100) + "%")
+    print("")
+
+    print("Variance (all) = " + str(stats.variance(distNoServersAll)))
+    print("Mean (all) = " + str(stats.mean(distNoServersAll)))
+    print("Spread (all) = " + str((max(distNoServersAll)- min(distNoServersAll))*100) + "%")
+    print("")
+
+    print("Variance TB (all) = " + str(stats.variance(distTBAll)))
+    print("Mean TB (all) = " + str(stats.mean(distTBAll)))
+    print("Spread TB (all) = " + str((max(distTBAll)- min(distTBAll))*100) + "%")
+    print("")
+
 
     # In-match betting:
     # Known Events: 
