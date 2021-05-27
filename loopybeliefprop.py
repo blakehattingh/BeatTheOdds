@@ -1,6 +1,8 @@
 import numpy as np
 import math as math
 
+from numpy.core.fromnumeric import var
+
 ##def choose(option, total):
 ##    temp = np.zeros(total)
 ##    temp[option] = 1.
@@ -104,7 +106,7 @@ def beliefpropagation(nodes, dist, parents, outcomes, info, iterations, toleranc
             converged=True
             for v in nodes:
                 conv=np.linalg.norm(previous[v]-variable_data[v])
-                #print("conv =" + str(conv))
+                print("Conv = " + str(conv))
                 if conv>tolerance:
                     converged=False
                     break
@@ -146,10 +148,18 @@ def beliefpropagation(nodes, dist, parents, outcomes, info, iterations, toleranc
                     msg_f_to_v[f][v]/=sum(msg_f_to_v[f][v])
     
     # for v in nodes:
-    #     print(v+': Outcomes ',end='')
-    #     print(outcomes[v],end='')
-    #     print(', Distribution ',end='')
-    #     print(variable_data[v])
+    #    if (v == 'Set' or v == 'NumGames' or v == 'SetScore'):
+        # print(v+': Outcomes ',end='')
+        # print(outcomes[v],end='')
+        # print(', Distribution ',end='')
+        # print(variable_data[v])
 
     # Return the distributions of interest:
-    return variable_data['Set'], variable_data["TB"]
+    return variable_data['Set'], variable_data['NumGames'], variable_data['SetScore']
+    # - Set, Set2, ... Set5
+    # - NumGames, NumGames2...
+    # - Match
+
+    # - SetScore, SetScore2...
+    # - TotalNumGames, AllSetScores
+
