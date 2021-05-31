@@ -43,7 +43,7 @@ def TieBreakerProbability(P1S, P2S, Iter, FirstTo):
     # Compute their probability of winning when they start the TB serving:
     return [Count1/Iter, Count2/Iter] # Prob Player 1 winning if he serves first, Prob Player 2 winning if he serves first
 
-def TennisMatch(FirstToSets = 3):
+def TennisMatch2(FirstToSets = 3):
     # Specify the names of the nodes in the Bayesian network
     if (FirstToSets == 3):
         nodes=['ServerOdd','ServerEven','Set','NumGames','G1','G2','G3','G4','G5','G6','G7','G8','G9','G10','G11',
@@ -782,7 +782,7 @@ def TennisMatch(FirstToSets = 3):
         dist['Match'][2,2,2] = [0.,1.]
     else:
         # Number of matches = 5:       
-        for i in range(1,5):
+        for i in range(1,6):
             Seqs = combine_recursion(5,i)
 
             for j in Seqs:
@@ -797,7 +797,7 @@ def TennisMatch(FirstToSets = 3):
                 Sequence = tuple(InitialSeq)
 
                 # Set Outcome:
-                if (j < 3):
+                if (i < 3):
                     dist['Match'][Sequence] = [1.,0.]
                 else:
                     dist['Match'][Sequence] = [0.,1.]
