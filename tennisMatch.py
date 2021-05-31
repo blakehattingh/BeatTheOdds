@@ -2,6 +2,7 @@ from typing import Sequence
 import numpy as np
 import math
 import statistics as stats
+import time
 # import matplotlib.pyplot as plt
 from loopybeliefprop import beliefpropagation, noinfo, choose
 from MarkovSimulations import MarkovChainTieBreaker
@@ -46,6 +47,8 @@ def TieBreakerProbability(P1S, P2S, Iter, FirstTo):
 def TennisMatch(FirstToSets = 3):
     # Specify the names of the nodes in the Bayesian network
     if (FirstToSets == 3):
+        print("im here (3)")
+        '''
         nodes=['ServerOdd','ServerEven','Set','NumGames','G1','G2','G3','G4','G5','G6','G7','G8','G9','G10','G11',
         'G12','TB','ServerOdd2','ServerEven2','Set2','NumGames2','S2G1','S2G2','S2G3','S2G4','S2G5','S2G6','S2G7',
         'S2G8','S2G9','S2G10','S2G11', 'S2G12','S2TB','ServerOdd3','ServerEven3','Set3','NumGames3','S3G1','S3G2',
@@ -55,15 +58,25 @@ def TennisMatch(FirstToSets = 3):
         'G12','TB','ServerOdd2','ServerEven2','Set2','NumGames2','SetScore2','S2G1','S2G2','S2G3','S2G4','S2G5','S2G6','S2G7',
         'S2G8','S2G9','S2G10','S2G11', 'S2G12','S2TB','ServerOdd3','ServerEven3','Set3','NumGames3','SetScore3', 'S3G1','S3G2',
         'S3G3','S3G4','S3G5','S3G6','S3G7','S3G8','S3G9','S3G10','S3G11','S3G12','S3TB','Match','TotalNumGames','AllSetScores']
-        '''
+        
     elif (FirstToSets == 5):
-       nodes=['ServerOdd','ServerEven','Set','NumGames','SetScore','G1','G2','G3','G4','G5','G6','G7','G8','G9','G10','G11',
+        print("im here")
+        nodes=['ServerOdd','ServerEven','Set','NumGames','G1','G2','G3','G4','G5','G6','G7','G8','G9','G10','G11',
+        'G12','TB','ServerOdd2','ServerEven2','Set2','NumGames2','S2G1','S2G2','S2G3','S2G4','S2G5','S2G6','S2G7',
+        'S2G8','S2G9','S2G10','S2G11', 'S2G12','S2TB','ServerOdd3','ServerEven3','Set3','NumGames3', 'S3G1','S3G2',
+        'S3G3','S3G4','S3G5','S3G6','S3G7','S3G8','S3G9','S3G10','S3G11','S3G12','S3TB','ServerOdd4','ServerEven4','Set4',
+        'NumGames4', 'S4G1','S4G2','S4G3','S4G4','S4G5','S4G6','S4G7','S4G8','S4G9','S4G10','S4G11','S4G12','S4TB', 
+        'ServerOdd5','ServerEven5','Set5','NumGames5', 'S5G1','S5G2','S5G3','S5G4','S5G5','S5G6','S5G7','S5G8','S5G9',
+        'S5G10','S5G11','S5G12','S5TB','Match']     
+
+        '''
+        nodes=['ServerOdd','ServerEven','Set','NumGames','SetScore','G1','G2','G3','G4','G5','G6','G7','G8','G9','G10','G11',
         'G12','TB','ServerOdd2','ServerEven2','Set2','NumGames2','SetScore2','S2G1','S2G2','S2G3','S2G4','S2G5','S2G6','S2G7',
         'S2G8','S2G9','S2G10','S2G11', 'S2G12','S2TB','ServerOdd3','ServerEven3','Set3','NumGames3','SetScore3', 'S3G1','S3G2',
         'S3G3','S3G4','S3G5','S3G6','S3G7','S3G8','S3G9','S3G10','S3G11','S3G12','S3TB','ServerOdd4','ServerEven4','Set4',
         'NumGames4','SetScore4', 'S4G1','S4G2','S4G3','S4G4','S4G5','S4G6','S4G7','S4G8','S4G9','S4G10','S4G11','S4G12','S4TB', 
         'ServerOdd5','ServerEven5','Set5','NumGames5','SetScore5', 'S5G1','S5G2','S5G3','S5G4','S5G5','S5G6','S5G7','S5G8','S5G9',
-        'S5G10','S5G11','S5G12','S5TB','Match','TotalNumGames','AllSetScores']      
+        'S5G10','S5G11','S5G12','S5TB','Match','TotalNumGames','AllSetScores']     ''' 
 
     # Defining parent nodes:
     parents={}
@@ -83,7 +96,7 @@ def TennisMatch(FirstToSets = 3):
     parents['TB']=['ServerOdd']
     parents['Set']=['G1', 'G2', 'G3', 'G4','G5','G6', 'G7', 'G8', 'G9', 'G10', 'G11', 'G12', 'TB']
     parents['NumGames']=['G1', 'G2', 'G3', 'G4','G5','G6', 'G7', 'G8', 'G9', 'G10', 'G11', 'G12', 'TB']
-    # parents['SetScore']=['G1', 'G2', 'G3', 'G4','G5','G6', 'G7', 'G8', 'G9', 'G10', 'G11', 'G12', 'TB']
+    parents['SetScore']=['G1', 'G2', 'G3', 'G4','G5','G6', 'G7', 'G8', 'G9', 'G10', 'G11', 'G12', 'TB'] #!!!!!!!!!!!!!
     parents['ServerEven2']=['ServerOdd2']
     parents['S2G1']=['ServerOdd2']
     parents['S2G2']=['ServerEven2']
@@ -100,7 +113,7 @@ def TennisMatch(FirstToSets = 3):
     parents['S2TB']=['ServerOdd2']
     parents['Set2']=['S2G1', 'S2G2', 'S2G3', 'S2G4','S2G5','S2G6', 'S2G7', 'S2G8', 'S2G9', 'S2G10', 'S2G11', 'S2G12', 'S2TB']
     parents['NumGames2']=['S2G1', 'S2G2', 'S2G3', 'S2G4','S2G5','S2G6', 'S2G7', 'S2G8', 'S2G9', 'S2G10', 'S2G11', 'S2G12', 'S2TB']
-    # parents['SetScore2']=['S2G1', 'S2G2', 'S2G3', 'S2G4','S2G5','S2G6', 'S2G7', 'S2G8', 'S2G9', 'S2G10', 'S2G11', 'S2G12', 'S2TB']
+    parents['SetScore2']=['S2G1', 'S2G2', 'S2G3', 'S2G4','S2G5','S2G6', 'S2G7', 'S2G8', 'S2G9', 'S2G10', 'S2G11', 'S2G12', 'S2TB']#!!!!!!!!!!!!!
     parents['ServerEven3']=['ServerOdd3']
     parents['S3G1']=['ServerOdd3']
     parents['S3G2']=['ServerEven3']
@@ -117,7 +130,7 @@ def TennisMatch(FirstToSets = 3):
     parents['S3TB']=['ServerOdd3']
     parents['Set3']=['S3G1','S3G2','S3G3','S3G4','S3G5','S3G6','S3G7','S3G8','S3G9','S3G10','S3G11','S3G12','S3TB']
     parents['NumGames3']=['S3G1','S3G2','S3G3','S3G4','S3G5','S3G6','S3G7','S3G8','S3G9','S3G10','S3G11','S3G12','S3TB']
-    # parents['SetScore3']=['S3G1','S3G2','S3G3','S3G4','S3G5','S3G6','S3G7','S3G8','S3G9','S3G10','S3G11','S3G12','S3TB']
+    parents['SetScore3']=['S3G1','S3G2','S3G3','S3G4','S3G5','S3G6','S3G7','S3G8','S3G9','S3G10','S3G11','S3G12','S3TB']#!!!!!!!!!!!!!
     
     # Set up links between sets:
     parents['ServerOdd2'] = ['ServerOdd','NumGames']
@@ -126,8 +139,8 @@ def TennisMatch(FirstToSets = 3):
     if (FirstToSets == 3):
         # Set up the links to the match nodes:
         parents['Match'] = ['Set', 'Set2', 'Set3']
-        # parents['TotalNumGames'] = ['NumGames', 'NumGames2', 'NumGames3']
-        # parents['AllSetScores'] = ['SetScore', 'SetScore2', 'SetScore3']
+        parents['TotalNumGames'] = ['NumGames', 'NumGames2', 'NumGames3']#!!!!!!!!!!!!!
+        parents['AllSetScores'] = ['SetScore', 'SetScore2', 'SetScore3']#!!!!!!!!!!!!!
 
     # If match is best of 5 sets:
     if (FirstToSets == 5):
@@ -194,7 +207,7 @@ def TennisMatch(FirstToSets = 3):
     outcomes['TB']=[1,2]
     outcomes['Set']=[1,2]
     outcomes['NumGames']=[6,7,8,9,10,12,13]
-    # outcomes['SetScore']=["6-0","6-1","6-2","6-3","6-4","7-5","7-6","0-6","1-6","2-6","3-6","4-6","5-7","6-7"]
+    outcomes['SetScore']=["6-0","6-1","6-2","6-3","6-4","7-5","7-6","0-6","1-6","2-6","3-6","4-6","5-7","6-7"]#!!!!!!!!!!!!!
     outcomes['ServerOdd2']=["P1Serves","P2Serves"]
     outcomes['ServerEven2']=["P1Serves","P2Serves"]
     outcomes['S2G1']=[1,2]
@@ -212,7 +225,7 @@ def TennisMatch(FirstToSets = 3):
     outcomes['S2TB']=[1,2]
     outcomes['Set2']=[1,2]
     outcomes['NumGames2']=[6,7,8,9,10,12,13]
-    # outcomes['SetScore2']=["6-0","6-1","6-2","6-3","6-4","7-5","7-6","0-6","1-6","2-6","3-6","4-6","5-7","6-7"]
+    outcomes['SetScore2']=["6-0","6-1","6-2","6-3","6-4","7-5","7-6","0-6","1-6","2-6","3-6","4-6","5-7","6-7"]#!!!!!!!!!!!!!
     outcomes['ServerOdd3']=["P1Serves","P2Serves"]
     outcomes['ServerEven3']=["P1Serves","P2Serves"]
     outcomes['S3G1']=[1,2]
@@ -230,12 +243,12 @@ def TennisMatch(FirstToSets = 3):
     outcomes['S3TB']=[1,2]
     outcomes['Set3']=[1,2]
     outcomes['NumGames3']=[6,7,8,9,10,12,13]
-    # outcomes['SetScore3']=["6-0","6-1","6-2","6-3","6-4","7-5","7-6","0-6","1-6","2-6","3-6","4-6","5-7","6-7"]
+    outcomes['SetScore3']=["6-0","6-1","6-2","6-3","6-4","7-5","7-6","0-6","1-6","2-6","3-6","4-6","5-7","6-7"]#!!!!!!!!!!!!!
 
     # outcomes for match nodes:
     outcomes['Match'] = [1,2]
-    # outcomes['TotalNumGames'] = [list(range(18, 66))]
-    # outcomes['AllSetScores'] = ["6-0","6-1","6-2","6-3","6-4","7-5","7-6","0-6","1-6","2-6","3-6","4-6","5-7","6-7"]
+    outcomes['TotalNumGames'] = [list(range(18, 66))]#!!!!!!!!!!!!!
+    outcomes['AllSetScores'] = ["6-0","6-1","6-2","6-3","6-4","7-5","7-6","0-6","1-6","2-6","3-6","4-6","5-7","6-7"]#!!!!!!!!!!!!!
 
     if (FirstToSets == 5):
         outcomes['ServerOdd4']=["P1Serves","P2Serves"]
@@ -553,22 +566,22 @@ def TennisMatch(FirstToSets = 3):
     # Define the possible outcomes of the set, given a sequence of outcomes from all 12 games and the TB:
     dist['Set']={}
     dist['NumGames']={}
-    # dist['SetScore']={}
+    dist['SetScore']={}#!!!!!!!!!!!!!
     dist['Set'][1,1,1,1,1,1,1,1,1,1,1,1,1] = [1.,0.]
     dist['NumGames'][1,1,1,1,1,1,1,1,1,1,1,1,1] = [1., 0., 0., 0., 0., 0., 0.]
-    # dist['SetScore'][1,1,1,1,1,1,1,1,1,1,1,1,1] = [1., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.]
+    dist['SetScore'][1,1,1,1,1,1,1,1,1,1,1,1,1] = [1., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.]#!!!!!!!!!!!!!
     dist['Set2']={}
     dist['NumGames2']={}
-    # dist['SetScore2']={}
+    dist['SetScore2']={}#!!!!!!!!!!!!!
     dist['Set2'][1,1,1,1,1,1,1,1,1,1,1,1,1] = [1.,0.]
     dist['NumGames2'][1,1,1,1,1,1,1,1,1,1,1,1,1] = [1., 0., 0., 0., 0., 0., 0.]
-    # dist['SetScore2'][1,1,1,1,1,1,1,1,1,1,1,1,1] = [1., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.]
+    dist['SetScore2'][1,1,1,1,1,1,1,1,1,1,1,1,1] = [1., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.]#!!!!!!!!!!!!!
     dist['Set3']={}
     dist['NumGames3']={}
-    # dist['SetScore3']={}
+    dist['SetScore3']={}#!!!!!!!!!!!!!
     dist['Set3'][1,1,1,1,1,1,1,1,1,1,1,1,1] = [1.,0.]
     dist['NumGames3'][1,1,1,1,1,1,1,1,1,1,1,1,1] = [1., 0., 0., 0., 0., 0., 0.]
-    # dist['SetScore3'][1,1,1,1,1,1,1,1,1,1,1,1,1] = [1., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.]
+    dist['SetScore3'][1,1,1,1,1,1,1,1,1,1,1,1,1] = [1., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.]#!!!!!!!!!!!!!
     if (FirstToSets == 5):
         dist['Set4']={}
         dist['NumGames4']={}
@@ -691,11 +704,11 @@ def TennisMatch(FirstToSets = 3):
                 # Assign the correct outcome to the respective leaf node:
                 SetScoresDist[IndexSS] = 1.
                 NumGamesDist[IndexNG] = 1.
-                # dist['SetScore'][Sequence] = SetScoresDist
+                dist['SetScore'][Sequence] = SetScoresDist #!!!!!!!!!!
                 dist['NumGames'][Sequence] = NumGamesDist
-                # dist['SetScore2'][Sequence] = SetScoresDist
+                dist['SetScore2'][Sequence] = SetScoresDist #!!!!!!!!!!
                 dist['NumGames2'][Sequence] = NumGamesDist
-                # dist['SetScore3'][Sequence] = SetScoresDist
+                dist['SetScore3'][Sequence] = SetScoresDist #!!!!!!!!!!
                 dist['NumGames3'][Sequence] = NumGamesDist
                 if (FirstToSets == 5):
                     dist['SetScore4'][Sequence] = SetScoresDist
@@ -726,11 +739,11 @@ def TennisMatch(FirstToSets = 3):
                     # Assign the correct outcome to the respective leaf node:
                     SetScoresDist[IndexSS] = 1.
                     NumGamesDist[IndexNG] = 1.
-                    # dist['SetScore'][Sequence] = SetScoresDist
+                    dist['SetScore'][Sequence] = SetScoresDist #!!!!!!!!!!
                     dist['NumGames'][Sequence] = NumGamesDist 
-                    # dist['SetScore2'][Sequence] = SetScoresDist
+                    dist['SetScore2'][Sequence] = SetScoresDist #!!!!!!!!!!
                     dist['NumGames2'][Sequence] = NumGamesDist
-                    # dist['SetScore3'][Sequence] = SetScoresDist
+                    dist['SetScore3'][Sequence] = SetScoresDist #!!!!!!!!!!
                     dist['NumGames3'][Sequence] = NumGamesDist
                     if (FirstToSets == 5):
                         dist['SetScore4'][Sequence] = SetScoresDist
@@ -757,11 +770,11 @@ def TennisMatch(FirstToSets = 3):
                     # Assign the correct outcome to the respective leaf node:
                     SetScoresDist[IndexSS] = 1.
                     NumGamesDist[IndexNG] = 1.
-                    # dist['SetScore'][Sequence] = SetScoresDist
+                    dist['SetScore'][Sequence] = SetScoresDist #!!!!!!!!!!
                     dist['NumGames'][Sequence] = NumGamesDist 
-                    # dist['SetScore2'][Sequence] = SetScoresDist
+                    dist['SetScore2'][Sequence] = SetScoresDist #!!!!!!!!!!
                     dist['NumGames2'][Sequence] = NumGamesDist
-                    # dist['SetScore3'][Sequence] = SetScoresDist
+                    dist['SetScore3'][Sequence] = SetScoresDist #!!!!!!!!!!
                     dist['NumGames3'][Sequence] = NumGamesDist
                     if (FirstToSets == 5):
                         dist['SetScore4'][Sequence] = SetScoresDist
@@ -781,8 +794,9 @@ def TennisMatch(FirstToSets = 3):
         dist['Match'][2,2,1] = [0.,1.]
         dist['Match'][2,2,2] = [0.,1.]
     else:
-        # Number of matches = 5:       
-        for i in range(1,5):
+        # Number of matches = 5:  
+        dist['Match'][1,1,1,1,1] = [1.,0.]     
+        for i in range(1,6):
             Seqs = combine_recursion(5,i)
 
             for j in Seqs:
@@ -797,13 +811,13 @@ def TennisMatch(FirstToSets = 3):
                 Sequence = tuple(InitialSeq)
 
                 # Set Outcome:
-                if (j < 3):
+                if (i < 3):
                     dist['Match'][Sequence] = [1.,0.]
                 else:
                     dist['Match'][Sequence] = [0.,1.]
     
-    # All Set Score distributions:
-    '''
+    # All Set Score distributions: !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    
     dist['AllSetScores'] = {}
     SetScores = ["6-0","6-1","6-2", "6-3","6-4","7-5","7-6","0-6","1-6","2-6","3-6","4-6","5-7","6-7"]
     for Set in outcomes['SetScore']:
@@ -849,7 +863,7 @@ def TennisMatch(FirstToSets = 3):
                                     # Update distribution:
                                     NumberOfGamesdist[index] = 1.                         
                                     dist['TotalNumGames'][Games, Games2, Games3, Games4, Games5] = NumberOfGamesdist
-    '''                  
+              
     # Set up initial information:
     info={}
     for i in nodes:
@@ -870,7 +884,46 @@ def main():
     # Set up the model and run it with no first server info:
     [nodes, dist, parents, outcomes, info] = TennisMatch(3)
     #info['Set'] = choose(outcomes['Set'], "1")
-    DistNoServer = beliefpropagation(nodes,dist,parents,outcomes,info,Iterations,Tol)
+    start = time.time()
+    #DistNoServer = beliefpropagation(nodes,dist,parents,outcomes,info,Iterations,Tol)
+    DistSet1, DistSet2, DistSet3\
+        , numGames1, numGames2, numGames3,\
+            setScore1,setScore2,setScore3,\
+                totalGames, allSetScores, match = beliefpropagation(nodes,dist,parents,outcomes,info,Iterations,Tol)
+    end = time.time()
+    timeTaken = end - start
+
+    print("time taken (s) = " + str(timeTaken))
+    print("")
+
+    print("set1 = " + str(DistSet1))
+    print("set2 = " + str(DistSet2))
+    print("set3 = " + str(DistSet3))
+    print("")
+
+    print("Number of Games 1 = " + str(numGames1))
+    print("Number of Games 2 = " + str(numGames2))
+    print("Number of Games 3 = " + str(numGames3))
+    print("")
+
+    print("Set Score set 1 = " + str(setScore1))
+    print("Set Score set 2 = " + str(setScore2))
+    print("Set Score set 3 = " + str(setScore3))
+    print("")
+
+    print("total games = " + str(totalGames))
+    print("all set scores = " + str(allSetScores))
+
+    print("Match = " + str(match))
+
+    
+    # - Set, Set2, ... Set5
+    # - NumGames, NumGames2...
+    # - Match
+    
+    # - SetScore, SetScore2...
+    # - TotalNumGames, AllSetScores
+
 
     # In-match betting:
     # Known Events: 

@@ -155,7 +155,10 @@ def beliefpropagation(nodes, dist, parents, outcomes, info, iterations, toleranc
         # print(variable_data[v])
 
     # Return the distributions of interest:
-    return variable_data['Set'], variable_data['NumGames'], variable_data['SetScore']
+    return variable_data['Set'],variable_data['Set2'],variable_data['Set3'], variable_data['NumGames'],\
+        variable_data['NumGames2'],variable_data['NumGames3'],\
+        variable_data['SetScore'],variable_data['SetScore2'],variable_data['SetScore3'],\
+        variable_data['TotalNumGames'],variable_data['AllSetScores'],variable_data['Match']
     # - Set, Set2, ... Set5
     # - NumGames, NumGames2...
     # - Match
