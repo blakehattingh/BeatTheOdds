@@ -1,26 +1,7 @@
-from typing import Sequence
-import numpy as np
-import math
-import statistics as stats
-# import matplotlib.pyplot as plt
-from loopybeliefprop import beliefpropagation, noinfo, choose
-from MarkovSimulations import MarkovChainTieBreaker
-from itertools import islice
+# Import the required functions:
+from loopybeliefprop import choose
 
-# Combinatoric Generator:
-def combine_recursion(n, k):
-    result = []
-    combine_dfs(n, k, 1, [], result)
-    return result
-
-def combine_dfs(n, k, start, path, result):
-    if k == len(path):
-        result.append(path)
-        return
-    for i in range(start, n + 1):
-        combine_dfs(n, k, i + 1, path + [i], result)   
-
-def TennisMatch1(SetDists, SetScoreDists, NumGamesDists):
+def TennisMatchNetwork1(SetDists, SetScoreDists, NumGamesDists):
     # Specify the names of the nodes in the Bayesian network
     nodes=['Set1','Set2','Set3','NumGames1','NumGames2','NumGames3','SetScore1','SetScore2','SetScore3','NumSets','Match',
     'TotalNumGames','AllSetScores']
