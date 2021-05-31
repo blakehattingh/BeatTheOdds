@@ -44,7 +44,7 @@ def TieBreakerProbability(P1S, P2S, Iter, FirstTo):
     # Compute their probability of winning when they start the TB serving:
     return [Count1/Iter, Count2/Iter] # Prob Player 1 winning if he serves first, Prob Player 2 winning if he serves first
 
-def TennisMatch(FirstToSets = 3):
+def TennisMatch2(FirstToSets = 3):
     # Specify the names of the nodes in the Bayesian network
     if (FirstToSets == 3):
         print("im here (3)")
