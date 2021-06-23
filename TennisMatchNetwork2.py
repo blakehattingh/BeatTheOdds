@@ -1,6 +1,6 @@
  # Import the required functions:
 from loopybeliefprop import choose
-from AdditionalFunctions import combine_recursion
+from AdditionalFunctions import combine_recursion, nth_index
  
 def TennisMatchNetwork2(P1S, P2S, P1TB, P2TB, FirstToSets, Mode):
     # Specify the names of the nodes in the Bayesian network
@@ -14,7 +14,8 @@ def TennisMatchNetwork2(P1S, P2S, P1TB, P2TB, FirstToSets, Mode):
             nodes=['ServerOdd','ServerEven','Set','NumGames','SetScore','G1','G2','G3','G4','G5','G6','G7','G8','G9','G10','G11',
             'G12','TB','ServerOdd2','ServerEven2','Set2','NumGames2','SetScore2','S2G1','S2G2','S2G3','S2G4','S2G5','S2G6','S2G7',
             'S2G8','S2G9','S2G10','S2G11', 'S2G12','S2TB','ServerOdd3','ServerEven3','Set3','NumGames3','SetScore3', 'S3G1','S3G2',
-            'S3G3','S3G4','S3G5','S3G6','S3G7','S3G8','S3G9','S3G10','S3G11','S3G12','S3TB','Match','TotalNumGames','AllSetScores']
+            'S3G3','S3G4','S3G5','S3G6','S3G7','S3G8','S3G9','S3G10','S3G11','S3G12','S3TB','Match','TotalNumGames','AllSetScores',
+            'NumSets']
     elif (FirstToSets == 5):
         if (Mode == 'Simple'):
             nodes=['ServerOdd','ServerEven','Set','NumGames','G1','G2','G3','G4','G5','G6','G7','G8','G9','G10','G11',
@@ -31,7 +32,7 @@ def TennisMatchNetwork2(P1S, P2S, P1TB, P2TB, FirstToSets, Mode):
             'S3G3','S3G4','S3G5','S3G6','S3G7','S3G8','S3G9','S3G10','S3G11','S3G12','S3TB','ServerOdd4','ServerEven4','Set4',
             'NumGames4','SetScore4', 'S4G1','S4G2','S4G3','S4G4','S4G5','S4G6','S4G7','S4G8','S4G9','S4G10','S4G11','S4G12','S4TB', 
             'ServerOdd5','ServerEven5','Set5','NumGames5','SetScore5', 'S5G1','S5G2','S5G3','S5G4','S5G5','S5G6','S5G7','S5G8','S5G9',
-            'S5G10','S5G11','S5G12','S5TB','Match','TotalNumGames','AllSetScores'] 
+            'S5G10','S5G11','S5G12','S5TB','Match','TotalNumGames','AllSetScores', 'NumSets'] 
 
     # Defining parent nodes:
     parents={}
@@ -100,6 +101,7 @@ def TennisMatchNetwork2(P1S, P2S, P1TB, P2TB, FirstToSets, Mode):
         if (Mode == 'Complex'):
             parents['TotalNumGames'] = ['NumGames', 'NumGames2', 'NumGames3']
             parents['AllSetScores'] = ['SetScore', 'SetScore2', 'SetScore3']
+            parents['NumSets'] = ['Set', 'Set2', 'Set3']
 
     # If match is best of 5 sets:
     if (FirstToSets == 5):
@@ -151,6 +153,8 @@ def TennisMatchNetwork2(P1S, P2S, P1TB, P2TB, FirstToSets, Mode):
         if (Mode == 'Complex'):
             parents['TotalNumGames'] = ['NumGames', 'NumGames2', 'NumGames3', 'NumGames4', 'NumGames5']
             parents['AllSetScores'] = ['SetScore', 'SetScore2', 'SetScore3', 'SetScore4', 'SetScore5']
+            parents['NumSets'] = ['Set', 'Set2', 'Set3', 'Set4', 'Set5']
+
 
     # Set up the possible outcomes for each node:
     outcomes={}
@@ -218,6 +222,7 @@ def TennisMatchNetwork2(P1S, P2S, P1TB, P2TB, FirstToSets, Mode):
     if (Mode == 'Complex'):
         outcomes['TotalNumGames'] = [list(range(18, 66))]
         outcomes['AllSetScores'] = ["6-0","6-1","6-2","6-3","6-4","7-5","7-6","0-6","1-6","2-6","3-6","4-6","5-7","6-7"]
+        outcomes['NumSets'] = [2,3,4,5]
 
     if (FirstToSets == 5):
         outcomes['ServerOdd4']=["P1Serves","P2Serves"]
@@ -845,6 +850,50 @@ def TennisMatchNetwork2(P1S, P2S, P1TB, P2TB, FirstToSets, Mode):
                                         # Update distribution:
                                         NumberOfGamesdist[index] = 1.                         
                                         dist['TotalNumGames'][Games, Games2, Games3, Games4, Games5] = NumberOfGamesdist
+
+        # Number of Sets:
+        dist['NumSets'] = {} # outcomes = 2, 3, 4, and 5
+
+        if (FirstToSets == 3):
+            dist['NumSets'][1,1,1] = [1.,0.,0.,0.]
+            dist['NumSets'][1,1,2] = [1.,0.,0.,0.]
+            dist['NumSets'][1,2,1] = [0.,1.,0.,0.]
+            dist['NumSets'][1,2,2] = [0.,1.,0.,0.]
+            dist['NumSets'][2,1,1] = [0.,1.,0.,0.]
+            dist['NumSets'][2,2,1] = [1.,0.,0.,0.]
+            dist['NumSets'][2,1,2] = [0.,1.,0.,0.]
+            dist['NumSets'][2,2,2] = [1.,0.,0.,0.]
+        else:
+            for i in range(1,6):
+                Seqs = combine_recursion(6,i)
+
+                for j in Seqs:
+                    # Reset Sequences and distributions:
+                    InitialSeq = [1,1,1,1,1]
+                    NumSetsDist = [0., 0., 0., 0., 0.]
+
+                    # Place the '2's in each possible combination:
+                    for Set in j:
+                        InitialSeq[Set-1] = 2
+
+                    # Assign the correct number of sets:
+                    Sequence = tuple(InitialSeq)
+
+                    # Number of Sets:
+
+                    # Case 1: (i (Player 2 wins) < 3)
+                    if (i < 3):
+                        # Player 1 won the game, check when his 3rd set win was:
+                        index = nth_index(Sequence, 1, 3)
+                    
+                    # Case 2: (i > 2):
+                    else:
+                        # Player 2 won the game, check when their 3rd set win was:
+                        index = nth_index(Sequence, 2, 3)
+                
+                # Update the number of sets distribution:
+                NumSetsDist[index-1] = 1.
+                dist['NumSets'][Sequence] = NumSetsDist
               
     # Set up initial information:
     info={}
