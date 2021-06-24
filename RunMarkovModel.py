@@ -37,7 +37,7 @@ def RunMarkovModel(P1S, P2S, FirstToSets, FirstToTBPoints, Method, Mode = 'Simpl
 def main():
     P1S = 0.70
     P2S = 0.80
-    Approach = 2
+    Approach = 1
 
     if (Approach == 1):
         # Run the Markov Model using the first approach:
