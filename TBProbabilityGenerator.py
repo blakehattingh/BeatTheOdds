@@ -1,12 +1,6 @@
-from itertools import islice
 from AdditionalFunctions import TieBreakerProbability
 import numpy as np
 import csv
-
-def nth_index(iterable, value, n):
-    matches = (idx for idx, val in enumerate(iterable) if val == value)
-    return next(islice(matches, n-1, n), None)
-
 
 def main():
     # Calculating the TB values for each possible combination of P1S and P2S values:
@@ -15,12 +9,12 @@ def main():
     # e.g. Row 1 = P1S = 0.5, Row 2 = 0.55, Row = 0.6
 
     # Generate all possible P1S and P2S values:
-    P1S = np.arange(0.5, 0.9, 0.1).tolist()
-    P2S = np.arange(0.5, 0.9, 0.1).tolist()
+    P1S = np.arange(0.5, 0.95, 0.01).tolist()
+    P2S = np.arange(0.5, 0.95, 0.01).tolist()
 
     # Set up Tie-breaker:
     FirstToTBPoints = 7
-    Iterations = 1000
+    Iterations = 100000
     TBProbabilities = []
     P1WinProbs = []
 
@@ -33,7 +27,6 @@ def main():
         TBProbabilities.append(P1WinProbs)
         P1WinProbs = []
         print(P1)
-    
 
     with open('TBProbabilities.csv', mode = 'w', newline = "") as TB_file:
         TB_writer = csv.writer(TB_file)

@@ -12,8 +12,8 @@ def RunMarkovModel(P1S, P2S, FirstToSets, FirstToTBPoints, Method, Viscosity, Mo
     # Tolerance level on Steady States:
     Tol = 0.0001
 
-    # Compute the tie-breaker probabilities using the simulation:
-    random.seed(14)
+    # Compute the tie-breaker probabilities using pre-calculated values from a simulation:
+
     [P1TB, P2TB] = [0.31866, 0.68287]# TieBreakerProbability(P1S, P2S, 100000, FirstToTBPoints)
     print(P1TB, P2TB)
 
