@@ -23,6 +23,7 @@ def main():
         for P2 in P2S:
             [P1Winning, P2Winning] = TieBreakerProbability(P1, P2, Iterations, FirstToTBPoints)
             P1WinProbs.append(P1Winning)
+            print(P2)
         # Store the probabilities for that P1S value:
         TBProbabilities.append(P1WinProbs)
         P1WinProbs = []
