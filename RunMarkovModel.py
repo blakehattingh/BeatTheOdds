@@ -3,7 +3,7 @@ from AdditionalFunctions import TieBreakerProbability
 from FirstImplementation import MarkovModelFirstImplementation
 from SecondImplementation import MarkovModelSecondImplementation
 
-def RunMarkovModel(P1S, P2S, FirstToSets, FirstToTBPoints, Method, Mode = 'Simple'):
+def RunMarkovModel(P1S, P2S, FirstToSets, FirstToTBPoints, Method, Viscosity, Mode = 'Simple'):
     # This function runs the Markov Model using one of the approaches implemented.
 
     # Model Parameters:
@@ -20,28 +20,33 @@ def RunMarkovModel(P1S, P2S, FirstToSets, FirstToTBPoints, Method, Mode = 'Simpl
     # Run the Markov Model using the method specified by the user:
     if (Method == 1):
         [MatchDist, NumSetsDist, TotalNumGamesDist, AllSetScoresDist] = MarkovModelFirstImplementation(P1S, P2S, P1TB, P2TB, 
-        FirstToSets, FirstToTBPoints, Iterations, Tol)
+        FirstToSets, FirstToTBPoints, Viscosity, Iterations, Tol)
         return MatchDist, NumSetsDist, TotalNumGamesDist, AllSetScoresDist
 
     elif (Method == 2):
         if (Mode == 'Simple'):
-            MatchDist = MarkovModelSecondImplementation(P1S, P2S, P1TB, P2TB, FirstToSets, FirstToTBPoints, Mode, Iterations, Tol)
+            MatchDist = MarkovModelSecondImplementation(P1S, P2S, P1TB,P2TB,FirstToSets,FirstToTBPoints,Mode,Viscosity,Iterations,Tol)
             return MatchDist
 
         elif (Mode == 'Complex'):
             [MatchDist,NumSetsDist,TotalNumGamesDist,AllSetScoresDist] = MarkovModelSecondImplementation(P1S, P2S, P1TB, P2TB, 
-            FirstToSets, FirstToTBPoints, Mode, Iterations, Tol)
+            FirstToSets, FirstToTBPoints, Mode, Viscosity, Iterations, Tol)
             return MatchDist, NumSetsDist, TotalNumGamesDist, AllSetScoresDist
 
 
 def main():
     P1S = 0.70
     P2S = 0.80
+<<<<<<< HEAD
     Approach = 1
+=======
+    Approach = 2
+    Viscosity = 0.5
+>>>>>>> f3e10579736ddedd053131d4e0774ab8c9e983a1
 
     if (Approach == 1):
         # Run the Markov Model using the first approach:
-        [MatchDist, NumSetsDist, TotalNumGamesDist, AllSetScoresDist] = RunMarkovModel(P1S,P2S,3,7,1)
+        [MatchDist, NumSetsDist, TotalNumGamesDist, AllSetScoresDist] = RunMarkovModel(P1S,P2S,3,7,1,Viscosity)
         print('Match Distribution: ', end = '')
         print(MatchDist)
         print('Number of Sets Distribution: ', end = '')
@@ -53,7 +58,7 @@ def main():
 
     else:
         # Run the Markov Model using the second approach:
-        [MatchDist, NumSetsDist, TotalNumGamesDist, AllSetScoresDist] = RunMarkovModel(P1S,P2S,3,7,2,'Complex')
+        [MatchDist, NumSetsDist, TotalNumGamesDist, AllSetScoresDist] = RunMarkovModel(P1S,P2S,3,7,2,Viscosity,'Complex')
         print('Match Distribution: ', end = '')
         print(MatchDist)
         print('Number of Sets Distribution: ', end = '')
