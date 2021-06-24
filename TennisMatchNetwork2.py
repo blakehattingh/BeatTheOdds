@@ -1,6 +1,7 @@
  # Import the required functions:
 from loopybeliefprop import choose
 from AdditionalFunctions import combine_recursion, nth_index
+import numpy as np
  
 def TennisMatchNetwork2(P1S, P2S, P1TB, P2TB, FirstToSets, Mode):
     # Specify the names of the nodes in the Bayesian network
@@ -220,7 +221,7 @@ def TennisMatchNetwork2(P1S, P2S, P1TB, P2TB, FirstToSets, Mode):
     outcomes['Match'] = [1,2]
 
     if (Mode == 'Complex'):
-        outcomes['TotalNumGames'] = [list(range(18, 66))]
+        outcomes['TotalNumGames'] = list(range(18, 66))
         outcomes['AllSetScores'] = ["6-0","6-1","6-2","6-3","6-4","7-5","7-6","0-6","1-6","2-6","3-6","4-6","5-7","6-7"]
         outcomes['NumSets'] = [2,3,4,5]
 
@@ -831,29 +832,27 @@ def TennisMatchNetwork2(P1S, P2S, P1TB, P2TB, FirstToSets, Mode):
 
         # Total Number of Games distributions:
         dist['TotalNumGames'] = {}
+        TotalGamesDist = np.zeros(48, dtype = float)
         for Games in outcomes['NumGames']:
                 for Games2 in outcomes['NumGames']:
                         for Games3 in outcomes['NumGames']:
                             if (FirstToSets == 3):
-                                NumberOfGamesdist = [0.] * len(outcomes['TotalNumGames'][0])
                                 TotalGames = Games + Games2 + Games3
-                                index = outcomes['TotalNumGames'][0].index(TotalGames)
-                                # Update distribution:
-                                NumberOfGamesdist[index] = 1.                         
-                                dist['TotalNumGames'][Games, Games2, Games3] = NumberOfGamesdist
+                                TotalGamesDist[TotalGames-18] = 1.                      
+                                dist['TotalNumGames'][Games, Games2, Games3] = TotalGamesDist
+                                # Reset Distribution:
+                                TotalGamesDist = np.zeros(48, dtype = float)
                             elif (FirstToSets == 5):
                                 for Games4 in outcomes['NumGames']:
                                     for Games5 in outcomes['NumGames']:
-                                        NumberOfGamesdist = [0.] * len(outcomes['TotalNumGames'])
                                         TotalGames = Games + Games2 + Games3 + Games4 + Games5
-                                        index = outcomes['TotalNumGames'][0].index(TotalGames)
-                                        # Update distribution:
-                                        NumberOfGamesdist[index] = 1.                         
-                                        dist['TotalNumGames'][Games, Games2, Games3, Games4, Games5] = NumberOfGamesdist
+                                        TotalGamesDist[TotalGames-18] = 1.                                             
+                                        dist['TotalNumGames'][Games, Games2, Games3, Games4, Games5] = TotalGamesDist
+                                        # Reset Distribution:
+                                        TotalGamesDist = np.zeros(48, dtype = float)
 
         # Number of Sets:
         dist['NumSets'] = {} # outcomes = 2, 3, 4, and 5
-
         if (FirstToSets == 3):
             dist['NumSets'][1,1,1] = [1.,0.,0.,0.]
             dist['NumSets'][1,1,2] = [1.,0.,0.,0.]

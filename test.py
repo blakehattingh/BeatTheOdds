@@ -1,5 +1,5 @@
 from itertools import islice
-
+import numpy as np
 
 def nth_index(iterable, value, n):
     matches = (idx for idx, val in enumerate(iterable) if val == value)
@@ -7,9 +7,11 @@ def nth_index(iterable, value, n):
 
 
 def main():
-    x = [1,2,3,4,5,4,3,2,5,6]
-    print(len(x))
-    print(nth_index(x, 3, 1))
+    x = np.zeros(48, dtype=float)
+    y = list(range(18,66))
+    print(len(y))
+    print(x)
+
 
 if __name__ == "__main__":
     main()
