@@ -1,4 +1,6 @@
 from RunMarkovModel import RunMarkovModel
+from TennisSetNetwork import TennisSetNetwork
+import numpy as np
 
 def main():
     # This file runs each implementation, for each of the 3 scenarios and outputs each distribution as a plot.
@@ -40,6 +42,16 @@ def main():
         NumberOfSetsDistributions5.append(NumSetsDist5)
         TotalNumberOfGamesDistributions5.append(TotalNumGamesDist5)
         AllSetScoresDistributions5.append(AllSetScoresDist5)
+
+def FirstServerEffects():
+    # Affect of the first server:
+    P2S = 0.7 # Average probability of winning a point on serve
+    P1S = np.arange(0.3, 0.9, 0.01).tolist()
+    for S in P1S:
+        [nodes, dist, parents, outcomes, info] = TennisSetNetwork(P1S, P2S, P1TB, P2TB)
+
+        [MatchDist3]
+
 
 if __name__ == "__main__":
     main()
