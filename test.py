@@ -13,7 +13,8 @@ def main():
     # Store each probability for player 1 winning for each combination of P1S and P2S values:
     # Each row corresponds to a new P1S value:
     # e.g. Row 1 = P1S = 0.5, Row 2 = 0.55, Row = 0.6
-
+    x = list(range(18,66))
+    print(x)
     # Generate all possible P1S and P2S values:
     P1S = np.arange(0.5, 0.9, 0.1).tolist()
     P2S = np.arange(0.5, 0.9, 0.1).tolist()
