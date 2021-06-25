@@ -62,7 +62,7 @@ def factor_graph(nodes,parents,info):
     return variable_data,variable_adj,factor_data,factor_adj
     
 
-def beliefpropagation(nodes, dist, parents, outcomes, info, iterations, tolerance, NodesToReturn, Viscosity=0.5):
+def beliefpropagation(nodes, dist, parents, outcomes, info, iterations, tolerance, NodesToReturn, Viscosity=0.5, UsingVis = False):
 
     M={}
     for x in dist:
@@ -96,12 +96,13 @@ def beliefpropagation(nodes, dist, parents, outcomes, info, iterations, toleranc
             variable_data[v]/=sum(variable_data[v])
             
             for f in variable_adj[v]:
-                #temp=msg_v_to_f[v][f]
+                temp=msg_v_to_f[v][f]
                 msg_v_to_f[v][f]=info[v].copy()
                 for g in variable_adj[v]:
                     if f!=g:
                         msg_v_to_f[v][f]*=msg_f_to_v[g][v]
-                #msg_v_to_f[v][f] = (Viscosity) * temp + (1. - Viscosity) * msg_f_to_v[g][v]
+                if UsingVis:
+                    msg_v_to_f[v][f] = (Viscosity) * temp + (1. - Viscosity) * msg_f_to_v[g][v]
         
         if iteration>0:
             converged=True
@@ -131,7 +132,7 @@ def beliefpropagation(nodes, dist, parents, outcomes, info, iterations, toleranc
                     count*=info[v].size
 
                 for v in factor_adj[f]:
-                    #temp=msg_f_to_v[f][v]
+                    temp=msg_f_to_v[f][v]
                     msg_f_to_v[f][v]=np.zeros(info[v].size)
                     for i in range(info[v].size):
                         for j in range(count):
@@ -148,7 +149,8 @@ def beliefpropagation(nodes, dist, parents, outcomes, info, iterations, toleranc
                                         prob*=msg_v_to_f[k][f][index]
                                 msg_f_to_v[f][v][i]+=prob
                     msg_f_to_v[f][v]/=sum(msg_f_to_v[f][v])
-                    #msg_f_to_v[f][v] = ( Viscosity) * temp + (1. - Viscosity) * msg_f_to_v[f][v]
+                    if UsingVis:
+                        msg_f_to_v[f][v] = ( Viscosity) * temp + (1. - Viscosity) * msg_f_to_v[f][v]
     
     # for v in nodes:
     #    if (v == 'Set' or v == 'NumGames' or v == 'SetScore'):
