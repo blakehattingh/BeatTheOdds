@@ -12,14 +12,23 @@ def main():
     Viscosity = 0.5
 
     # Distributions:
-    MatchDistributions3 = []
-    NumberOfSetsDistributions3 = []
-    TotalNumberOfGamesDistributions3 = []
-    AllSetScoresDistributions3 = []
-    MatchDistributions5 = []
-    NumberOfSetsDistributions5 = []
-    TotalNumberOfGamesDistributions5 = []
-    AllSetScoresDistributions5 = []
+    MatchDistributions3A1 = []
+    NumberOfSetsDistributions3A1 = []
+    TotalNumberOfGamesDistributions3A1 = []
+    AllSetScoresDistributions3A1 = []
+    MatchDistributions5A1 = []
+    NumberOfSetsDistributions5A1 = []
+    TotalNumberOfGamesDistributions5A1 = []
+    AllSetScoresDistributions5A1 = []
+
+    MatchDistributions3A2 = []
+    NumberOfSetsDistributions3A2 = []
+    TotalNumberOfGamesDistributions3A2 = []
+    AllSetScoresDistributions3A2 = []
+    MatchDistributions5A2 = []
+    NumberOfSetsDistributions5A2 = []
+    TotalNumberOfGamesDistributions5A2 = []
+    AllSetScoresDistributions5A2 = []
 
     # Possible Outcomes:
     MatchOutcomes = ['Player 1 Wins', 'Player 2 Wins']
@@ -33,15 +42,18 @@ def main():
         [MatchDist3, NumSetsDist3, TotalNumGamesDist3, AllSetScoresDist3] = RunMarkovModel(P1,P2S,3,FirstToTBPoints,Approach,Viscosity)
         [MatchDist5, NumSetsDist5, TotalNumGamesDist5, AllSetScoresDist5] = RunMarkovModel(P1,P2S,5,FirstToTBPoints,Approach,Viscosity)
 
+        [MatchDist3A2, NumSetsDist3A2, TotalNumGamesDist3A2, AllSetScoresDist3A2] = RunMarkovModel(P1,P2S,3,FirstToTBPoints,2,Viscosity, True)
+        [MatchDist5A2, NumSetsDist5A2, TotalNumGamesDist5A2, AllSetScoresDist5A2] = RunMarkovModel(P1,P2S,5,FirstToTBPoints,2,Viscosity, True)
+
         # Append distributions for each scenario:
-        MatchDistributions3.append(MatchDist3)
-        NumberOfSetsDistributions3.append(NumSetsDist3)
-        TotalNumberOfGamesDistributions3.append(TotalNumGamesDist3)
-        AllSetScoresDistributions3.append(AllSetScoresDist3)
-        MatchDistributions5.append(MatchDist5)
-        NumberOfSetsDistributions5.append(NumSetsDist5)
-        TotalNumberOfGamesDistributions5.append(TotalNumGamesDist5)
-        AllSetScoresDistributions5.append(AllSetScoresDist5)
+        MatchDistributions3A1.append(MatchDist3)
+        NumberOfSetsDistributions3A1.append(NumSetsDist3)
+        TotalNumberOfGamesDistributions3A1.append(TotalNumGamesDist3)
+        AllSetScoresDistributions3A1.append(AllSetScoresDist3)
+        MatchDistributions5A1.append(MatchDist5)
+        NumberOfSetsDistributions5A1.append(NumSetsDist5)
+        TotalNumberOfGamesDistributions5A1.append(TotalNumGamesDist5)
+        AllSetScoresDistributions5A1.append(AllSetScoresDist5)
 
 def FirstServerEffects():
     # Affect of the first server:
