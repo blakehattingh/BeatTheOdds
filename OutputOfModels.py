@@ -1,5 +1,7 @@
+from AdditionalFunctions import ComputeTBProbabilities
 from RunMarkovModel import RunMarkovModel
 from TennisSetNetwork import TennisSetNetwork
+from loopybeliefprop import beliefpropagation
 import numpy as np
 
 def main():
@@ -56,15 +58,59 @@ def main():
         AllSetScoresDistributions5A1.append(AllSetScoresDist5)
 
 def FirstServerEffects():
-    # Affect of the first server:
+    # This function visualises the effect of knowing the first server of a match.
+    # It shows how the probability of a player winning a set changes if they serve first versus if they recieve first.
+    # It also shows the affect that the value of P1S has on this relationship.
+
+    # Parameters:
+    Iterations = 100
+    Tol = 0.0001
+    Viscosity = 0.5
+
+    # Plot 1:
+    # - PServe difference vs Probability of Player 1 winning a set (grouped bargraph)
     P2S = 0.7 # Average probability of winning a point on serve
-    P1S = np.arange(0.3, 0.9, 0.01).tolist()
+    P1S = [0.71] #, 0.75, 0.80]
+    Scenarios = [[1., 0.]]# , [0.5, 0.5], [0., 1.]]
+    SetDistributions1 = []
+    GameDistributions = []
     for S in P1S:
-        [nodes, dist, parents, outcomes, info] = TennisSetNetwork(P1S, P2S, P1TB, P2TB)
+        # Compute TB Probs:
+        [P1TB, P2TB] = ComputeTBProbabilities(S, P2S)
+        for Scen in Scenarios:
+            [nodes, dist, parents, outcomes, info] = TennisSetNetwork(S, P2S, P1TB, P2TB, Scen)
+            [SetDist, G1,G2,G3,G4,G5,G6,G7,G8,G9,G10,G11,G12,TB] = beliefpropagation(nodes, dist, parents, outcomes, info, Iterations, 
+            Tol, ['Set', 'G1', 'G2', 'G3', 'G4', 'G5', 'G6', 'G7', 'G8', 'G9', 'G10', 'G11', 'G12', 'TB'], Viscosity)
+            SetDistributions1.append(SetDist.tolist())
+            GameDistributions.append([G1,G2,G3,G4,G5,G6,G7,G8,G9,G10,G11,G12,TB])
+    
+    print(SetDistributions1)
+    print(GameDistributions)
+    
+    # Plot 2:
+    # - Player 1 serving ability vs Difference in probability between serving first and receiving first (line graph)
+    # - Each line on the graph corresponds to a different difference in serving abilities
+    # A = PServe difference of 0.01
+    # B = PServe difference of 0.05
+    # C = PServe differnece of 0.1
 
-        [MatchDist3]
+    if False:
+        P1S = np.arange(0.5, 0.95, 0.01).tolist()
+        SetDistributions2 = []
+        Differences = [0.01, 0.05, 0.10]
+        for S in P1S:
+            for D in Differences:
+                # Compute TB Probs:
+                [P1TB, P2TB] = ComputeTBProbabilities(S, S - D)
 
+                for Scen in Scenarios:
+                    # Set up network:
+                    [nodes, dist, parents, outcomes, info] = TennisSetNetwork(S, S - D, P1TB, P2TB, Scen)
+                    SetDist = beliefpropagation(nodes, dist, parents, outcomes, info, Iterations, Tol, ['Set'], Viscosity)
+                    SetDistributions2.append(SetDist.to_list())
+        
+        print(SetDistributions2)
 
 if __name__ == "__main__":
-    main()
+    FirstServerEffects()
     

@@ -1,5 +1,5 @@
 import random
-from AdditionalFunctions import TieBreakerProbability
+from AdditionalFunctions import ComputeTBProbabilities
 from FirstImplementation import MarkovModelFirstImplementation
 from SecondImplementation import MarkovModelSecondImplementation
 
@@ -12,10 +12,8 @@ def RunMarkovModel(P1S, P2S, FirstToSets, FirstToTBPoints, Method, Viscosity, Mo
     # Tolerance level on Steady States:
     Tol = 0.0001
 
-    # Compute the tie-breaker probabilities using pre-calculated values from a simulation:
-
-    [P1TB, P2TB] = [0.31866, 0.68287]# TieBreakerProbability(P1S, P2S, 100000, FirstToTBPoints)
-    print(P1TB, P2TB)
+    # Compute the TB Probabilities:
+    [P1TB, P2TB] = ComputeTBProbabilities(P1S, P2S)
 
     # Run the Markov Model using the method specified by the user:
     if (Method == 1):
