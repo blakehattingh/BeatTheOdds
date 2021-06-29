@@ -32,4 +32,3 @@ def main():
     with open('TBProbabilities.csv', mode = 'w', newline = "") as TB_file:
         TB_writer = csv.writer(TB_file)
         TB_writer.writerows(TBProbabilities)    
-C
