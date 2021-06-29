@@ -10,8 +10,10 @@ def nth_index(iterable, value, n):
 
 
 def main():
-    # Test stuff:
-    x = [1,4,5,6]
+    a = np.array([1.,1.,1.])
+    print(a)
+    print("hello World")
+
 
 if __name__ == "__main__":
     main()

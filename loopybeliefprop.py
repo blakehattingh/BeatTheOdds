@@ -17,9 +17,6 @@ def choose(outcomes,choice):
 
     return np.ones(len(outcomes))
 
-def noinfo(outcomes):
-    return np.ones(total)
-
 def appendOutcomes(dx,pars,outcomes,p,index,n):
     if p==n:
         if len(index)>1:
