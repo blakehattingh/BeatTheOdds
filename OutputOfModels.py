@@ -3,6 +3,7 @@ from RunMarkovModel import RunMarkovModel
 from TennisSetNetwork import TennisSetNetwork
 from loopybeliefprop import beliefpropagation
 import numpy as np
+import matplotlib.pyplot as plt
 
 def main():
     # This file runs each implementation, for each of the 3 scenarios and outputs each distribution as a plot.
@@ -58,9 +59,9 @@ def FirstServerEffects():
     # Plot 1:
     # - PServe difference vs Probability of Player 1 winning a set (grouped bargraph)
     P2S = 0.7 # Average probability of winning a point on serve
-    P1S = [0.71] #, 0.75, 0.80]
-    Scenarios = [[1., 0.]]# , [0.5, 0.5], [0., 1.]]
-    SetDistributions1 = []
+    P1S = [0.71, 0.75, 0.80]
+    Scenarios = [[1., 0.], [0.5, 0.5], [0., 1.]]
+    SetDistributions = []
     GameDistributions = []
     for S in P1S:
         # Compute TB Probs:
@@ -69,11 +70,37 @@ def FirstServerEffects():
             [nodes, dist, parents, outcomes, info] = TennisSetNetwork(S, P2S, P1TB, P2TB, Scen)
             [SetDist, G1,G2,G3,G4,G5,G6,G7,G8,G9,G10,G11,G12,TB] = beliefpropagation(nodes, dist, parents, outcomes, info, Iterations, 
             Tol, ['Set', 'G1', 'G2', 'G3', 'G4', 'G5', 'G6', 'G7', 'G8', 'G9', 'G10', 'G11', 'G12', 'TB'], Viscosity)
-            SetDistributions1.append(SetDist.tolist())
-            GameDistributions.append([G1,G2,G3,G4,G5,G6,G7,G8,G9,G10,G11,G12,TB])
+            SetDistributions.append(SetDist.tolist())
+            Games = [G1,G2,G3,G4,G5,G6,G7,G8,G9,G10,G11,G12,TB]
+            GameDistributions.append(Games)
     
-    print(SetDistributions1)
+    print(SetDistributions)
     print(GameDistributions)
+
+    # Split Game distributions up:
+    FS1 = [SetDistributions[0][0], SetDistributions[3][0], SetDistributions[6][0]]
+    FSE = [SetDistributions[1][0], SetDistributions[4][0], SetDistributions[7][0]]
+    FS2 = [SetDistributions[2][0], SetDistributions[5][0], SetDistributions[8][0]]
+
+    # Label Locations:
+    x = np.arange(len(Scenarios))
+    width = 0.25
+
+    fig, ax = plt.subplots()
+    ax.bar(x-width, FS1, width, label = 'Player 1 Serving First')
+    ax.bar(x, FSE, width, label = '50-50 Initial Distribution')
+    ax.bar(x+width, FS2, width, label = 'Player 2 Serving First')
+
+    # Add labels:
+    ax.set_xlabel('Difference in Serving Abilities')
+    ax.set_ylabel('Probability of Player 1 Winning a Set')
+    ax.set_title('Probability of Winning a Set dependent on the First Server')
+    ax.set_xticks(x)
+    ax.set_xticklabels(Scenarios)
+    ax.legend()
+
+    fig.tight_layout()
+    plt.show()
     
     # Plot 2:
     # - Player 1 serving ability vs Difference in probability between serving first and receiving first (line graph)
@@ -83,7 +110,7 @@ def FirstServerEffects():
     # C = PServe differnece of 0.1
 
     if False:
-        P1S = np.arange(0.5, 0.95, 0.01).tolist()
+        P1S = np.arange(0.5, 0.95, 0.05).tolist()
         SetDistributions2 = []
         Differences = [0.01, 0.05, 0.10]
         for S in P1S:
