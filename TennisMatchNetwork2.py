@@ -864,7 +864,7 @@ def TennisMatchNetwork2(P1S, P2S, P1TB, P2TB, FirstToSets, Mode):
             dist['NumSets'][2,2,2] = [1.,0.,0.,0.]
         else:
             for i in range(1,6):
-                Seqs = combine_recursion(6,i)
+                Seqs = combine_recursion(5,i)
 
                 for j in Seqs:
                     # Reset Sequences and distributions:

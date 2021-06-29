@@ -10,7 +10,7 @@ def RunMarkovModel(P1S, P2S, FirstToSets, FirstToTBPoints, Method, Viscosity, Mo
     # Max Number of Iterations until Steady State reached:
     Iterations = 100
     # Tolerance level on Steady States:
-    Tol = 0.0001
+    Tol = 0.001
 
     # Compute the TB Probabilities:
     [P1TB, P2TB] = ComputeTBProbabilities(P1S, P2S)
@@ -35,8 +35,8 @@ def RunMarkovModel(P1S, P2S, FirstToSets, FirstToTBPoints, Method, Viscosity, Mo
 def main():
     P1S = 0.70
     P2S = 0.80
-    Approach = 1
-    Viscosity = 0.
+    Approach = 2
+    Viscosity = 0.5
 
     if (Approach == 1):
         # Run the Markov Model using the first approach:

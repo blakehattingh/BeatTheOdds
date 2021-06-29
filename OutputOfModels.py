@@ -47,17 +47,17 @@ def main():
     Approach = 1
     for P1 in P1S:
         [MatchDist3, NumSetsDist3, TotalNumGamesDist3, AllSetScoresDist3] = RunMarkovModel(P1,P2S,3,FirstToTBPoints,Approach,Viscosity)
-        #[MatchDist5, NumSetsDist5, TotalNumGamesDist5, AllSetScoresDist5] = RunMarkovModel(P1,P2S,5,FirstToTBPoints,Approach,Viscosity)
+        [MatchDist5, NumSetsDist5, TotalNumGamesDist5, AllSetScoresDist5] = RunMarkovModel(P1,P2S,5,FirstToTBPoints,Approach,Viscosity)
 
-        #[MatchDist3A2, NumSetsDist3A2, TotalNumGamesDist3A2, AllSetScoresDist3A2] = RunMarkovModel(P1,P2S,3,FirstToTBPoints,2,Viscosity, True)
-        #[MatchDist5A2, NumSetsDist5A2, TotalNumGamesDist5A2, AllSetScoresDist5A2] = RunMarkovModel(P1,P2S,5,FirstToTBPoints,2,Viscosity, True)
+        [MatchDist3A2, NumSetsDist3A2, TotalNumGamesDist3A2, AllSetScoresDist3A2] = RunMarkovModel(P1,P2S,3,FirstToTBPoints,2,Viscosity,'Complex')
+        [MatchDist5A2, NumSetsDist5A2, TotalNumGamesDist5A2, AllSetScoresDist5A2] = RunMarkovModel(P1,P2S,5,FirstToTBPoints,2,Viscosity,'Complex')
 
         # Append distributions for each scenario:
         MatchDistributions3A1.append(MatchDist3)
         NumberOfSetsDistributions3A1.append(NumSetsDist3)
         TotalNumberOfGamesDistributions3A1.append(TotalNumGamesDist3)
         AllSetScoresDistributions3A1.append(AllSetScoresDist3)
-        '''MatchDistributions5A1.append(MatchDist5)
+        MatchDistributions5A1.append(MatchDist5)
         NumberOfSetsDistributions5A1.append(NumSetsDist5)
         TotalNumberOfGamesDistributions5A1.append(TotalNumGamesDist5)
         AllSetScoresDistributions5A1.append(AllSetScoresDist5)
@@ -69,10 +69,10 @@ def main():
         MatchDistributions5A1.append(MatchDist5A2)
         NumberOfSetsDistributions5A1.append(NumSetsDist5A2)
         TotalNumberOfGamesDistributions5A1.append(TotalNumGamesDist5A2)
-        AllSetScoresDistributions5A1.append(AllSetScoresDist5A2)'''
+        AllSetScoresDistributions5A1.append(AllSetScoresDist5A2)
 
-        #plotMatchOutcome(MatchDistributions3A1, MatchDistributions5A1, MatchDistributions3A2, MatchDistributions5A2)
-        #plotNumberOfSets(NumberOfSetsDistributions3A1, NumberOfSetsDistributions5A1, NumberOfSetsDistributions3A2, NumberOfSetsDistributions5A2)
+        plotMatchOutcome(MatchDistributions3A1, MatchDistributions5A1, MatchDistributions3A2, MatchDistributions5A2)
+        plotNumberOfSets(NumberOfSetsDistributions3A1, NumberOfSetsDistributions5A1, NumberOfSetsDistributions3A2, NumberOfSetsDistributions5A2)
         plotNumberOfGames(TotalNumberOfGamesDistributions3A1, TotalNumberOfGamesDistributions3A2, TotalNumberOfGamesDistributions5A1, TotalNumberOfGamesDistributions5A2)
         plotSetScore(AllSetScoresDistributions3A1, AllSetScoresDistributions3A2, AllSetScoresDistributions5A1, AllSetScoresDistributions5A2)
 
