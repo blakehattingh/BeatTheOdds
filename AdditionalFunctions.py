@@ -50,11 +50,8 @@ def ComputeTBProbabilities(P1S, P2S):
         for row in csv_reader:
             if line_count == Row:
                 P1TB = float(row[Col])
-                break
+                # Compute P2TB:
+                P2TB = 1. - P1TB
+                return P1TB, P2TB
             else:
                 line_count += 1
-    
-    # Compute P2TB:
-    P2TB = 1. - P1TB
-
-    return [P1TB, P2TB]
