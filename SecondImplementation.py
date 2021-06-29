@@ -10,7 +10,7 @@ def MarkovModelSecondImplementation(P1S, P2S, P1TB, P2TB, FirstToSets, FirstToTB
         [nodes, dist, parents, outcomes, info] = TennisMatchNetwork2(P1S, P2S, P1TB, P2TB, FirstToSets, Mode)
 
         # Run the belief propagation algorithm on this network:
-        [MatchDist] = beliefpropagation(nodes,dist,parents,outcomes,info,Iterations,Tol,['Match'],Viscosity)
+        [MatchDist] = beliefpropagation(nodes,dist,parents,outcomes,info,Iterations,Tol,['Match'],Viscosity, True)
         return MatchDist
     else:
         # Set up the Bayesain Network:
@@ -18,6 +18,6 @@ def MarkovModelSecondImplementation(P1S, P2S, P1TB, P2TB, FirstToSets, FirstToTB
 
         # Run the belief propagation algorithm on this network:
         [MatchDist,NumSetsDist,TotalNumGamesDist,AllSetScoresDist] = beliefpropagation(nodes,dist,parents,outcomes,info,Iterations,Tol,
-                                                                    ['Match','NumSets','TotalNumGames','AllSetScores'],Viscosity)
+                                                                    ['Match','NumSets','TotalNumGames','AllSetScores'],Viscosity, True)
         return MatchDist,NumSetsDist,TotalNumGamesDist,AllSetScoresDist
     

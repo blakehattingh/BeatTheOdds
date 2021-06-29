@@ -1,5 +1,8 @@
 from itertools import islice
+from AdditionalFunctions import TieBreakerProbability
 import numpy as np
+import matplotlib.pyplot as plt
+import csv
 
 def nth_index(iterable, value, n):
     matches = (idx for idx, val in enumerate(iterable) if val == value)
