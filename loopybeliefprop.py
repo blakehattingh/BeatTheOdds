@@ -101,7 +101,7 @@ def beliefpropagation(nodes, dist, parents, outcomes, info, iterations, toleranc
                 for g in variable_adj[v]:
                     if f!=g:
                         msg_v_to_f[v][f]*=msg_f_to_v[g][v]
-                msg_v_to_f[v][f] = (1. - Viscosity) * temp + Viscosity * msg_f_to_v[g][v]
+                msg_v_to_f[v][f] = (Viscosity) * temp + (1. - Viscosity) * msg_f_to_v[g][v]
         
         if iteration>0:
             converged=True
@@ -148,7 +148,7 @@ def beliefpropagation(nodes, dist, parents, outcomes, info, iterations, toleranc
                                         prob*=msg_v_to_f[k][f][index]
                                 msg_f_to_v[f][v][i]+=prob
                     msg_f_to_v[f][v]/=sum(msg_f_to_v[f][v])
-                    msg_f_to_v[f][v] = (1. - Viscosity) * temp + Viscosity * msg_f_to_v[f][v]
+                    msg_f_to_v[f][v] = (Viscosity) * temp + (1. - Viscosity) * msg_f_to_v[f][v]
     
     # for v in nodes:
     #    if (v == 'Set' or v == 'NumGames' or v == 'SetScore'):

@@ -7,10 +7,9 @@ def nth_index(iterable, value, n):
 
 
 def main():
-    x = np.zeros(48, dtype=float)
-    y = list(range(18,66))
-    print(len(y))
-    print(x)
+    a = np.array([1.,1.,1.])
+    print(a)
+    print("hello World")
 
 
 if __name__ == "__main__":
