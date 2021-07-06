@@ -166,7 +166,7 @@ def TennisMatchNetwork1(SetDists, SetScoreDists, NumGamesDists, FirstToSets):
         # Number of sets distributions:
         dist['NumSets']={} 
         dist['Match'] = {}
-        dist['NumSets'][1,1,1,1,1] = [0., 1., 0., 0.]
+        dist['NumSets'][1,1,1,1,1] = [1., 0., 0.]
         dist['Match'][1,1,1,1,1] = [1.,0.]     
         for i in range(1,6):
             Seqs = combine_recursion(5,i)
@@ -174,7 +174,7 @@ def TennisMatchNetwork1(SetDists, SetScoreDists, NumGamesDists, FirstToSets):
             for j in Seqs:
                 # Reset Sequences and distributions:
                 InitialSeq = [1,1,1,1,1]
-                NumSetDist = [0., 0., 0., 0.]
+                NumSetDist = [0., 0., 0.]
 
                 # Place the '2's in each possible combination:
                 for games in j:
@@ -188,13 +188,13 @@ def TennisMatchNetwork1(SetDists, SetScoreDists, NumGamesDists, FirstToSets):
                     dist['Match'][Sequence] = [1.,0.]
                     # Find occurence of 3rd set win for player 1:
                     Set = nth_index(Sequence, 1, 3)
-                    NumSetDist[Set-1] = 1.
+                    NumSetDist[Set-2] = 1.
                     dist['NumSets'][Sequence] = NumSetDist
                 else:
                     dist['Match'][Sequence] = [0.,1.]
                     # Find occurence of 3rd set win for player 2:
                     Set = nth_index(Sequence, 2, 3)
-                    NumSetDist[Set-1] = 1.
+                    NumSetDist[Set-2] = 1.
                     dist['NumSets'][Sequence] = NumSetDist
 
         # Total number of games distributions:

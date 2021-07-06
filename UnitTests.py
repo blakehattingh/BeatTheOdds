@@ -1,7 +1,7 @@
-from BeatTheOdds.TennisMatchNetwork1 import TennisMatchNetwork1
-from BeatTheOdds.RunMarkovModel import RunMarkovModel
-from BeatTheOdds.TennisSetNetwork import TennisSetNetwork
-from BeatTheOdds.TennisMatchNetwork2 import TennisMatchNetwork2
+from TennisMatchNetwork1 import TennisMatchNetwork1
+from RunMarkovModel import RunMarkovModel
+from TennisSetNetwork import TennisSetNetwork
+from TennisMatchNetwork2 import TennisMatchNetwork2
 import sys
 import numpy as np
 
@@ -49,6 +49,11 @@ def TestSuite():
     UnitTest2Set()
     UnitTest2SetScores()
     UnitTest2NumGames()
+    UnitTest3Network()
+    UnitTest3Match()
+    UnitTest3NumSets()
+    UnitTest3TotalNumGames()
+    UnitTest3AllSetScores()
     # UnitTest1()
 
 def UnitTest1():
@@ -150,30 +155,28 @@ def UnitTest3Network():
         0.12304573, 0.12304516])]
 
     # Set up a "Match Network" using first approach:
-    [nodes5, dist5, parents5, outcomes5, info5] = TennisMatchNetwork1(SetDists, SetScoreDists, NumGamesDists, 5)
     [nodes3, dist3, parents3, outcomes3, info3] = TennisMatchNetwork1(SetDists, SetScoreDists, NumGamesDists, 3)
+    [nodes5, dist5, parents5, outcomes5, info5] = TennisMatchNetwork1(SetDists, SetScoreDists, NumGamesDists, 5)
 
-    # Check number of nodes:
-    if (len(nodes5) != 5 * 3 + 4):
-        print('3b. Match Network Test Failed')
-    elif (len(nodes3) != 3 * 3 + 4):
-        print('3a. Match Network Test Failed')
-
-    # Check parent nodes:
-    if (len(parents5['Match']) != 5):
-        print('3b. Match Network Test Failed')    
-    elif (len(parents5['TotalNumGames']) != 5 + 1):
-        print('3b. Match Network Test Failed')
-    else:
-        print('3b. Match Network Test Passed')
-    
-    # 3 Set match:
-    if (len(parents3['Match']) != 3):
-        print('3a. Match Network Test Failed')    
+    # Check number of nodes and parent nodes: (3 sets)
+    if (len(nodes3) != 3 * 3 + 4):
+        print('3a. Network Test Failed')
+    elif (len(parents3['Match']) != 3):
+        print('3a. Network Test Failed')    
     elif (len(parents3['TotalNumGames']) != 3 + 1):
-        print('3a. Match Network Test Failed')
+        print('3a. Network Test Failed')
     else:
-        print('3a. Match Network Test Passed')
+        print('3a. Network Test Passed')
+
+    # 5 sets:
+    if (len(nodes5) != 5 * 3 + 4):
+        print('3b. Network Test Failed')
+    elif (len(parents5['Match']) != 5):
+        print('3b. Network Test Failed')    
+    elif (len(parents5['TotalNumGames']) != 5 + 1):
+        print('3b. Network Test Failed')
+    else:
+        print('3b. Network Test Passed')
 
 def UnitTest3Match():
     SetDists = [np.array([0.51471958, 0.48528042]), np.array([0.51495612, 0.48504388]), np.array([0.51473445, 0.48526555]),
@@ -198,11 +201,11 @@ def UnitTest3Match():
     [nodes5, dist5, parents5, outcomes5, info5] = TennisMatchNetwork1(SetDists, SetScoreDists, NumGamesDists, 5)
 
     # Test the Match outcome distribution (3 sets):
-    if (dist3['Match'][2, 2, 2] != [1., 0.]):
+    if (dist3['Match'][2, 2, 2] != [0., 1.]):
         print('3a. Match Test Failed')
     elif (dist3['Match'][1, 1, 2] != [1., 0.]):
         print('3a. Match Test Failed')
-    elif(dist3['Match'][1, 2, 1] != [0., 1.]):
+    elif(dist3['Match'][1, 2, 1] != [1., 0.]):
         print('3a. Match Test Failed')
     else:
         print('3a. Match Test Passed')
@@ -253,7 +256,7 @@ def UnitTest3NumSets():
 
     # Test the Number of Sets distribution: (5 sets)
     if (dist5['NumSets'][2, 2, 2, 2, 2] != [1., 0., 0.]):
-        print('3b. Number of Sets Test Failed')
+        print(dist5['NumSets'][2,2,2,2,2])
     elif (dist5['NumSets'][1, 1, 2, 2, 2] != [0., 0., 1.]):
         print('3b. Number of Sets Test Failed')
     elif(dist5['NumSets'][1, 2, 1, 2, 1] != [0., 0., 1.]):
@@ -350,37 +353,37 @@ def UnitTest3TotalNumGames():
     Distribution14[47] = 1.
 
     # Test the Total number of games distribution: (3 sets)
-    if (dist3['TotalNumGames'][2, 6, 6, 6] != Distribution1):
+    if (np.allclose(dist3['TotalNumGames'][2, 6, 6, 6], Distribution1)):
         print('3a. Total Number of Games Test Failed')
-    elif (dist3['TotalNumGames'][2, 10, 12, 8] != Distribution2):
+    elif (np.allclose(dist3['TotalNumGames'][2, 10, 12, 8], Distribution2)):
         print('3a. Total Number of Games Test Failed')
-    elif(dist3['TotalNumGames'][2, 8, 13, 9] != Distribution3):
+    elif(np.allclose(dist3['TotalNumGames'][2, 8, 13, 9], Distribution3)):
         print('3a. Total Number of Games Test Failed')
-    elif(dist3['TotalNumGames'][2, 13, 13, 6] != Distribution4):
+    elif(np.allclose(dist3['TotalNumGames'][2, 13, 13, 6], Distribution4)):
         print('3a. Total Number of Games Test Failed')
-    elif(dist3['TotalNumGames'][3, 9, 10, 13] != Distribution5):
+    elif(np.allclose(dist3['TotalNumGames'][3, 9, 10, 13], Distribution5)):
         print('3a. Total Number of Games Test Failed')
-    elif(dist3['TotalNumGames'][3, 10, 12, 8] != Distribution6):
+    elif(np.allclose(dist3['TotalNumGames'][3, 10, 12, 8], Distribution6)):
         print('3a. Total Number of Games Test Failed')
-    elif(dist3['TotalNumGames'][3, 13, 13, 13] != Distribution7):
+    elif(np.allclose(dist3['TotalNumGames'][3, 13, 13, 13], Distribution7)):
         print('3a. Total Number of Games Test Failed')
     else:
         print('3a. Total Number of Games Test Passed')
 
     # Test the Number of Sets distribution: (5 sets)
-    if (dist5['TotalNumGames'][3, 6, 6, 10, 8, 9] != Distribution8):
+    if (np.allclose(dist5['TotalNumGames'][3, 6, 6, 10, 8, 9], Distribution8)):
         print('3b. Total Number of Games Test Failed')
-    elif (dist5['TotalNumGames'][3, 10, 12, 13, 6, 12] != Distribution9):
+    elif (np.allclose(dist5['TotalNumGames'][3, 10, 12, 13, 6, 12], Distribution9)):
         print('3b. Total Number of Games Test Failed')
-    elif (dist5['TotalNumGames'][4, 8, 13, 10, 12, 9] != Distribution10):
+    elif (np.allclose(dist5['TotalNumGames'][4, 8, 13, 10, 12, 9], Distribution10)):
         print('3b. Total Number of Games Test Failed')
-    elif (dist5['TotalNumGames'][4, 13, 13, 9, 12, 9] != Distribution11):
+    elif (np.allclose(dist5['TotalNumGames'][4, 13, 13, 9, 12, 9], Distribution11)):
         print('3b. Total Number of Games Test Failed')
-    elif (dist5['TotalNumGames'][5, 9, 10, 13, 12, 10] != Distribution12):
+    elif (np.allclose(dist5['TotalNumGames'][5, 9, 10, 13, 12, 10], Distribution12)):
         print('3b. Total Number of Games Test Failed')
-    elif (dist5['TotalNumGames'][5, 10, 12, 9, 13, 13] != Distribution13):
+    elif (np.allclose(dist5['TotalNumGames'][5, 10, 12, 9, 13, 13], Distribution13)):
         print('3b. Total Number of Games Test Failed')
-    elif (dist5['TotalNumGames'][5, 13, 13, 13, 13, 13] != Distribution13):
+    elif (np.allclose(dist5['TotalNumGames'][5, 13, 13, 13, 13, 13], Distribution13)):
         print('3b. Total Number of Games Test Failed')
     else:
         print('3b. Total Number of Games Test Passed')
@@ -477,33 +480,33 @@ def UnitTest3AllSetScores():
     Distribution12[7] = 2./5.
 
     # Test the All Set Scores distribution: (3 sets)
-    if (dist3['AllSetScores'][2, 1, 1, 8] != Distribution1):
+    if (np.allclose(dist3['AllSetScores'][2, 1, 1, 8], Distribution1)):
         print('3a. All Set Scores Test Failed')
-    elif (dist3['AllSetScores'][2, 4, 5, 11] != Distribution2):
+    elif (np.allclose(dist3['AllSetScores'][2, 4, 5, 11], Distribution2)):
         print('3a. All Set Scores Test Failed')
-    elif(dist3['AllSetScores'][2, 9, 13, 2] != Distribution3):
+    elif(np.allclose(dist3['AllSetScores'][2, 9, 13, 2], Distribution3)):
         print('3a. All Set Scores Test Failed')
-    elif(dist3['AllSetScores'][3, 13, 0, 13] != Distribution4):
+    elif(np.allclose(dist3['AllSetScores'][3, 13, 0, 13], Distribution4)):
         print('3a. All Set Scores Test Failed')
-    elif(dist3['AllSetScores'][3, 3, 11, 6] != Distribution5):
+    elif(np.allclose(dist3['AllSetScores'][3, 3, 11, 6], Distribution5)):
         print('3a. All Set Scores Test Failed')
     else:
         print('3a. Number of Sets Test Passed')
 
     # Test the Number of Sets distribution: (5 sets)
-    if (dist5['AllSetScores'][3, 4, 4, 4, 8, 9] != Distribution6):
+    if (np.allclose(dist5['AllSetScores'][3, 4, 4, 4, 8, 9], Distribution6)):
         print('3b. All Set Scores Test Failed')
-    elif (dist5['AllSetScores'][3, 2, 3, 4, 11, 12] != Distribution7):
+    elif (np.allclose(dist5['AllSetScores'][3, 2, 3, 4, 11, 12], Distribution7)):
         print('3b. All Set Scores Test Failed')
-    elif (dist5['AllSetScores'][4, 6, 13, 4, 5, 9] != Distribution8):
+    elif (np.allclose(dist5['AllSetScores'][4, 6, 13, 4, 5, 9], Distribution8)):
         print('3b. All Set Scores Test Failed')
-    elif (dist5['AllSetScores'][4, 0, 0, 10, 1, 7] != Distribution9):
+    elif (np.allclose(dist5['AllSetScores'][4, 0, 0, 10, 1, 7], Distribution9)):
         print('3b. All Set Scores Test Failed')
-    elif (dist5['AllSetScores'][4, 11, 11, 6, 11, 5] != Distribution10):
+    elif (np.allclose(dist5['AllSetScores'][4, 11, 11, 6, 11, 5], Distribution10)):
         print('3b. All Set Scores Test Failed')
-    elif (dist5['AllSetScores'][5, 9, 13, 4, 12, 3] != Distribution11):
+    elif (np.allclose(dist5['AllSetScores'][5, 9, 13, 4, 12, 3], Distribution11)):
         print('3b. All Set Scores Test Failed')
-    elif (dist5['AllSetScores'][5, 6, 7, 6, 7, 6] != Distribution12):
+    elif (np.allclose(dist5['AllSetScores'][5, 6, 7, 6, 7, 6], Distribution12)):
         print('3b. All Set Scores Test Failed')
     else:
         print('3b. Number of Sets Test Passed')
