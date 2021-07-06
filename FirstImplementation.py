@@ -41,6 +41,9 @@ def MarkovModelFirstImplementation(P1S, P2S, P1TB, P2TB, FirstToSets, FirstToTBP
         SetDists = [SetDist1, SetDist2, SetDist3]
         SetScoreDists = [SetScoreDist1, SetScoreDist2, SetScoreDist3]
         NumGamesDists = [NumGamesDist1, NumGamesDist2, NumGamesDist3]
+        print(SetDists)
+        print(SetScoreDists)
+        print(NumGamesDists)
         
         # Set up the new network:
         [nodes, dist, parents, outcomes, info] = TennisMatchNetwork1(SetDists, SetScoreDists, NumGamesDists, 3)

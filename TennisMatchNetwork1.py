@@ -30,7 +30,7 @@ def TennisMatchNetwork1(SetDists, SetScoreDists, NumGamesDists, FirstToSets):
         outcomes['SetScore3']=[1,2,3,4,5,6,7,8,9,10,11,12,13,14]
         outcomes['NumSets']=[2,3]
         outcomes['Match']=[1,2]
-        outcomes['TotalNumGames']=list(range(12,39))
+        outcomes['TotalNumGames']=list(range(12,40))
         outcomes['AllSetScores']=[1,2,3,4,5,6,7,8,9,10,11,12,13,14]
 
         # Set up the initial distributions for our parent nodes:
@@ -45,7 +45,6 @@ def TennisMatchNetwork1(SetDists, SetScoreDists, NumGamesDists, FirstToSets):
         dist['SetScore2'] = SetScoreDists[1]
         dist['SetScore3'] = SetScoreDists[2]
         
-
         # Match node distributions:
         dist['Match']={}
         dist['Match'][1,1,1] = [1.,0.]

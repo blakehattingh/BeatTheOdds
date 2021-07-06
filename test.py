@@ -3,7 +3,7 @@ from AdditionalFunctions import TieBreakerProbability
 from TennisMatchNetwork1 import TennisMatchNetwork1
 from loopybeliefprop import beliefpropagation
 import numpy as np
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
 import csv
 
 def nth_index(iterable, value, n):

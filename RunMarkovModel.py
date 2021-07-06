@@ -39,6 +39,7 @@ def main():
     Viscosity = 0.5
 
     if (Approach == 1):
+        '''
         # Run the Markov Model using the first approach:
         [MatchDist, NumSetsDist, TotalNumGamesDist, AllSetScoresDist] = RunMarkovModel(P1S,P2S,5,7,Approach,Viscosity)
         print('Match Distribution: ', end = '')
@@ -49,6 +50,7 @@ def main():
         print(TotalNumGamesDist)
         print('Set Score Distribution: ', end = '')
         print(AllSetScoresDist)
+        '''
 
         [MatchDist, NumSetsDist, TotalNumGamesDist, AllSetScoresDist] = RunMarkovModel(P1S,P2S,3,7,Approach,Viscosity)
         print('Match Distribution: ', end = '')
@@ -59,7 +61,7 @@ def main():
         print(TotalNumGamesDist)
         print('Set Score Distribution: ', end = '')
         print(AllSetScoresDist)
-
+        
     else:
         # Run the Markov Model using the second approach:
         [MatchDist, NumSetsDist, TotalNumGamesDist, AllSetScoresDist] = RunMarkovModel(P1S,P2S,3,7,Approach,Viscosity,'Complex')
