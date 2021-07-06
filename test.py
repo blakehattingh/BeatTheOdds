@@ -1,5 +1,7 @@
 from itertools import islice
 from AdditionalFunctions import TieBreakerProbability
+from TennisMatchNetwork1 import TennisMatchNetwork1
+from loopybeliefprop import beliefpropagation
 import numpy as np
 import matplotlib.pyplot as plt
 import csv
@@ -10,9 +12,22 @@ def nth_index(iterable, value, n):
 
 
 def main():
-    a = np.array([1.,1.,1.])
-    print(a)
-    print("hello World")
+    Viscosity = 0.5
+    Iterations = 100
+    Tol = 0.01
+    SetDists = [[0.8,0.2],[0.6,0.4],[0.7,0.3],[0.45,0.55],[0.8,0.2]]
+    SetScoreDists = [[0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.,0.,0.,0.],[0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.,0.,0.,0.],
+    [0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.,0.,0.,0.],[0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.,0.,0.,0.],[0.1,0.1,0.1,0.1,
+    0.1,0.1,0.1,0.1,0.1,0.1,0.,0.,0.,0.]]
+    NumGamesDist = [0.] * 7
+    for i in range(len(NumGamesDist)):
+        NumGamesDist[i] = 1. / len(NumGamesDist)
+    NumGamesDists = [NumGamesDist, NumGamesDist, NumGamesDist, NumGamesDist, NumGamesDist]
+
+    # Set up the new network:
+    [nodes, dist, parents, outcomes, info] = TennisMatchNetwork1(SetDists, SetScoreDists, NumGamesDists, 5)
+    [MatchDist,NumSetsDist,TotalNumGamesDist,AllSetScoresDist] = beliefpropagation(nodes, dist, parents, outcomes, info, 
+    Iterations, Tol, ['Match','NumSets','TotalNumGames','AllSetScores'], Viscosity)
 
 
 if __name__ == "__main__":

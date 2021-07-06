@@ -100,7 +100,7 @@ def TennisMatchNetwork2(P1S, P2S, P1TB, P2TB, FirstToSets, Mode):
         # Set up the links to the match nodes:
         parents['Match'] = ['Set', 'Set2', 'Set3']
         if (Mode == 'Complex'):
-            parents['TotalNumGames'] = ['NumGames', 'NumGames2', 'NumGames3']
+            parents['TotalNumGames'] = ['NumSets', 'NumGames', 'NumGames2', 'NumGames3']
             parents['AllSetScores'] = ['SetScore', 'SetScore2', 'SetScore3']
             parents['NumSets'] = ['Set', 'Set2', 'Set3']
 
@@ -152,7 +152,7 @@ def TennisMatchNetwork2(P1S, P2S, P1TB, P2TB, FirstToSets, Mode):
         parents['Match'] = ['Set', 'Set2', 'Set3', 'Set4', 'Set5']
 
         if (Mode == 'Complex'):
-            parents['TotalNumGames'] = ['NumGames', 'NumGames2', 'NumGames3', 'NumGames4', 'NumGames5']
+            parents['TotalNumGames'] = ['NumSets', 'NumGames', 'NumGames2', 'NumGames3', 'NumGames4', 'NumGames5']
             parents['AllSetScores'] = ['SetScore', 'SetScore2', 'SetScore3', 'SetScore4', 'SetScore5']
             parents['NumSets'] = ['Set', 'Set2', 'Set3', 'Set4', 'Set5']
 
@@ -621,7 +621,7 @@ def TennisMatchNetwork2(P1S, P2S, P1TB, P2TB, FirstToSets, Mode):
                 # Check the first 12 games to see if a tie-breaker was required:
                 First12 = Sequence[:-1]
                 P2Wins = First12.count(2)
-                if (P2Wins > 5):
+                if (P2Wins > 6):
                     # Player 2 wins:
                     dist['Set'][Sequence] = [0.,1.]
                     dist['Set2'][Sequence] = [0.,1.]
@@ -629,34 +629,35 @@ def TennisMatchNetwork2(P1S, P2S, P1TB, P2TB, FirstToSets, Mode):
                     if (FirstToSets == 5):
                         dist['Set4'][Sequence] = [0.,1.]
                         dist['Set5'][Sequence] = [0.,1.]
-                else:
-                    # Player 1 wins:
-                    dist['Set'][Sequence] = [1.,0.]
-                    dist['Set2'][Sequence] = [1.,0.]
-                    dist['Set3'][Sequence] = [1.,0.]
-                    if (FirstToSets == 5):
-                        dist['Set4'][Sequence] = [1.,0.]
-                        dist['Set5'][Sequence] = [1.,0.]
-                
-                # Check if a tie-breaker was needed:
-                if (P2Wins == 6):
-                    # Check who won the TB:
-                    if (Sequence[-1] == 2):
-                        # Player 2 won the TB and therefore the set too:
+
+                elif (P2Wins == 6):
+                    # Tie-breaker required:
+                    TBResult = Sequence[-1]
+                    if (TBResult == 1):
+                        # Player 1 wins:
+                        dist['Set'][Sequence] = [1.,0.]
+                        dist['Set2'][Sequence] = [1.,0.]
+                        dist['Set3'][Sequence] = [1.,0.]
+                        if (FirstToSets == 5):
+                            dist['Set4'][Sequence] = [1.,0.]
+                            dist['Set5'][Sequence] = [1.,0.]
+                    else:
+                        # Player 2 wins:
                         dist['Set'][Sequence] = [0.,1.]
                         dist['Set2'][Sequence] = [0.,1.]
                         dist['Set3'][Sequence] = [0.,1.]
                         if (FirstToSets == 5):
                             dist['Set4'][Sequence] = [0.,1.]
                             dist['Set5'][Sequence] = [0.,1.]
-                    else:
-                        # Player 1 wins:
-                        dist['Set'][Sequence] = [1.,0.] 
-                        dist['Set2'][Sequence] = [1.,0.]
-                        dist['Set3'][Sequence] = [1.,0.]
-                        if (FirstToSets == 5):
-                            dist['Set4'][Sequence] = [1.,0.]
-                            dist['Set5'][Sequence] = [1.,0.] 
+
+                else: # P2Wins < 6
+                    # Player 1 wins:
+                    dist['Set'][Sequence] = [1.,0.] 
+                    dist['Set2'][Sequence] = [1.,0.]
+                    dist['Set3'][Sequence] = [1.,0.]
+                    if (FirstToSets == 5):
+                        dist['Set4'][Sequence] = [1.,0.]
+                        dist['Set5'][Sequence] = [1.,0.] 
 
             # Compute the set score and number of games in the set:
             Game = 0
@@ -782,7 +783,7 @@ def TennisMatchNetwork2(P1S, P2S, P1TB, P2TB, FirstToSets, Mode):
         dist['Match'][2,2,1] = [0.,1.]
         dist['Match'][2,2,2] = [0.,1.]
     else:
-        # Number of matches = 5:  
+        # Number of Sets = 5:  
         dist['Match'][1,1,1,1,1] = [1.,0.]     
         for i in range(1,6):
             Seqs = combine_recursion(5,i)
@@ -832,22 +833,46 @@ def TennisMatchNetwork2(P1S, P2S, P1TB, P2TB, FirstToSets, Mode):
 
         # Total Number of Games distributions:
         dist['TotalNumGames'] = {}
-        TotalGamesDist = np.zeros(48, dtype = float)
-        for Games in outcomes['NumGames']:
-                for Games2 in outcomes['NumGames']:
-                        for Games3 in outcomes['NumGames']:
+        TotalGamesDist = np.zeros(54, dtype = float) # First value corresponds to 12 games being played
+        for Games1 in outcomes['NumGames']:
+                for Games2 in outcomes['NumGames2']:
+                        for Games3 in outcomes['NumGames3']:
                             if (FirstToSets == 3):
-                                TotalGames = Games + Games2 + Games3
-                                TotalGamesDist[TotalGames-18] = 1.                      
-                                dist['TotalNumGames'][Games, Games2, Games3] = TotalGamesDist
+                                # Case of 2 sets:
+                                TotalGames = Games1 + Games2
+                                TotalGamesDist[TotalGames-12] = 1.                      
+                                dist['TotalNumGames'][2, Games1, Games2, Games3] = TotalGamesDist
+
+                                # Case of 3 sets:
+                                TotalGamesDist = np.zeros(54, dtype = float)
+                                TotalGames = TotalGames + Games3
+                                TotalGamesDist[TotalGames-12] = 1.
+                                dist['TotalNumGames'][3, Games1, Games2, Games3] = TotalGamesDist
+
                                 # Reset Distribution:
                                 TotalGamesDist = np.zeros(48, dtype = float)
+
                             elif (FirstToSets == 5):
-                                for Games4 in outcomes['NumGames']:
-                                    for Games5 in outcomes['NumGames']:
-                                        TotalGames = Games + Games2 + Games3 + Games4 + Games5
-                                        TotalGamesDist[TotalGames-18] = 1.                                             
-                                        dist['TotalNumGames'][Games, Games2, Games3, Games4, Games5] = TotalGamesDist
+                                for Games4 in outcomes['NumGames4']:
+                                    for Games5 in outcomes['NumGames5']:
+                                        # Case of 3 sets:
+                                        TotalGames = Games1 + Games2 + Games3
+                                        TotalGamesDist[TotalGames-12] = 1.                                             
+                                        dist['TotalNumGames'][3, Games1, Games2, Games3, Games4, Games5] = TotalGamesDist
+                                        TotalGamesDist = np.zeros(48, dtype = float)
+
+                                        # Case of 4 sets:
+                                        TotalGames = TotalGames + Games4
+                                        TotalGamesDist[TotalGames-12] = 1.                                             
+                                        dist['TotalNumGames'][4, Games1, Games2, Games3, Games4, Games5] = TotalGamesDist
+                                        TotalGamesDist = np.zeros(48, dtype = float)
+
+                                        # Case of 5 sets:
+                                        TotalGames = TotalGames + Games5
+                                        TotalGamesDist[TotalGames-12] = 1.                                             
+                                        dist['TotalNumGames'][5, Games1, Games2, Games3, Games4, Games5] = TotalGamesDist
+                                        TotalGamesDist = np.zeros(48, dtype = float)
+                                        
                                         # Reset Distribution:
                                         TotalGamesDist = np.zeros(48, dtype = float)
 

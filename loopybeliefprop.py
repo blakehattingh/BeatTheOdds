@@ -89,7 +89,6 @@ def beliefpropagation(nodes, dist, parents, outcomes, info, iterations, toleranc
             variable_data[v]=info[v].copy()
             for f in variable_adj[v]:
                 variable_data[v]*=msg_f_to_v[f][v]
-
             variable_data[v]/=sum(variable_data[v])
             
             for f in variable_adj[v]:

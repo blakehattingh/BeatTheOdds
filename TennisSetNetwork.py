@@ -45,7 +45,7 @@ def TennisSetNetwork(P1S, P2S, P1TB, P2TB, InitServerDist = [0.5, 0.5]):
     outcomes['TB']=[1,2]
     outcomes['Set']=[1,2]
     outcomes['NumGames']=[6,7,8,9,10,12,13]
-    outcomes['SetScore']=["6-0","6-1","6-2","6-3","6-4","7-5","7-6","0-6","1-6","2-6","3-6","4-6","5-7","6-7"]
+    outcomes['SetScore']=[1,2,3,4,5,6,7,8,9,10,11,12,13,14]
 
     # Compute the probability of winning a game on serve from the on-serve point probabilities:
     P1G = pow(P1S, 4) * (15 - 4 * P1S - (10 * pow(P1S, 2) / (1 - 2 * P1S * (1 - P1S))))
