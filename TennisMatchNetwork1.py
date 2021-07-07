@@ -45,7 +45,7 @@ def TennisMatchNetwork1(SetDists, SetScoreDists, NumGamesDists, FirstToSets):
         dist['SetScore1'] = SetScoreDists[0]
         dist['SetScore2'] = SetScoreDists[1]
         dist['SetScore3'] = SetScoreDists[2]
-
+        
         # Match node distributions:
         dist['Match']={}
         dist['Match'][1,1,1] = [1.,0.]
