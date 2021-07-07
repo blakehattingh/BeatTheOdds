@@ -3,10 +3,10 @@ import math as math
 
 from numpy.core.fromnumeric import var
 
-##def choose(option, total):
-##    temp = np.zeros(total)
-##    temp[option] = 1.
-##    return temp
+def choose(option, total):
+    temp = np.zeros(total)
+    temp[option] = 1.
+    return temp
 
 def choose(outcomes,choice):
     for i in range(len(outcomes)):
@@ -16,9 +16,6 @@ def choose(outcomes,choice):
             return temp
 
     return np.ones(len(outcomes))
-
-def noinfo(outcomes):
-    return np.ones(total)
 
 def appendOutcomes(dx,pars,outcomes,p,index,n):
     if p==n:
@@ -92,7 +89,6 @@ def beliefpropagation(nodes, dist, parents, outcomes, info, iterations, toleranc
             variable_data[v]=info[v].copy()
             for f in variable_adj[v]:
                 variable_data[v]*=msg_f_to_v[f][v]
-
             variable_data[v]/=sum(variable_data[v])
             
             for f in variable_adj[v]:

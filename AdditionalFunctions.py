@@ -40,7 +40,9 @@ def TieBreakerProbability(P1S, P2S, Iter, FirstTo):
     return [Count1/Iter, Count2/Iter] # Prob Player 1 winning if he serves first, Prob Player 2 winning if he serves first
 
 def ComputeTBProbabilities(P1S, P2S):
-    # Find which row and column these Pserve probabilities correspond to in the TBProbs matrix:
+    [P1Winning, P2Winning] = TieBreakerProbability(P1S, P2S, 10000, 7)
+    return P1Winning, P2Winning
+    #Find which row and column these Pserve probabilities correspond to in the TBProbs matrix:
     Row = round((P1S - 0.50) / 0.01)
     Col = round((P2S - 0.50) / 0.01)
 
