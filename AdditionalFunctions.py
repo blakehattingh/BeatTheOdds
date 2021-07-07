@@ -1,6 +1,7 @@
 from itertools import islice
 from MarkovSimulations import MarkovChainTieBreaker
 import csv
+import os
 
 # Find the nth position of a value in an array:
 def nth_index(iterable, value, n):
@@ -41,12 +42,13 @@ def TieBreakerProbability(P1S, P2S, Iter, FirstTo):
 def ComputeTBProbabilities(P1S, P2S):
     [P1Winning, P2Winning] = TieBreakerProbability(P1S, P2S, 10000, 7)
     return P1Winning, P2Winning
-    # Find which row and column these Pserve probabilities correspond to in the TBProbs matrix:
+    #Find which row and column these Pserve probabilities correspond to in the TBProbs matrix:
     Row = round((P1S - 0.50) / 0.01)
     Col = round((P2S - 0.50) / 0.01)
 
     # Compute the tie-breaker probabilities using pre-calculated values from a simulation:
-    with open(r'C:\Users\ckno672\Documents\ResearchProject\BeatTheOdds\TBProbabilities.csv') as csv_file:
+    THIS_FOLDER = os.path.dirname(os.path.abspath(__file__))
+    with open(os.path.join(THIS_FOLDER,'TBProbabilities.csv')) as csv_file:
         csv_reader = csv.reader(csv_file, delimiter=',')
         line_count = 0
         for row in csv_reader:
