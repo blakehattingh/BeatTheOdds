@@ -35,7 +35,7 @@ def RunMarkovModel(P1S, P2S, FirstToSets, FirstToTBPoints, Method, Viscosity, Mo
 def main():
     P1S = 0.6
     P2S = 0.55
-    Approach = 2
+    Approach = 1
     Viscosity = 0.5
 
     if (Approach == 1):
