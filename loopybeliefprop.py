@@ -3,10 +3,10 @@ import math as math
 
 from numpy.core.fromnumeric import var
 
-##def choose(option, total):
-##    temp = np.zeros(total)
-##    temp[option] = 1.
-##    return temp
+def choose(option, total):
+    temp = np.zeros(total)
+    temp[option] = 1.
+    return temp
 
 def choose(outcomes,choice):
     for i in range(len(outcomes)):

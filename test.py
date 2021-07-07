@@ -28,6 +28,15 @@ def main():
     [nodes, dist, parents, outcomes, info] = TennisMatchNetwork1(SetDists, SetScoreDists, NumGamesDists, 5)
     [MatchDist,NumSetsDist,TotalNumGamesDist,AllSetScoresDist] = beliefpropagation(nodes, dist, parents, outcomes, info, 
     Iterations, Tol, ['Match','NumSets','TotalNumGames','AllSetScores'], Viscosity)
+    
+    print('Match Distribution: ', end = '')
+    print(MatchDist)
+    print('Number of Sets Distribution: ', end = '')
+    print(NumSetsDist)
+    print('Number of Games Distribution: ', end = '')
+    print(TotalNumGamesDist)
+    print('Set Score Distribution: ', end = '')
+    print(AllSetScoresDist)
 
 
 if __name__ == "__main__":
