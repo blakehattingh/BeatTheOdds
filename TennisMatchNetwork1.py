@@ -1,18 +1,18 @@
 # Import the required functions:
-from loopybeliefprop import choose
+from OriginalLoopy import choose
 from AdditionalFunctions import combine_recursion, nth_index
 import numpy as np
 
 def TennisMatchNetwork1(SetDists, SetScoreDists, NumGamesDists, FirstToSets):
     if (FirstToSets == 3):
         # Specify the names of the nodes in the Bayesian network
-        nodes=['Set1','Set2','Set3','NumGames1','NumGames2','NumGames3','SetScore1','SetScore2','SetScore3','NumSets','Match',
+        nodes=['Set1','Set2','Set3','NumGames1','NumGames2','NumGames3','SetScore1','SetScore2','SetScore3','Match','NumSets',
         'TotalNumGames','AllSetScores']
 
         # Defining parent nodes:
         parents={}
-        parents['NumSets']=['Set1', 'Set2', 'Set3']
         parents['Match']=['Set1', 'Set2', 'Set3']
+        parents['NumSets']=['Set1', 'Set2', 'Set3']
         parents['TotalNumGames']=['NumSets', 'NumGames1', 'NumGames2', 'NumGames3']
         parents['AllSetScores']=['NumSets', 'SetScore1', 'SetScore2', 'SetScore3']
 
@@ -45,7 +45,7 @@ def TennisMatchNetwork1(SetDists, SetScoreDists, NumGamesDists, FirstToSets):
         dist['SetScore1'] = SetScoreDists[0]
         dist['SetScore2'] = SetScoreDists[1]
         dist['SetScore3'] = SetScoreDists[2]
-        
+
         # Match node distributions:
         dist['Match']={}
         dist['Match'][1,1,1] = [1.,0.]

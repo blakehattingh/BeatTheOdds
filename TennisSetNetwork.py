@@ -1,5 +1,5 @@
 # Import the required functions:
-from AdditionalFunctions import combine_recursion
+from AdditionalFunctions import combine_recursion, nth_index
 from loopybeliefprop import choose
 
 def TennisSetNetwork(P1S, P2S, P1TB, P2TB, InitServerDist = [0.5, 0.5]):
@@ -146,25 +146,21 @@ def TennisSetNetwork(P1S, P2S, P1TB, P2TB, InitServerDist = [0.5, 0.5]):
 
             # Case 3: (i = 6 or 7)
             else:
-                # Check the first 12 games to see if a tie-breaker was required:
-                First12 = Sequence[:-1]
-                P2Wins = First12.count(2)
-                if (P2Wins > 5):
-                    # Player 2 wins:
-                    dist['Set'][Sequence] = [0.,1.]
-                else:
-                    # Player 1 wins:
-                    dist['Set'][Sequence] = [1.,0.]
-                
-                # Check if a tie-breaker was needed:
-                if (P2Wins == 6):
-                    # Check who won the TB:
-                    if (Sequence[-1] == 2):
-                        # Player 2 won the TB and therefore the set too:
-                        dist['Set'][Sequence] = [0.,1.]
+                if (i == 6):
+                    # Check when player 2 won his 6th game:
+                    P2Wins = nth_index(Sequence, 2, 6)
+                    # Check if he won it before the 11th game: (therefore won the set 6-4)
+                    if (P2Wins < 10):
+                        dist['Set'][Sequence] = [0., 1.]
                     else:
-                        # Player 1 wins:
-                        dist['Set'][Sequence] = [1.,0.]  
+                        dist['Set'][Sequence] = [1., 0.]
+                else: # i == 7
+                    # Check when player 1 won his 6th game:
+                    P1Wins = nth_index(Sequence, 1, 6) 
+                    if (P1Wins < 10):
+                        dist['Set'][Sequence] = [1., 0.]
+                    else:
+                        dist['Set'][Sequence] = [0., 1.]
 
             # Compute the set score and number of games in the set:
             Game = 0

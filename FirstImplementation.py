@@ -1,13 +1,15 @@
 # Import the required functions:
+from TennisMatchNetwork1Efficient import TennisMatchNetwork1Efficient
 import numpy as np
 from TennisSetNetwork import TennisSetNetwork
 from loopybeliefprop import beliefpropagation
-from TennisMatchNetwork1 import TennisMatchNetwork1
+from TennisMatchNetwork1Efficient import TennisMatchNetwork1Efficient
 
 def MarkovModelFirstImplementation(P1S, P2S, P1TB, P2TB, FirstToSets, FirstToTBPoints, Viscosity, Iterations = 100, Tol = 0.001):
     
     # Set up the Bayesian Network and run the blief propagation algorithm for each set played:
     # Set 1:
+    print("Set 1:")
     [nodes, dist, parents, outcomes, info] = TennisSetNetwork(P1S, P2S, P1TB, P2TB)
     [SetDist1, NumGamesDist1, SetScoreDist1] = beliefpropagation(nodes,dist,parents,outcomes,info,Iterations,Tol,
                                                                  ['Set','NumGames','SetScore'], Viscosity)
@@ -17,6 +19,7 @@ def MarkovModelFirstImplementation(P1S, P2S, P1TB, P2TB, FirstToSets, FirstToTBP
     InitServerDist = [sum(NumGamesDist1[[0,2,4,5]]), sum(NumGamesDist1[[1,3,6]])]
 
     # Set 2:
+    print("Set 2:")
     [nodes, dist, parents, outcomes, info] = TennisSetNetwork(P1S, P2S, P1TB, P2TB, InitServerDist)
     [SetDist2, NumGamesDist2, SetScoreDist2] = beliefpropagation(nodes,dist,parents,outcomes,info,Iterations,Tol,
                                                                  ['Set','NumGames','SetScore'], Viscosity)
@@ -28,6 +31,7 @@ def MarkovModelFirstImplementation(P1S, P2S, P1TB, P2TB, FirstToSets, FirstToTBP
     InitServerDist = [Prob1Serve, Prob2Serve]
     
     # Set 3:
+    print("Set 3:")
     [nodes, dist, parents, outcomes, info] = TennisSetNetwork(P1S, P2S, P1TB, P2TB, InitServerDist)
     [SetDist3, NumGamesDist3, SetScoreDist3] = beliefpropagation(nodes,dist,parents,outcomes,info,Iterations,Tol,
                                                                  ['Set','NumGames','SetScore'], Viscosity)
@@ -41,14 +45,12 @@ def MarkovModelFirstImplementation(P1S, P2S, P1TB, P2TB, FirstToSets, FirstToTBP
         SetDists = [SetDist1, SetDist2, SetDist3]
         SetScoreDists = [SetScoreDist1, SetScoreDist2, SetScoreDist3]
         NumGamesDists = [NumGamesDist1, NumGamesDist2, NumGamesDist3]
-        print(SetDists)
-        print(SetScoreDists)
-        print(NumGamesDists)
         
         # Set up the new network:
-        [nodes, dist, parents, outcomes, info] = TennisMatchNetwork1(SetDists, SetScoreDists, NumGamesDists, 3)
+        print("Match:")
+        [nodes, dist, parents, outcomes, info] = TennisMatchNetwork1Efficient(SetScoreDists, 3)
         [MatchDist,NumSetsDist,TotalNumGamesDist,AllSetScoresDist] = beliefpropagation(nodes, dist, parents, outcomes, info, 
-        Iterations, Tol, ['Match','NumSets','TotalNumGames','AllSetScores'], Viscosity)
+        Iterations, Tol, ['Match','MatchScore','TotalNumGames','AllSetScores'], Viscosity)
         
         # Return the leaf node distributions:
         return MatchDist, NumSetsDist, TotalNumGamesDist, AllSetScoresDist
@@ -62,6 +64,7 @@ def MarkovModelFirstImplementation(P1S, P2S, P1TB, P2TB, FirstToSets, FirstToTBP
         InitServerDist = [Prob1Serve, Prob2Serve]
 
         # Set 4:
+        print("Set 4:")
         [nodes, dist, parents, outcomes, info] = TennisSetNetwork(P1S, P2S, P1TB, P2TB, InitServerDist)
         [SetDist4, NumGamesDist4, SetScoreDist4] = beliefpropagation(nodes, dist, parents, outcomes, info, Iterations, Tol,
                                                                     ['Set','NumGames','SetScore'], Viscosity)
@@ -74,6 +77,7 @@ def MarkovModelFirstImplementation(P1S, P2S, P1TB, P2TB, FirstToSets, FirstToTBP
         InitServerDist = [Prob1Serve, Prob2Serve]
 
         # Set 5:
+        print("Set 5:")
         [nodes, dist, parents, outcomes, info] = TennisSetNetwork(P1S, P2S, P1TB, P2TB, InitServerDist)
         [SetDist5, NumGamesDist5, SetScoreDist5] = beliefpropagation(nodes, dist, parents, outcomes, info, Iterations, Tol,
                                                                     ['Set','NumGames','SetScore'], Viscosity)
@@ -88,9 +92,10 @@ def MarkovModelFirstImplementation(P1S, P2S, P1TB, P2TB, FirstToSets, FirstToTBP
         NumGamesDists = [NumGamesDist1, NumGamesDist2, NumGamesDist3, NumGamesDist4, NumGamesDist5]
         
         # Set up the new network:
-        [nodes, dist, parents, outcomes, info] = TennisMatchNetwork1(SetDists, SetScoreDists, NumGamesDists, 5)
+        print("Match:")
+        [nodes, dist, parents, outcomes, info] = TennisMatchNetwork1Efficient(SetDists, SetScoreDists, NumGamesDists, 5)
         [MatchDist,NumSetsDist,TotalNumGamesDist,AllSetScoresDist] = beliefpropagation(nodes, dist, parents, outcomes, info, 
-        Iterations, Tol, ['Match','NumSets','TotalNumGames','AllSetScores'], Viscosity)
+        Iterations, Tol, ['Match','MatchScore','TotalNumGames','AllSetScores'], Viscosity)
         
         # Return the leaf node distributions:
         return MatchDist, NumSetsDist, TotalNumGamesDist, AllSetScoresDist
