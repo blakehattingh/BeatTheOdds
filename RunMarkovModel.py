@@ -22,20 +22,15 @@ def RunMarkovModel(P1S, P2S, FirstToSets, FirstToTBPoints, Method, Viscosity, Mo
         return MatchDist, NumSetsDist, TotalNumGamesDist, AllSetScoresDist
 
     elif (Method == 2):
-        if (Mode == 'Simple'):
-            MatchDist = MarkovModelSecondImplementation(P1S, P2S, P1TB,P2TB,FirstToSets,FirstToTBPoints,Mode,Viscosity,Iterations,Tol)
-            return MatchDist
-
-        elif (Mode == 'Complex'):
-            [MatchDist,Set1Dist,Set2Dist,Set3Dist,NumSetsDist,TotalNumGamesDist,AllSetScoresDist] = MarkovModelSecondImplementation(P1S,
-             P2S, P1TB, P2TB, FirstToSets, FirstToTBPoints, Mode, Viscosity, Iterations, Tol)
-            return MatchDist, Set1Dist, Set2Dist, Set3Dist, NumSetsDist, TotalNumGamesDist, AllSetScoresDist
+        [MatchDist,NumSetsDist,TotalNumGamesDist,AllSetScoresDist] = MarkovModelSecondImplementation(P1S,
+            P2S, P1TB, P2TB, FirstToSets, FirstToTBPoints, Viscosity, Iterations, Tol)
+        return MatchDist, NumSetsDist, TotalNumGamesDist, AllSetScoresDist
 
 
 def main():
     P1S = 0.6
     P2S = 0.55
-    Approach = 1
+    Approach = 2
     Viscosity = 0.5
 
     if (Approach == 1):
@@ -64,16 +59,10 @@ def main():
 
     else:
         # Run the Markov Model using the second approach:
-        [MatchDist, Set1Dist, Set2Dist, Set3Dist, NumSetsDist, TotalNumGamesDist, AllSetScoresDist] = RunMarkovModel(P1S,P2S,3,7,
-        Approach,Viscosity,'Complex')
+        [MatchDist, NumSetsDist, TotalNumGamesDist, AllSetScoresDist] = RunMarkovModel(P1S,P2S,5,7,
+        Approach,Viscosity)
         print('Match Distribution: ', end = '')
         print(MatchDist)
-        print('Set 1 Distribution: ', end = '')
-        print(Set1Dist)
-        print('Set 2 Distribution: ', end = '')
-        print(Set2Dist)
-        print('Set 3 Distribution: ', end = '')
-        print(Set3Dist)
         print('Number of Sets Distribution: ', end = '')
         print(NumSetsDist)
         print('Number of Games Distribution: ', end = '')

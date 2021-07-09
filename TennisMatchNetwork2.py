@@ -3,7 +3,7 @@ from loopybeliefprop import choose
 from AdditionalFunctions import combine_recursion, nth_index
 import numpy as np
  
-def TennisMatchNetwork2(P1S, P2S, P1TB, P2TB, FirstToSets, Mode):
+def TennisMatchNetwork2(P1S, P2S, P1TB, P2TB, FirstToSets):
     if (FirstToSets == 3):
         # Specify the names of the nodes in the Bayesian network
         nodes=['ServerOdd1','ServerEven1','Set1','NumGames1','SetScore1','G1','G2','G3','G4','G5','G6','G7','G8','G9','G10','G11',
@@ -361,34 +361,29 @@ def TennisMatchNetwork2(P1S, P2S, P1TB, P2TB, FirstToSets, Mode):
 
                 # Case 3: (i = 6 or 7)
                 else:
-                    # Check the first 12 games to see if a tie-breaker was required:
-                    First12 = Sequence[:-1]
-                    P2Wins = First12.count(2)
-                    if (P2Wins > 6):
-                        # Player 2 wins:
-                        dist['Set1'][Sequence] = [0.,1.]
-                        dist['Set2'][Sequence] = [0.,1.]
-                        dist['Set3'][Sequence] = [0.,1.]
-
-                    elif (P2Wins == 6):
-                        # Tie-breaker required:
-                        TBResult = Sequence[-1]
-                        if (TBResult == 1):
-                            # Player 1 wins:
-                            dist['Set1'][Sequence] = [1.,0.]
-                            dist['Set2'][Sequence] = [1.,0.]
-                            dist['Set3'][Sequence] = [1.,0.]
+                    if (i == 6):
+                        # Check when player 2 won his 6th game:
+                        P2Wins = nth_index(Sequence, 2, 6)
+                        # Check if he won it before the 11th game: (therefore won the set 6-4)
+                        if (P2Wins < 10):
+                            dist['Set1'][Sequence] = [0., 1.]
+                            dist['Set2'][Sequence] = [0., 1.]
+                            dist['Set3'][Sequence] = [0., 1.]
                         else:
-                            # Player 2 wins:
-                            dist['Set1'][Sequence] = [0.,1.]
-                            dist['Set2'][Sequence] = [0.,1.]
-                            dist['Set3'][Sequence] = [0.,1.]
-
-                    else: # P2Wins < 6
-                        # Player 1 wins:
-                        dist['Set1'][Sequence] = [1.,0.] 
-                        dist['Set2'][Sequence] = [1.,0.]
-                        dist['Set3'][Sequence] = [1.,0.]
+                            dist['Set1'][Sequence] = [1., 0.]
+                            dist['Set2'][Sequence] = [1., 0.]
+                            dist['Set3'][Sequence] = [1., 0.]
+                    else: # i == 7
+                        # Check when player 1 won his 6th game:
+                        P1Wins = nth_index(Sequence, 1, 6) 
+                        if (P1Wins < 10):
+                            dist['Set1'][Sequence] = [1., 0.]
+                            dist['Set2'][Sequence] = [1., 0.]
+                            dist['Set3'][Sequence] = [1., 0.]
+                        else:
+                            dist['Set1'][Sequence] = [0., 1.]
+                            dist['Set2'][Sequence] = [0., 1.]
+                            dist['Set3'][Sequence] = [0., 1.]
 
                 # Compute the set score and number of games in the set:
                 Game = 0
@@ -1086,42 +1081,37 @@ def TennisMatchNetwork2(P1S, P2S, P1TB, P2TB, FirstToSets, Mode):
 
                 # Case 3: (i = 6 or 7)
                 else:
-                    # Check the first 12 games to see if a tie-breaker was required:
-                    First12 = Sequence[:-1]
-                    P2Wins = First12.count(2)
-                    if (P2Wins > 6):
-                        # Player 2 wins:
-                        dist['Set1'][Sequence] = [0.,1.]
-                        dist['Set2'][Sequence] = [0.,1.]
-                        dist['Set3'][Sequence] = [0.,1.]
-                        dist['Set4'][Sequence] = [0.,1.]
-                        dist['Set5'][Sequence] = [0.,1.]
-
-                    elif (P2Wins == 6):
-                        # Tie-breaker required:
-                        TBResult = Sequence[-1]
-                        if (TBResult == 1):
-                            # Player 1 wins:
-                            dist['Set1'][Sequence] = [1.,0.]
-                            dist['Set2'][Sequence] = [1.,0.]
-                            dist['Set3'][Sequence] = [1.,0.]
-                            dist['Set4'][Sequence] = [1.,0.]
-                            dist['Set5'][Sequence] = [1.,0.]
+                    if (i == 6):
+                        # Check when player 2 won his 6th game:
+                        P2Wins = nth_index(Sequence, 2, 6)
+                        # Check if he won it before the 11th game: (therefore won the set 6-4)
+                        if (P2Wins < 10):
+                            dist['Set1'][Sequence] = [0., 1.]
+                            dist['Set2'][Sequence] = [0., 1.]
+                            dist['Set3'][Sequence] = [0., 1.]
+                            dist['Set4'][Sequence] = [0., 1.]
+                            dist['Set5'][Sequence] = [0., 1.]
                         else:
-                            # Player 2 wins:
-                            dist['Set1'][Sequence] = [0.,1.]
-                            dist['Set2'][Sequence] = [0.,1.]
-                            dist['Set3'][Sequence] = [0.,1.]
-                            dist['Set4'][Sequence] = [0.,1.]
-                            dist['Set5'][Sequence] = [0.,1.]
-
-                    else: # P2Wins < 6
-                        # Player 1 wins:
-                        dist['Set1'][Sequence] = [1.,0.] 
-                        dist['Set2'][Sequence] = [1.,0.]
-                        dist['Set3'][Sequence] = [1.,0.]
-                        dist['Set4'][Sequence] = [1.,0.]
-                        dist['Set5'][Sequence] = [1.,0.] 
+                            dist['Set1'][Sequence] = [1., 0.]
+                            dist['Set2'][Sequence] = [1., 0.]
+                            dist['Set3'][Sequence] = [1., 0.]
+                            dist['Set4'][Sequence] = [1., 0.]
+                            dist['Set5'][Sequence] = [1., 0.]
+                    else: # i == 7
+                        # Check when player 1 won his 6th game:
+                        P1Wins = nth_index(Sequence, 1, 6) 
+                        if (P1Wins < 10):
+                            dist['Set1'][Sequence] = [1., 0.]
+                            dist['Set2'][Sequence] = [1., 0.]
+                            dist['Set3'][Sequence] = [1., 0.]
+                            dist['Set4'][Sequence] = [1., 0.]
+                            dist['Set5'][Sequence] = [1., 0.]
+                        else:
+                            dist['Set1'][Sequence] = [0., 1.]
+                            dist['Set2'][Sequence] = [0., 1.]
+                            dist['Set3'][Sequence] = [0., 1.]                   
+                            dist['Set4'][Sequence] = [0., 1.]                   
+                            dist['Set5'][Sequence] = [0., 1.]   
 
                 # Compute the set score and number of games in the set:
                 Game = 0
@@ -1225,7 +1215,7 @@ def TennisMatchNetwork2(P1S, P2S, P1TB, P2TB, FirstToSets, Mode):
     
         # Match and number of sets distributions:
         dist['Match']={}
-        dist['NumSets']
+        dist['NumSets']={}
         dist['Match'][1,1,1,1,1] = [1.,0.]
         dist['NumSets'][1,1,1,1,1] = [1.,0.,0.]     
         for i in range(1,6):
@@ -1299,19 +1289,19 @@ def TennisMatchNetwork2(P1S, P2S, P1TB, P2TB, FirstToSets, Mode):
                                     for Games5 in outcomes['NumGames5']:
                                         # Case of 3 sets:
                                         TotalGames = Games1 + Games2 + Games3
-                                        TotalGamesDist[TotalGames-12] = 1.                                             
+                                        TotalGamesDist[TotalGames-18] = 1.                                             
                                         dist['TotalNumGames'][3, Games1, Games2, Games3, Games4, Games5] = TotalGamesDist
                                         TotalGamesDist = np.zeros(48, dtype = float)
 
                                         # Case of 4 sets:
                                         TotalGames = TotalGames + Games4
-                                        TotalGamesDist[TotalGames-12] = 1.                                             
+                                        TotalGamesDist[TotalGames-18] = 1.                                             
                                         dist['TotalNumGames'][4, Games1, Games2, Games3, Games4, Games5] = TotalGamesDist
                                         TotalGamesDist = np.zeros(48, dtype = float)
 
                                         # Case of 5 sets:
                                         TotalGames = TotalGames + Games5
-                                        TotalGamesDist[TotalGames-12] = 1.                                             
+                                        TotalGamesDist[TotalGames-18] = 1.                                             
                                         dist['TotalNumGames'][5, Games1, Games2, Games3, Games4, Games5] = TotalGamesDist
                                         TotalGamesDist = np.zeros(48, dtype = float)
               

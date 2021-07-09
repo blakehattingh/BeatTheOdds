@@ -1,6 +1,7 @@
+from TennisMatchNetwork1Efficient import TennisMatchNetwork1Efficient
 from itertools import islice
 from AdditionalFunctions import TieBreakerProbability
-from TennisMatchNetwork1 import TennisMatchNetwork1
+from TennisMatchNetwork1Efficient import TennisMatchNetwork1Efficient
 from loopybeliefprop import beliefpropagation
 import numpy as np
 # import matplotlib.pyplot as plt
@@ -25,9 +26,9 @@ def main():
     NumGamesDists = [NumGamesDist, NumGamesDist, NumGamesDist, NumGamesDist, NumGamesDist]
 
     # Set up the new network:
-    [nodes, dist, parents, outcomes, info] = TennisMatchNetwork1(SetDists, SetScoreDists, NumGamesDists, 5)
+    [nodes, dist, parents, outcomes, info] = TennisMatchNetwork1Efficient(SetScoreDists, 5)
     [MatchDist,NumSetsDist,TotalNumGamesDist,AllSetScoresDist] = beliefpropagation(nodes, dist, parents, outcomes, info, 
-    Iterations, Tol, ['Match','NumSets','TotalNumGames','AllSetScores'], Viscosity)
+    Iterations, Tol, ['Match','MatchScore','TotalNumGames','AllSetScores'], Viscosity)
     
     print('Match Distribution: ', end = '')
     print(MatchDist)
