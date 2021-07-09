@@ -53,7 +53,7 @@ def MarkovModelFirstImplementation(P1S, P2S, P1TB, P2TB, FirstToSets, FirstToTBP
         Iterations, Tol, ['Match','MatchScore','TotalNumGames','AllSetScores'], Viscosity)
         
         # Non-Efficient Version:
-        # [nodes, dist, parents, outcomes, info] = TennisMatchNetwork1(SetScoreDists, 3)
+        # [nodes, dist, parents, outcomes, info] = TennisMatchNetwork1(SetDists, SetScoreDists, NumGamesDists, 3)
         # [MatchDist,NumSetsDist,TotalNumGamesDist,AllSetScoresDist] = beliefpropagation(nodes, dist, parents, outcomes, info, 
         # Iterations, Tol, ['Match','NumSets','TotalNumGames','AllSetScores'], Viscosity)
 
