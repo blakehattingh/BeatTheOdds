@@ -3,7 +3,7 @@ from TennisMatchNetwork1Efficient import TennisMatchNetwork1Efficient
 import numpy as np
 from TennisSetNetwork import TennisSetNetwork
 from loopybeliefprop import beliefpropagation
-from TennisMatchNetwork1Efficient import TennisMatchNetwork1Efficient
+from TennisMatchNetwork1 import TennisMatchNetwork1
 
 def MarkovModelFirstImplementation(P1S, P2S, P1TB, P2TB, FirstToSets, FirstToTBPoints, Viscosity, Iterations = 100, Tol = 0.001):
     
