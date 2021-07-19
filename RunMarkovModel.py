@@ -29,14 +29,14 @@ def RunMarkovModel(P1S, P2S, FirstToSets, FirstToTBPoints, Method, Viscosity, Mo
 
 def main():
     P1S = 0.6
-    P2S = 0.55
+    P2S = 0.9
     Approach = 1
     Viscosity = 0.5
 
     if (Approach == 1):
         # Implementation 1:
         # Run the Markov Model using the first approach:
-        [MatchDist, NumSetsDist, TotalNumGamesDist, AllSetScoresDist] = RunMarkovModel(P1S,P2S,3,7,Approach,Viscosity)
+        '''[MatchDist, NumSetsDist, TotalNumGamesDist, AllSetScoresDist] = RunMarkovModel(P1S,P2S,3,7,Approach,Viscosity)
         print('Match Distribution: ', end = '')
         print(MatchDist)
         print('Number of Sets Distribution: ', end = '')
@@ -44,7 +44,7 @@ def main():
         print('Number of Games Distribution: ', end = '')
         print(TotalNumGamesDist)
         print('Set Score Distribution: ', end = '')
-        print(AllSetScoresDist)
+        print(AllSetScoresDist)'''
         
         # Implementation 3: (Efficient version of Implementation 1)
         [MatchDist, MatchScoreDist, TotalNumGamesDist, AllSetScoresDist] = RunMarkovModel(P1S,P2S,3,7,Approach,Viscosity)
