@@ -1,3 +1,4 @@
+from TennisMatchNetwork1Efficient import TennisMatchNetwork1Efficient
 from TennisMatchNetwork1 import TennisMatchNetwork1
 from RunMarkovModel import RunMarkovModel
 from TennisSetNetwork import TennisSetNetwork
@@ -69,7 +70,7 @@ def TestSuite():
         UnitTest4Network()
         UnitTest4Sets()
         UnitTest4Match()
-        UnitTest4NumSets()
+        UnitTest4MatchScore()
         UnitTest4TotalNumGames()
 
 def UnitTest1():
@@ -239,6 +240,48 @@ def UnitTest3Match():
         print('3b. Match Test Failed')
     else:
         print('3b. Match Test Passed')
+
+def UnitTest3MatchScore():
+    SetScoreDists = [np.array([0.01576853, 0.04723345, 0.08253247, 0.10987546, 0.12342136,
+        0.06171053, 0.06842541, 0.01548256, 0.04651851, 0.08153156,
+        0.10887454, 0.12267068, 0.0613352 , 0.05461975]), np.array([0.01500446, 0.05239947, 0.07579284, 0.12454442, 0.10996195,
+        0.0612606 , 0.0702565 , 0.01472783, 0.03985681, 0.08661524,
+        0.09532216, 0.1373999 , 0.06088177, 0.05597605]), np.array([0.01575673, 0.04796772, 0.08177476, 0.11161937, 0.12169578,
+        0.06170372, 0.06845911, 0.0154709 , 0.04576982, 0.08225674,
+        0.10715684, 0.12440623, 0.06132832, 0.05463398]), np.array([0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0., 0., 0.1, 0.1, 0., 0.]),
+        np.array([0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0., 0., 0.1, 0.1, 0., 0.])]
+
+    # Set up a 'Match Network' using approach 1:
+    [nodes5, dist5, parents5, outcomes5, info5] = TennisMatchNetwork1Efficient(SetScoreDists, 5)
+    [nodes3, dist3, parents3, outcomes3, info3] = TennisMatchNetwork1Efficient(SetScoreDists, 3)
+
+    # Test the Match Score distribution: (3 sets)
+    if (dist3['MatchScore'][2, 2, 2] != [0., 0., 1., 0.]):
+        print('3a. Match Score Test Failed')
+    elif (dist3['MatchScore'][1, 1, 2] != [1., 0., 0., 0.]):
+        print('3a. Match Score Test Failed')
+    elif(dist3['MatchScore'][1, 2, 1] != [0., 1., 0., 0.]):
+        print('3a. Match Score Test Failed')
+    elif(dist3['MatchScore'][2, 1, 2] != [0., 0., 0., 1.]):
+        print('3a. Match Score Test Failed')
+    else:
+        print('3a. Match Score Test Passed')
+
+    # Test the Match Score distribution: (5 sets)
+    if (dist5['MatchScore'][2, 2, 2, 2, 2] != [0., 0., 0., 1., 0., 0.]):
+        print(dist5['MatchScore'][2,2,2,2,2])
+    elif (dist5['MatchScore'][1, 1, 2, 2, 2] != [0., 0., 0., 0., 0., 1.]):
+        print('3b. Match Score Test Failed')
+    elif(dist5['MatchScore'][1, 2, 1, 2, 1] != [0., 0., 1., 0., 0., 0.]):
+        print('3b. Match Score Test Failed')
+    elif(dist5['MatchScore'][2, 2, 1, 2, 1] != [0., 0., 0., 0., 1., 0.]):
+        print('3b. Match Score Test Failed')
+    elif(dist5['MatchScore'][1, 1, 1, 2, 2] != [1., 0., 0., 0., 0., 0.]):
+        print('3b. Match Score Test Failed')
+    elif(dist5['MatchScore'][2, 1, 1, 1, 2] != [0., 1., 0., 0., 0., 0.]):
+        print('3b. Match Score Test Failed')
+    else:
+        print('3b. Match Score Test Passed')
 
 def UnitTest3NumSets():
     SetDists = [np.array([0.51471958, 0.48528042]), np.array([0.51495612, 0.48504388]), np.array([0.51473445, 0.48526555]),
@@ -533,14 +576,16 @@ def UnitTest3AllSetScores():
 
 def UnitTest4Network():
     # Set up a "Match Network" using the second approach:
-    [nodes3, dist3, parents3, outcomes3, info3] = TennisMatchNetwork2(0.9, 0.7, 0.85, 0.15, 3)
-    [nodes5, dist5, parents5, outcomes5, info5] = TennisMatchNetwork2(0.9, 0.7, 0.85, 0.15, 5)
+    [nodes3, dist3, parents3, outcomes3, info3] = TennisMatchNetwork2(0.9, 0.7, 3)
+    [nodes5, dist5, parents5, outcomes5, info5] = TennisMatchNetwork2(0.9, 0.7, 5)
     
     # Check number of nodes and parent nodes: (3 sets)
     if (len(nodes3) != 18 * 3 + 4):
         print('4a. Network Test Failed a')
     elif (len(parents3['ServerOdd2']) != 2):
-        print('4a. Network Test Failed b')    
+        print('4a. Network Test Failed b')
+    elif (dist3['ServerOdd2']['P2Serves',6] != [0., 1.]):
+        print('4a. Network Test Failed c')    
     else:
         print('4a. Network Test Passed')
 
@@ -548,14 +593,16 @@ def UnitTest4Network():
     if (len(nodes5) != 18 * 5 + 4):
         print('4b. Network Test Failed a')
     elif (len(parents5['ServerOdd4']) != 2):
-        print('4b. Network Test Failed b')    
+        print('4b. Network Test Failed b')
+    elif (dist5['ServerOdd2']['P2Serves',7] != [1., 0.]):
+        print('4a. Network Test Failed c')      
     else:
         print('4b. Network Test Passed')
 
 def UnitTest4Sets():
     # Set up a "Match Network" using the second approach:
-    [nodes3, dist3, parents3, outcomes3, info3] = TennisMatchNetwork2(0.9, 0.7, 0.85, 0.15, 3)
-    [nodes5, dist5, parents5, outcomes5, info5] = TennisMatchNetwork2(0.9, 0.7, 0.85, 0.15, 5)
+    [nodes3, dist3, parents3, outcomes3, info3] = TennisMatchNetwork2(0.9, 0.7, 3)
+    [nodes5, dist5, parents5, outcomes5, info5] = TennisMatchNetwork2(0.9, 0.7, 5)
 
     # Check different game outcomes to see if the correct winner is assigned:
     if (dist3['Set1'][1,1,1,1,1,2,2,2,2,2,2,2,1] != [0., 1.]):
@@ -588,7 +635,7 @@ def UnitTest4Sets():
 
 def UnitTest4Match():
     # Set up a "Match Network" using the second approach:
-    [nodes, dist, parents, outcomes, info] = TennisMatchNetwork2(0.9, 0.7, 0.85, 0.15, 3)
+    [nodes, dist, parents, outcomes, info] = TennisMatchNetwork2(0.9, 0.7, 3)
     
     # Check several different scorelines get the correct set winner when 3 sets are played:
     if (dist['Match'][1,1,1] != [1.,0.]): 
@@ -605,7 +652,7 @@ def UnitTest4Match():
         print('4a. Match Test Passed')
 
     # Check scoreline for 5 set matches:
-    [nodes, dist, parents, outcomes, info] = TennisMatchNetwork2(0.5, 0.7, 0.3, 0.7, 5)
+    [nodes, dist, parents, outcomes, info] = TennisMatchNetwork2(0.5, 0.7, 5)
     if (dist['Match'][1,1,1,1,1] != [1.,0.]): 
         print('4b. Match Test Failed a')
     elif (dist['Match'][2,1,1,1,1] != [1.,0.]): 
@@ -619,72 +666,72 @@ def UnitTest4Match():
     else:
         print('4b. Match Test Passed')
 
-def UnitTest4NumSets():
+def UnitTest4MatchScore():
     # Set up a "Match Network" using the second approach:
-    [nodes, dist, parents, outcomes, info] = TennisMatchNetwork2(0.9, 0.7, 0.85, 0.15, 3)
+    [nodes, dist, parents, outcomes, info] = TennisMatchNetwork2(0.9, 0.7, 3)
     
     # Check several different scorelines get the correct set winner when 3 sets are played:
-    if (dist['NumSets'][1,1,1] != [1.,0.]): # 2 sets
-        print('4a. Number of Sets Test Failed')
-    elif (dist['NumSets'][1,1,2] != [1.,0.]): # 2 sets
-        print('4a. Number of Sets Test Failed')
-    elif (dist['NumSets'][2,2,2] != [1.,0.]): # 2 sets
-        print('4a. Number of Sets Test Failed')
-    elif (dist['NumSets'][2,2,1] != [1.,0.]): # 2 sets
-        print('4a. Number of Sets Test Failed')
-    elif (dist['NumSets'][2,1,2] != [0.,1.]): # 3 sets
-        print('4a. Number of Sets Test Failed')
+    if (dist['MatchScore'][1,1,1] != [1.,0.,0.,0.]): # 2 sets
+        print('4a. Match Score Test Failed a')
+    elif (dist['MatchScore'][1,1,2] != [1.,0.,0.,0.]): # 2 sets
+        print('4a. Match Score Test Failed b')
+    elif (dist['MatchScore'][2,2,2] != [0.,0.,1.,0.]): # 2 sets
+        print('4a. Match Score Test Failed c')
+    elif (dist['MatchScore'][2,2,1] != [0.,0.,1.,0.]): # 2 sets
+        print('4a. Match Score Test Failed d')
+    elif (dist['MatchScore'][2,1,2] != [0.,0.,0.,1.]): # 3 sets
+        print('4a. Match Score Test Failed e')
     else:
-        print('4a. Number of Sets Test Passed')
+        print('4a. Match Score Test Passed')
 
     # Check scoreline for 5 set matches:
-    [nodes, dist, parents, outcomes, info] = TennisMatchNetwork2(0.5, 0.7, 0.3, 0.7, 5)
-    if (dist['NumSets'][1,1,1,1,1] != [1.,0.,0.]): # 3 sets
-        print('4b. Number of Sets Test Failed a')
-    elif (dist['NumSets'][2,1,1,1,1] != [0.,1.,0.]): # 4 sets
-        print('4b. Number of Sets Test Failed b')
-    elif (dist['NumSets'][1,1,2,2,1] != [0.,0.,1.]): # 5 sets
-        print('4b. Number of Sets Test Failed c')
-    elif (dist['NumSets'][2,1,2,1,2] != [0.,0.,1.]): # 5 sets
-        print('4b. Number of Sets Test Failed d')
-    elif (dist['NumSets'][2,2,1,2,1] != [0.,1.,0.]): # 4 sets
-        print('4b. Number of Sets Test Failed e')
+    [nodes, dist, parents, outcomes, info] = TennisMatchNetwork2(0.5, 0.7, 5)
+    if (dist['MatchScore'][1,1,1,1,1] != [1.,0.,0.,0.,0.,0.]): # 3 sets
+        print('4b. Match Score Test Failed a')
+    elif (dist['MatchScore'][2,1,1,1,1] != [0.,1.,0.,0.,0.,0.]): # 4 sets
+        print('4b. Match Score Test Failed b')
+    elif (dist['MatchScore'][1,1,2,2,1] != [0.,0.,1.,0.,0.,0.]): # 5 sets
+        print('4b. Match Score Test Failed c')
+    elif (dist['MatchScore'][2,1,2,1,2] != [0.,0.,0.,0.,0.,1.]): # 5 sets
+        print('4b. Match Score Test Failed d')
+    elif (dist['MatchScore'][2,2,1,2,1] != [0.,0.,0.,0.,1.,0.]): # 4 sets
+        print('4b. Match Score Test Failed e')
     else:
-        print('4b. Number of Sets Test Passed')
+        print('4b. Match Score Test Passed')
 
 def UnitTest4TotalNumGames():
     # Set up a "Match Network" using the second approach:
-    [nodes, dist, parents, outcomes, info] = TennisMatchNetwork2(0.9, 0.7, 0.85, 0.15, 3)
+    [nodes, dist, parents, outcomes, info] = TennisMatchNetwork2(0.9, 0.7, 3)
     
     # Check several different scorelines get the correct set winner when 3 sets are played:
-    if (dist['TotalNumGames'][2,7,8,9][3] != 1. or dist['TotalNumGames'][2,7,8,9][12] != 0.): # Total games = 15 
+    if (dist['TotalNumGames'][1,7,8,9][3] != 1. or dist['TotalNumGames'][1,7,8,9][12] != 0.): # Total games = 15 
         print('4a. Total Number of Games Test Failed a')
-    elif (dist['TotalNumGames'][3,7,8,9][3] != 0. or dist['TotalNumGames'][3,7,8,9][12] != 1.): # Total games = 24
+    elif (dist['TotalNumGames'][2,7,8,9][3] != 0. or dist['TotalNumGames'][2,7,8,9][12] != 1.): # Total games = 24
         print('4a. Total Number of Games Test Failed b')
-    elif (dist['TotalNumGames'][2,6,13,8][7] != 1. or dist['TotalNumGames'][2,6,13,8][15] != 0.): # Total games = 19
+    elif (dist['TotalNumGames'][1,6,13,8][7] != 1. or dist['TotalNumGames'][1,6,13,8][15] != 0.): # Total games = 19
         print('4a. Total Number of Games Test Failed c')
-    elif (dist['TotalNumGames'][3,6,13,8][15] != 1. or dist['TotalNumGames'][3,6,13,8][22] != 0.): # Total games = 27
+    elif (dist['TotalNumGames'][4,6,13,8][15] != 1. or dist['TotalNumGames'][4,6,13,8][22] != 0.): # Total games = 27
         print('4a. Total Number of Games Test Failed d')
-    elif (dist['TotalNumGames'][3,13,13,13][27] != 1. or dist['TotalNumGames'][3,13,13,13][14] != 0.): # Total games = 39
+    elif (dist['TotalNumGames'][4,13,13,13][27] != 1. or dist['TotalNumGames'][4,13,13,13][14] != 0.): # Total games = 39
         print('4a. Total Number of Games Test Failed e')
-    elif (dist['TotalNumGames'][2,6,6,6][0] != 1. or dist['TotalNumGames'][2,6,6,6][6] != 0.): # Total games = 12
+    elif (dist['TotalNumGames'][3,6,6,6][0] != 1. or dist['TotalNumGames'][3,6,6,6][6] != 0.): # Total games = 12
         print('4a. Total Number of Games Test Failed f')
     else:
         print('4a. Total Number of Games Test Passed')
 
     # Check scoreline for 5 set TotalNumGameses:
-    [nodes, dist, parents, outcomes, info] = TennisMatchNetwork2(0.5, 0.7, 0.3, 0.7, 5)
-    if (dist['TotalNumGames'][3,7,8,9,10,6][6] != 1. or dist['TotalNumGames'][3,7,8,9,10,6][16] != 0.): # Total games = 24 
+    [nodes, dist, parents, outcomes, info] = TennisMatchNetwork2(0.5, 0.7, 5)
+    if (dist['TotalNumGames'][1,7,8,9,10,6][6] != 1. or dist['TotalNumGames'][1,7,8,9,10,6][16] != 0.): # Total games = 24 
         print('4b. Total Number of Games Test Failed a')
-    elif (dist['TotalNumGames'][4,9,9,9,6,12][15] != 1. or dist['TotalNumGames'][4,9,9,9,6,12][27] != 0.): # Total games = 33
+    elif (dist['TotalNumGames'][2,9,9,9,6,12][15] != 1. or dist['TotalNumGames'][2,9,9,9,6,12][27] != 0.): # Total games = 33
         print('4b. Total Number of Games Test Failed b')
-    elif (dist['TotalNumGames'][5,13,13,13,13,13][47] != 1.):  # Total games = 65
+    elif (dist['TotalNumGames'][3,13,13,13,13,13][47] != 1.):  # Total games = 65
         print('4b. Total Number of Games Test Failed c')
-    elif (dist['TotalNumGames'][3,7,6,13,7,8][8] != 1.): # Total games = 26
+    elif (dist['TotalNumGames'][4,7,6,13,7,8][8] != 1.): # Total games = 26
         print('4b. Total Number of Games Test Failed d')
-    elif (dist['TotalNumGames'][5,6,6,6,6,6][12] != 1.): # Total games = 30
+    elif (dist['TotalNumGames'][6,6,6,6,6,6][12] != 1.): # Total games = 30
         print('4b. Total Number of Games Test Failed e')
-    elif (dist['TotalNumGames'][4,12,10,9,13,6][26] != 1.): # Total games = 44
+    elif (dist['TotalNumGames'][5,12,10,9,13,6][26] != 1.): # Total games = 44
         print('4b. Total Number of Games Test Failed f')
     else:
         print('4b. Total Number of Games Test Passed')

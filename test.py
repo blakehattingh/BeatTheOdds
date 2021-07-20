@@ -1,10 +1,10 @@
 from TennisMatchNetwork1Efficient import TennisMatchNetwork1Efficient
 from itertools import islice
-from AdditionalFunctions import TieBreakerProbability
+from AdditionalFunctions import TieBreakerProbability, ComputeTBProbabilities
 from TennisMatchNetwork1Efficient import TennisMatchNetwork1Efficient
 from loopybeliefprop import beliefpropagation
+from OMalleysEqns import TB, Matrices
 import numpy as np
-# import matplotlib.pyplot as plt
 import csv
 
 def nth_index(iterable, value, n):
@@ -13,6 +13,18 @@ def nth_index(iterable, value, n):
 
 
 def main():
+    P = 0.6
+    P2S = 0.7
+    Q = 1. - P2S 
+    [A, B] = Matrices()
+    TBServeA = TB(P, Q, A)
+    TBServeB = TB(Q, P, A)
+    # [P1TB, P2TB] = ComputeTBProbabilities(P, P2S)
+    print(TBServeA)
+    print(TBServeB)
+
+
+    '''
     Viscosity = 0.5
     Iterations = 100
     Tol = 0.01
@@ -38,7 +50,7 @@ def main():
     print(TotalNumGamesDist)
     print('Set Score Distribution: ', end = '')
     print(AllSetScoresDist)
-
+    '''
 
 if __name__ == "__main__":
     main()

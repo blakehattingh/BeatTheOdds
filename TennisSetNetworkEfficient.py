@@ -3,9 +3,9 @@ from AdditionalFunctions import combine_recursion, nth_index
 from loopybeliefprop import choose
 from OMalleysEqns import TB
 
-def TennisSetNetwork(P1S, P2S, InitServerDist = [0.5, 0.5]):
+def TennisSetNetworkEfficient(P1S, P2S, InitServerDist = [0.5, 0.5]):
     # Specify the names of the nodes in the Bayesian network
-    nodes=['ServerOdd','ServerEven','Set','NumGames','SetScore','G1','G2','G3','G4','G5','G6','G7','G8','G9','G10','G11','G12','TB']
+    nodes=['ServerOdd','ServerEven','SetScore','G1','G2','G3','G4','G5','G6','G7','G8','G9','G10','G11','G12','TB']
 
     # Defining parent nodes:
     parents={}
@@ -23,8 +23,6 @@ def TennisSetNetwork(P1S, P2S, InitServerDist = [0.5, 0.5]):
     parents['G11']=['ServerOdd']
     parents['G12']=['ServerEven']
     parents['TB']=['ServerOdd']
-    parents['Set']=['G1', 'G2', 'G3', 'G4','G5','G6', 'G7', 'G8', 'G9', 'G10', 'G11', 'G12', 'TB']
-    parents['NumGames']=['G1', 'G2', 'G3', 'G4','G5','G6', 'G7', 'G8', 'G9', 'G10', 'G11', 'G12', 'TB']
     parents['SetScore']=['G1', 'G2', 'G3', 'G4','G5','G6', 'G7', 'G8', 'G9', 'G10', 'G11', 'G12', 'TB']
 
     # Set up the possible outcomes for each node:
@@ -44,8 +42,6 @@ def TennisSetNetwork(P1S, P2S, InitServerDist = [0.5, 0.5]):
     outcomes['G11']=[1,2]
     outcomes['G12']=[1,2]
     outcomes['TB']=[1,2]
-    outcomes['Set']=[1,2]
-    outcomes['NumGames']=[6,7,8,9,10,12,13]
     outcomes['SetScore']=[1,2,3,4,5,6,7,8,9,10,11,12,13,14]
 
     # Compute the probability of winning a game on serve from the on-serve point probabilities:
@@ -110,16 +106,11 @@ def TennisSetNetwork(P1S, P2S, InitServerDist = [0.5, 0.5]):
     dist['TB']["P2Serves"]=[1.-P2TB,P2TB]
 
     # Define the possible outcomes of the set, given a sequence of outcomes from all 12 games and the TB:
-    dist['Set']={}
-    dist['NumGames']={}
     dist['SetScore']={}
-    dist['Set'][1,1,1,1,1,1,1,1,1,1,1,1,1] = [1.,0.]
-    dist['NumGames'][1,1,1,1,1,1,1,1,1,1,1,1,1] = [1., 0., 0., 0., 0., 0., 0.]
     dist['SetScore'][1,1,1,1,1,1,1,1,1,1,1,1,1] = [1., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.]
 
     # Possible Set Scores and Number of Games:
     SetScores = [[6,0],[6,1],[6,2],[6,3],[6,4],[7,5],[7,6],[0,6],[1,6],[2,6],[3,6],[4,6],[5,7],[6,7]]
-    NumberOfGames = [6,7,8,9,10,12,13]
 
     for i in range(1,14):
         Seqs = combine_recursion(13,i)
@@ -128,7 +119,6 @@ def TennisSetNetwork(P1S, P2S, InitServerDist = [0.5, 0.5]):
             # Reset Sequences and distributions:
             InitialSeq = [1,1,1,1,1,1,1,1,1,1,1,1,1]
             SetScoresDist = [0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.]
-            NumGamesDist = [0., 0., 0., 0., 0., 0., 0.]
 
             # Place the '2's in each possible combination:
             for games in j:
@@ -137,40 +127,11 @@ def TennisSetNetwork(P1S, P2S, InitServerDist = [0.5, 0.5]):
             # Assign the correct winner:
             Sequence = tuple(InitialSeq)
 
-            # Set Outcome:
-
-            # Case 1: (i (Player 2 wins) < 6)
-            if (i < 6):
-                # Player 1 wins:
-                dist['Set'][Sequence] = [1.,0.]
-            
-            # Case 2: (i > 7):
-            elif (i > 7):
-                # Player 2 wins:
-                dist['Set'][Sequence] = [0.,1.]
-
-            # Case 3: (i = 6 or 7)
-            else:
-                if (i == 6):
-                    # Check when player 2 won his 6th game:
-                    P2Wins = nth_index(Sequence, 2, 6)
-                    # Check if he won it before the 11th game: (therefore won the set 6-4)
-                    if (P2Wins < 10):
-                        dist['Set'][Sequence] = [0., 1.]
-                    else:
-                        dist['Set'][Sequence] = [1., 0.]
-                else: # i == 7
-                    # Check when player 1 won his 6th game:
-                    P1Wins = nth_index(Sequence, 1, 6) 
-                    if (P1Wins < 10):
-                        dist['Set'][Sequence] = [1., 0.]
-                    else:
-                        dist['Set'][Sequence] = [0., 1.]
-
-            # Compute the set score and number of games in the set:
+            # Compute the set score:
             Game = 0
             iGames = 0
             jGames = 0
+
             # Case 1: Set did not go beyond 10 games
             if (i <= 4 or i > 8):
                 while (iGames < 6 and jGames < 6):
@@ -186,13 +147,10 @@ def TennisSetNetwork(P1S, P2S, InitServerDist = [0.5, 0.5]):
 
                 # Find the index corresponding to this outcome:
                 IndexSS = SetScores.index(SetScore)
-                IndexNG = NumberOfGames.index(NumGames)
 
                 # Assign the correct outcome to the respective leaf node:
                 SetScoresDist[IndexSS] = 1.
-                NumGamesDist[IndexNG] = 1.
                 dist['SetScore'][Sequence] = SetScoresDist
-                dist['NumGames'][Sequence] = NumGamesDist
 
             else: # Case 2:
                 # Check if the game went beyond 10 games:
@@ -212,13 +170,10 @@ def TennisSetNetwork(P1S, P2S, InitServerDist = [0.5, 0.5]):
 
                     # Find the index corresponding to this outcome:
                     IndexSS = SetScores.index(SetScore)
-                    IndexNG = NumberOfGames.index(NumGames)
 
                     # Assign the correct outcome to the respective leaf node:
                     SetScoresDist[IndexSS] = 1.
-                    NumGamesDist[IndexNG] = 1.
                     dist['SetScore'][Sequence] = SetScoresDist
-                    dist['NumGames'][Sequence] = NumGamesDist          
 
                 else: 
                     # Set went to 10- games
@@ -231,17 +186,13 @@ def TennisSetNetwork(P1S, P2S, InitServerDist = [0.5, 0.5]):
 
                     # Compute score and number of games:
                     SetScore = [iGames, jGames]
-                    NumGames = sum(SetScore)
 
                     # Find the index corresponding to this outcome:
                     IndexSS = SetScores.index(SetScore)
-                    IndexNG = NumberOfGames.index(NumGames)
 
                     # Assign the correct outcome to the respective leaf node:
                     SetScoresDist[IndexSS] = 1.
-                    NumGamesDist[IndexNG] = 1.
                     dist['SetScore'][Sequence] = SetScoresDist
-                    dist['NumGames'][Sequence] = NumGamesDist 
 
     # Set up initial information:
     info={}
@@ -249,4 +200,3 @@ def TennisSetNetwork(P1S, P2S, InitServerDist = [0.5, 0.5]):
         info[i] = choose(outcomes[i], "NotSure")
     
     return(nodes, dist, parents, outcomes, info)
-

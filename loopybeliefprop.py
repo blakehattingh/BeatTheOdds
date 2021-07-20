@@ -72,7 +72,7 @@ def beliefpropagation(nodes, dist, parents, outcomes, info, iterations, toleranc
     msg_f_to_v = {}
 
     variable_data, variable_adj, factor_data, factor_adj = factor_graph(nodes,parents,info)
-    
+
     for n in nodes:
         msg_v_to_f[n]={}
         msg_f_to_v[n]={}
@@ -104,6 +104,7 @@ def beliefpropagation(nodes, dist, parents, outcomes, info, iterations, toleranc
             converged=True
             for v in nodes:
                 conv=np.linalg.norm(previous[v]-variable_data[v])
+                # print(variable_data[v])
                 print("Conv = " + str(conv))
                 if conv>tolerance:
                     converged=False
@@ -116,7 +117,8 @@ def beliefpropagation(nodes, dist, parents, outcomes, info, iterations, toleranc
         #f to v
         for f in nodes:
             temp={}
-            
+            # print(f)
+            # print(factor_adj[f])
             if len(factor_adj[f])==1:
                 v=factor_adj[f][0]
                 msg_f_to_v[f][v]=M[f]
@@ -124,8 +126,10 @@ def beliefpropagation(nodes, dist, parents, outcomes, info, iterations, toleranc
                 count=1
                 div={}
                 for v in factor_adj[f]:
+                    # print(v)
                     div[v]=count
                     count*=info[v].size
+                    # print(count)
 
                 for v in factor_adj[f]:
                     temp=msg_f_to_v[f][v]
@@ -147,18 +151,11 @@ def beliefpropagation(nodes, dist, parents, outcomes, info, iterations, toleranc
                     msg_f_to_v[f][v]/=sum(msg_f_to_v[f][v])
                     if UsingVis:
                         msg_f_to_v[f][v] = ( Viscosity) * temp + (1. - Viscosity) * msg_f_to_v[f][v]
-    
-    # for v in nodes:
-    #    if (v == 'Set' or v == 'NumGames' or v == 'SetScore'):
-        # print(v+': Outcomes ',end='')
-        # print(outcomes[v],end='')
-        # print(', Distribution ',end='')
-        # print(variable_data[v])
 
     # Return the distributions of interest (usually the leaf nodes):
     ReturnDists = []
     for node in NodesToReturn:
-        ReturnDists.append(variable_data[node])
+        ReturnDists.append(variable_data[node].tolist())
     return ReturnDists
 
 

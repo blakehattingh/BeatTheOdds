@@ -2,15 +2,16 @@
 from loopybeliefprop import choose
 from AdditionalFunctions import combine_recursion, nth_index
 import numpy as np
+from OMalleysEqns import TB
  
-def TennisMatchNetwork2(P1S, P2S, P1TB, P2TB, FirstToSets):
+def TennisMatchNetwork2(P1S, P2S, FirstToSets):
     if (FirstToSets == 3):
         # Specify the names of the nodes in the Bayesian network
         nodes=['ServerOdd1','ServerEven1','Set1','NumGames1','SetScore1','G1','G2','G3','G4','G5','G6','G7','G8','G9','G10','G11',
         'G12','TB','ServerOdd2','ServerEven2','Set2','NumGames2','SetScore2','S2G1','S2G2','S2G3','S2G4','S2G5','S2G6','S2G7',
         'S2G8','S2G9','S2G10','S2G11', 'S2G12','S2TB','ServerOdd3','ServerEven3','Set3','NumGames3','SetScore3', 'S3G1','S3G2',
         'S3G3','S3G4','S3G5','S3G6','S3G7','S3G8','S3G9','S3G10','S3G11','S3G12','S3TB','Match','TotalNumGames','AllSetScores',
-        'NumSets']
+        'MatchScore']
 
         # Defining parent nodes:
         parents={}
@@ -72,9 +73,9 @@ def TennisMatchNetwork2(P1S, P2S, P1TB, P2TB, FirstToSets):
 
         # Set up the links to the output nodes:
         parents['Match'] = ['Set1', 'Set2', 'Set3']
-        parents['TotalNumGames'] = ['NumSets', 'NumGames1', 'NumGames2', 'NumGames3']
-        parents['AllSetScores'] = ['NumSets', 'SetScore1', 'SetScore2', 'SetScore3']
-        parents['NumSets'] = ['Set1', 'Set2', 'Set3']
+        parents['TotalNumGames'] = ['MatchScore', 'NumGames1', 'NumGames2', 'NumGames3']
+        parents['AllSetScores'] = ['MatchScore', 'SetScore1', 'SetScore2', 'SetScore3']
+        parents['MatchScore'] = ['Set1', 'Set2', 'Set3']
 
         # Set up the possible outcomes for each node:
         outcomes={}
@@ -137,11 +138,15 @@ def TennisMatchNetwork2(P1S, P2S, P1TB, P2TB, FirstToSets):
         outcomes['Match'] = [1,2]
         outcomes['TotalNumGames'] = list(range(12, 40))
         outcomes['AllSetScores'] = [1,2,3,4,5,6,7,8,9,10,11,12,13,14]
-        outcomes['NumSets'] = [2,3]
+        outcomes['MatchScore'] = [1,2,3,4]
 
         # Compute the probability of winning a game on serve from the on-serve point probabilities:
         P1G = pow(P1S, 4) * (15 - 4 * P1S - (10 * pow(P1S, 2) / (1 - 2 * P1S * (1 - P1S))))
         P2G = pow(P2S, 4) * (15 - 4 * P2S - (10 * pow(P2S, 2) / (1 - 2 * P2S * (1 - P2S))))
+
+        # Compute the probability of winning a TB starting with service:
+        P1TB = TB(P1S, 1 - P2S)
+        P2TB = TB(P2S, 1 - P1S)
 
         # Equal chance of each player serving the first game: (Can update if the toss has been done)
         dist={}
@@ -484,16 +489,16 @@ def TennisMatchNetwork2(P1S, P2S, P1TB, P2TB, FirstToSets):
         dist['Match'][2,2,1] = [0.,1.]
         dist['Match'][2,2,2] = [0.,1.]
 
-        # Number of Sets:
-        dist['NumSets'] = {}
-        dist['NumSets'][1,1,1] = [1.,0.]
-        dist['NumSets'][1,1,2] = [1.,0.]
-        dist['NumSets'][1,2,1] = [0.,1.]
-        dist['NumSets'][1,2,2] = [0.,1.]
-        dist['NumSets'][2,1,1] = [0.,1.]
-        dist['NumSets'][2,2,1] = [1.,0.]
-        dist['NumSets'][2,1,2] = [0.,1.]
-        dist['NumSets'][2,2,2] = [1.,0.]
+        # Match Score:
+        dist['MatchScore'] = {}
+        dist['MatchScore'][1,1,1] = [1.,0.,0.,0.]
+        dist['MatchScore'][1,1,2] = [1.,0.,0.,0.]
+        dist['MatchScore'][1,2,1] = [0.,1.,0.,0.]
+        dist['MatchScore'][1,2,2] = [0.,0.,0.,1.]
+        dist['MatchScore'][2,1,1] = [0.,1.,0.,0.]
+        dist['MatchScore'][2,2,1] = [0.,0.,1.,0.]
+        dist['MatchScore'][2,1,2] = [0.,0.,0.,1.]
+        dist['MatchScore'][2,2,2] = [0.,0.,1.,0.]
         
         # All Set Score distributions: 
         dist['AllSetScores'] = {}
@@ -505,14 +510,16 @@ def TennisMatchNetwork2(P1S, P2S, P1TB, P2TB, FirstToSets):
                             SetScoresDist = [0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.]
                             SetScoresDist[Set1-1] = SetScoresDist[Set1-1] + 1./2.
                             SetScoresDist[Set2-1] = SetScoresDist[Set2-1] + 1./2.
-                            dist['AllSetScores'][2, Set1, Set2, Set3] = SetScoresDist
+                            dist['AllSetScores'][1, Set1, Set2, Set3] = SetScoresDist
+                            dist['AllSetScores'][3, Set1, Set2, Set3] = SetScoresDist
 
                             # 3 Sets:
                             SetScoresDist = [0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.]
                             SetScoresDist[Set1-1] = SetScoresDist[Set1-1] + 1./3.
                             SetScoresDist[Set2-1] = SetScoresDist[Set2-1] + 1./3.
                             SetScoresDist[Set3-1] = SetScoresDist[Set3-1] + 1./3.
-                            dist['AllSetScores'][3, Set1, Set2, Set3] = SetScoresDist                           
+                            dist['AllSetScores'][2, Set1, Set2, Set3] = SetScoresDist                           
+                            dist['AllSetScores'][4, Set1, Set2, Set3] = SetScoresDist                           
 
         # Total Number of Games distributions:
         dist['TotalNumGames'] = {}
@@ -523,13 +530,15 @@ def TennisMatchNetwork2(P1S, P2S, P1TB, P2TB, FirstToSets):
                             TotalGamesDist = np.zeros(28, dtype = float)
                             TotalGames = Games1 + Games2
                             TotalGamesDist[TotalGames-12] = 1.                      
-                            dist['TotalNumGames'][2, Games1, Games2, Games3] = TotalGamesDist
+                            dist['TotalNumGames'][1, Games1, Games2, Games3] = TotalGamesDist
+                            dist['TotalNumGames'][3, Games1, Games2, Games3] = TotalGamesDist
 
                             # Case of 3 sets:
                             TotalGamesDist = np.zeros(28, dtype = float)
                             TotalGames = TotalGames + Games3
                             TotalGamesDist[TotalGames-12] = 1.
-                            dist['TotalNumGames'][3, Games1, Games2, Games3] = TotalGamesDist
+                            dist['TotalNumGames'][2, Games1, Games2, Games3] = TotalGamesDist
+                            dist['TotalNumGames'][4, Games1, Games2, Games3] = TotalGamesDist
 
     # If match is best of 5 sets:
     if (FirstToSets == 5):
@@ -540,7 +549,7 @@ def TennisMatchNetwork2(P1S, P2S, P1TB, P2TB, FirstToSets):
             'S3G3','S3G4','S3G5','S3G6','S3G7','S3G8','S3G9','S3G10','S3G11','S3G12','S3TB','ServerOdd4','ServerEven4','Set4',
             'NumGames4','SetScore4', 'S4G1','S4G2','S4G3','S4G4','S4G5','S4G6','S4G7','S4G8','S4G9','S4G10','S4G11','S4G12','S4TB', 
             'ServerOdd5','ServerEven5','Set5','NumGames5','SetScore5', 'S5G1','S5G2','S5G3','S5G4','S5G5','S5G6','S5G7','S5G8','S5G9',
-            'S5G10','S5G11','S5G12','S5TB','Match','TotalNumGames','AllSetScores', 'NumSets'] 
+            'S5G10','S5G11','S5G12','S5TB','Match','TotalNumGames','AllSetScores', 'MatchScore'] 
 
         # Defining parent nodes:
         parents={}
@@ -638,9 +647,9 @@ def TennisMatchNetwork2(P1S, P2S, P1TB, P2TB, FirstToSets):
 
         # Set up the links to the output nodes:
         parents['Match'] = ['Set1', 'Set2', 'Set3', 'Set4', 'Set5']
-        parents['TotalNumGames'] = ['NumSets', 'NumGames1', 'NumGames2', 'NumGames3', 'NumGames4', 'NumGames5']
-        parents['AllSetScores'] = ['NumSets', 'SetScore1', 'SetScore2', 'SetScore3', 'SetScore4', 'SetScore5']
-        parents['NumSets'] = ['Set1', 'Set2', 'Set3', 'Set4', 'Set5']
+        parents['TotalNumGames'] = ['MatchScore', 'NumGames1', 'NumGames2', 'NumGames3', 'NumGames4', 'NumGames5']
+        parents['AllSetScores'] = ['MatchScore', 'SetScore1', 'SetScore2', 'SetScore3', 'SetScore4', 'SetScore5']
+        parents['MatchScore'] = ['Set1', 'Set2', 'Set3', 'Set4', 'Set5']
 
         # Set up the possible outcomes for each node:
         outcomes={}
@@ -739,11 +748,15 @@ def TennisMatchNetwork2(P1S, P2S, P1TB, P2TB, FirstToSets):
         outcomes['Match'] = [1,2]
         outcomes['TotalNumGames'] = list(range(18, 66))
         outcomes['AllSetScores'] = [1,2,3,4,5,6,7,8,9,10,11,12,13,14]
-        outcomes['NumSets'] = [3,4,5]
+        outcomes['MatchScore'] = [1,2,3,4,5,6]
 
         # Compute the probability of winning a game on serve from the on-serve point probabilities:
         P1G = pow(P1S, 4) * (15 - 4 * P1S - (10 * pow(P1S, 2) / (1 - 2 * P1S * (1 - P1S))))
         P2G = pow(P2S, 4) * (15 - 4 * P2S - (10 * pow(P2S, 2) / (1 - 2 * P2S * (1 - P2S))))
+
+        # Compute the probability of winning a TB starting with service:
+        P1TB = TB(P1S, 1 - P2S)
+        P2TB = TB(P2S, 1 - P1S)
 
         # Equal chance of each player serving the first game: (Can update if the toss has been done)
         dist={}
@@ -1213,18 +1226,18 @@ def TennisMatchNetwork2(P1S, P2S, P1TB, P2TB, FirstToSets):
                         dist['SetScore4'][Sequence] = SetScoresDist
                         dist['SetScore5'][Sequence] = SetScoresDist
     
-        # Match and number of sets distributions:
+        # Match and the match score distributions:
         dist['Match']={}
-        dist['NumSets'] = {}
+        dist['MatchScore'] = {}
         dist['Match'][1,1,1,1,1] = [1.,0.]
-        dist['NumSets'][1,1,1,1,1] = [1.,0.,0.]     
+        dist['MatchScore'][1,1,1,1,1] = [1.,0.,0.,0.,0.,0.]     
         for i in range(1,6):
             Seqs = combine_recursion(5,i)
 
             for j in Seqs:
                 # Reset Sequences and distributions:
                 InitialSeq = [1,1,1,1,1]
-                NumSetsDist = [0., 0., 0.]
+                MatchScoreDist = [0., 0., 0., 0., 0., 0.]
 
                 # Place the '2's in each possible combination:
                 for games in j:
@@ -1237,15 +1250,15 @@ def TennisMatchNetwork2(P1S, P2S, P1TB, P2TB, FirstToSets):
                     dist['Match'][Sequence] = [1.,0.]
                     # Find the index of the 3rd set that player 1 won:
                     Set = nth_index(Sequence, 1, 3)
-                    NumSetsDist[Set-2] = 1.
-                    dist['NumSets'][Sequence] = NumSetsDist
+                    MatchScoreDist[Set-2] = 1.
+                    dist['MatchScore'][Sequence] = MatchScoreDist
                 else:
                     # Player 2 won:
                     dist['Match'][Sequence] = [0.,1.]
                     # Find the index of the 3rd set that player 2 won:
                     Set = nth_index(Sequence, 2, 3)
-                    NumSetsDist[Set-2] = 1.
-                    dist['NumSets'][Sequence] = NumSetsDist
+                    MatchScoreDist[Set+1] = 1.
+                    dist['MatchScore'][Sequence] = MatchScoreDist
         
         # All Set Score distributions: 
         dist['AllSetScores'] = {}
@@ -1260,7 +1273,8 @@ def TennisMatchNetwork2(P1S, P2S, P1TB, P2TB, FirstToSets):
                                     SetScoresDist[Set1-1] = SetScoresDist[Set1-1] + 1./3.
                                     SetScoresDist[Set2-1] = SetScoresDist[Set2-1] + 1./3.
                                     SetScoresDist[Set3-1] = SetScoresDist[Set3-1] + 1./3.
-                                    dist['AllSetScores'][3, Set1, Set2, Set3, Set4, Set5] = SetScoresDist
+                                    dist['AllSetScores'][1, Set1, Set2, Set3, Set4, Set5] = SetScoresDist
+                                    dist['AllSetScores'][4, Set1, Set2, Set3, Set4, Set5] = SetScoresDist
 
                                     # 4 Sets:
                                     SetScoresDist = [0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.]
@@ -1268,7 +1282,8 @@ def TennisMatchNetwork2(P1S, P2S, P1TB, P2TB, FirstToSets):
                                     SetScoresDist[Set2-1] = SetScoresDist[Set2-1] + 1./4.
                                     SetScoresDist[Set3-1] = SetScoresDist[Set3-1] + 1./4.
                                     SetScoresDist[Set4-1] = SetScoresDist[Set4-1] + 1./4.
-                                    dist['AllSetScores'][4, Set1, Set2, Set3, Set4, Set5] = SetScoresDist
+                                    dist['AllSetScores'][2, Set1, Set2, Set3, Set4, Set5] = SetScoresDist
+                                    dist['AllSetScores'][5, Set1, Set2, Set3, Set4, Set5] = SetScoresDist
 
                                     # 5 Sets:
                                     SetScoresDist = [0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.]
@@ -1277,7 +1292,8 @@ def TennisMatchNetwork2(P1S, P2S, P1TB, P2TB, FirstToSets):
                                     SetScoresDist[Set3-1] = SetScoresDist[Set3-1] + 1./5.
                                     SetScoresDist[Set4-1] = SetScoresDist[Set4-1] + 1./5.
                                     SetScoresDist[Set5-1] = SetScoresDist[Set5-1] + 1./5.
-                                    dist['AllSetScores'][5, Set1, Set2, Set3, Set4, Set5] = SetScoresDist
+                                    dist['AllSetScores'][3, Set1, Set2, Set3, Set4, Set5] = SetScoresDist
+                                    dist['AllSetScores'][6, Set1, Set2, Set3, Set4, Set5] = SetScoresDist
                            
         # Total Number of Games distributions:
         dist['TotalNumGames'] = {}
@@ -1290,19 +1306,22 @@ def TennisMatchNetwork2(P1S, P2S, P1TB, P2TB, FirstToSets):
                                         # Case of 3 sets:
                                         TotalGames = Games1 + Games2 + Games3
                                         TotalGamesDist[TotalGames-18] = 1.                                             
-                                        dist['TotalNumGames'][3, Games1, Games2, Games3, Games4, Games5] = TotalGamesDist
+                                        dist['TotalNumGames'][1, Games1, Games2, Games3, Games4, Games5] = TotalGamesDist
+                                        dist['TotalNumGames'][4, Games1, Games2, Games3, Games4, Games5] = TotalGamesDist
                                         TotalGamesDist = np.zeros(48, dtype = float)
 
                                         # Case of 4 sets:
                                         TotalGames = TotalGames + Games4
                                         TotalGamesDist[TotalGames-18] = 1.                                             
-                                        dist['TotalNumGames'][4, Games1, Games2, Games3, Games4, Games5] = TotalGamesDist
+                                        dist['TotalNumGames'][2, Games1, Games2, Games3, Games4, Games5] = TotalGamesDist
+                                        dist['TotalNumGames'][5, Games1, Games2, Games3, Games4, Games5] = TotalGamesDist
                                         TotalGamesDist = np.zeros(48, dtype = float)
 
                                         # Case of 5 sets:
                                         TotalGames = TotalGames + Games5
                                         TotalGamesDist[TotalGames-18] = 1.                                             
-                                        dist['TotalNumGames'][5, Games1, Games2, Games3, Games4, Games5] = TotalGamesDist
+                                        dist['TotalNumGames'][3, Games1, Games2, Games3, Games4, Games5] = TotalGamesDist
+                                        dist['TotalNumGames'][6, Games1, Games2, Games3, Games4, Games5] = TotalGamesDist
                                         TotalGamesDist = np.zeros(48, dtype = float)
               
     # Set up initial information:
