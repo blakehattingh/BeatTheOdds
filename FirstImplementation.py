@@ -53,9 +53,9 @@ def MarkovModelFirstImplementation(P1S, P2S, FirstToSets, FirstToTBPoints, Visco
         Iterations, Tol, ['Match','MatchScore','TotalNumGames','AllSetScores'], Viscosity)
         
         # Non-Efficient Version:
-        # [nodes, dist, parents, outcomes, info] = TennisMatchNetwork1(SetDists, SetScoreDists, NumGamesDists, 3)
-        # [MatchDist,NumSetsDist,TotalNumGamesDist,AllSetScoresDist] = beliefpropagation(nodes, dist, parents, outcomes, info, 
-        # Iterations, Tol, ['Match','NumSets','TotalNumGames','AllSetScores'], Viscosity)
+        #[nodes, dist, parents, outcomes, info] = TennisMatchNetwork1(SetDists, SetScoreDists, NumGamesDists, 3)
+        #[MatchDist,NumSetsDist,TotalNumGamesDist,AllSetScoresDist] = beliefpropagation(nodes, dist, parents, outcomes, info, 
+        #Iterations, Tol, ['Match','NumSets','TotalNumGames','AllSetScores'], Viscosity)
 
         # Return the leaf node distributions:
         return MatchDist, NumSetsDist, TotalNumGamesDist, AllSetScoresDist

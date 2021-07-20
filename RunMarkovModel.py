@@ -35,8 +35,8 @@ def main():
 
     if (Approach == 1):
         # Implementation 1:
-        '''
         # Run the Markov Model using the first approach:
+        '''
         [MatchDist, NumSetsDist, TotalNumGamesDist, AllSetScoresDist] = RunMarkovModel(P1S,P2S,3,7,Approach,Viscosity)
         print('Match Distribution: ', end = '')
         print(MatchDist)
