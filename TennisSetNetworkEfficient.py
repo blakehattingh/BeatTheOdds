@@ -10,38 +10,22 @@ def TennisSetNetworkEfficient(P1S, P2S, InitServerDist = [0.5, 0.5]):
     # Defining parent nodes:
     parents={}
     parents['ServerEven']=['ServerOdd']
-    parents['G1']=['ServerOdd']
-    parents['G2']=['ServerEven']
-    parents['G3']=['ServerOdd']
-    parents['G4']=['ServerEven']
-    parents['G5']=['ServerOdd']
-    parents['G6']=['ServerEven']
-    parents['G7']=['ServerOdd']
-    parents['G8']=['ServerEven']
-    parents['G9']=['ServerOdd']
-    parents['G10']=['ServerEven']
-    parents['G11']=['ServerOdd']
-    parents['G12']=['ServerEven']
-    parents['TB']=['ServerOdd']
+    GameNodes = ['G1','G2','G3','G4','G5','G6','G7','G8','G9','G10','G11','G12','TB']
+    EvenGames = ['G2','G4','G6','G8','G10','G12']
+    OddGames = ['G1','G3','G5','G7','G9','G11','TB']
+    for node in GameNodes:
+        if (node in OddGames):
+            parents[node] = ['ServerOdd']
+        else:
+            parents[node] = ['ServerEven']
     parents['SetScore']=['G1', 'G2', 'G3', 'G4','G5','G6', 'G7', 'G8', 'G9', 'G10', 'G11', 'G12', 'TB']
 
     # Set up the possible outcomes for each node:
     outcomes={}
     outcomes['ServerOdd']=["P1Serves","P2Serves"]
     outcomes['ServerEven']=["P1Serves","P2Serves"]
-    outcomes['G1']=[1,2]
-    outcomes['G2']=[1,2]
-    outcomes['G3']=[1,2]
-    outcomes['G4']=[1,2]
-    outcomes['G5']=[1,2]
-    outcomes['G6']=[1,2]
-    outcomes['G7']=[1,2]
-    outcomes['G8']=[1,2]
-    outcomes['G9']=[1,2]
-    outcomes['G10']=[1,2]
-    outcomes['G11']=[1,2]
-    outcomes['G12']=[1,2]
-    outcomes['TB']=[1,2]
+    for node in GameNodes:
+        outcomes[node] = [1, 2]
     outcomes['SetScore']=[1,2,3,4,5,6,7,8,9,10,11,12,13,14]
 
     # Compute the probability of winning a game on serve from the on-serve point probabilities:
@@ -52,61 +36,26 @@ def TennisSetNetworkEfficient(P1S, P2S, InitServerDist = [0.5, 0.5]):
     P1TB = TB(P1S, 1 - P2S)
     P2TB = TB(P2S, 1 - P1S)
 
-    # Equal chance of each player serving the first game: (Can update if the toss has been done)
+    # Set up dictionaries for each game:
     dist={}
+    for node in nodes:
+        dist[node] = {}
+
+    # Equal chance of each player serving the first game: (Can update if the toss has been done)
     dist['ServerOdd'] = InitServerDist
-    dist['ServerEven'] = {}
     dist['ServerEven']["P1Serves"] = [0.,1.]
     dist['ServerEven']["P2Serves"] = [1.,0.]
 
-    # Set up dictionaries for each game:
-    dist['G1']={}
-    dist['G2']={}
-    dist['G3']={}
-    dist['G4']={}
-    dist['G5']={}
-    dist['G6']={}
-    dist['G7']={}
-    dist['G8']={}
-    dist['G9']={}
-    dist['G10']={}
-    dist['G11']={}
-    dist['G12']={}
-    dist['TB']={}
-    
     # Define the probabilities for each game, given the server:
-    # Player 1 serving:
-    dist['G1']["P1Serves"]=[P1G,1.-P1G]
-    dist['G2']["P1Serves"]=[P1G,1.-P1G]
-    dist['G3']["P1Serves"]=[P1G,1.-P1G]
-    dist['G4']["P1Serves"]=[P1G,1.-P1G]
-    dist['G5']["P1Serves"]=[P1G,1.-P1G]
-    dist['G6']["P1Serves"]=[P1G,1.-P1G]
-    dist['G7']["P1Serves"]=[P1G,1.-P1G]
-    dist['G8']["P1Serves"]=[P1G,1.-P1G]
-    dist['G9']["P1Serves"]=[P1G,1.-P1G]
-    dist['G10']["P1Serves"]=[P1G,1.-P1G]
-    dist['G11']["P1Serves"]=[P1G,1.-P1G]
-    dist['G12']["P1Serves"]=[P1G,1.-P1G]
-    dist['TB']["P1Serves"]=[P1TB,1.-P1TB]
-
-    # Player 2 serving:
-    dist['G1']["P2Serves"]=[1.-P2G,P2G]
-    dist['G2']["P2Serves"]=[1.-P2G,P2G]
-    dist['G3']["P2Serves"]=[1.-P2G,P2G]
-    dist['G4']["P2Serves"]=[1.-P2G,P2G]
-    dist['G5']["P2Serves"]=[1.-P2G,P2G]
-    dist['G6']["P2Serves"]=[1.-P2G,P2G]
-    dist['G7']["P2Serves"]=[1.-P2G,P2G]
-    dist['G8']["P2Serves"]=[1.-P2G,P2G]
-    dist['G9']["P2Serves"]=[1.-P2G,P2G]
-    dist['G10']["P2Serves"]=[1.-P2G,P2G]
-    dist['G11']["P2Serves"]=[1.-P2G,P2G]
-    dist['G12']["P2Serves"]=[1.-P2G,P2G]
-    dist['TB']["P2Serves"]=[1.-P2TB,P2TB]
+    for node in GameNodes:
+        if (node == 'TB'):
+            dist[node]["P1Serves"] = [P1TB, 1. - P1TB]
+            dist[node]["P2Serves"] = [1. - P2TB, P2TB]
+        else:
+            dist[node]["P1Serves"] = [P1G, 1. - P1G]
+            dist[node]["P2Serves"] = [1. - P2G, P2G]
 
     # Define the possible outcomes of the set, given a sequence of outcomes from all 12 games and the TB:
-    dist['SetScore']={}
     dist['SetScore'][1,1,1,1,1,1,1,1,1,1,1,1,1] = [1., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.]
 
     # Possible Set Scores and Number of Games:

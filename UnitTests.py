@@ -1,33 +1,36 @@
+from typing import Set
 from TennisMatchNetwork1Efficient import TennisMatchNetwork1Efficient
 from TennisMatchNetwork1 import TennisMatchNetwork1
 from RunMarkovModel import RunMarkovModel
-from TennisSetNetwork import TennisSetNetwork
+from TennisSetNetworkEfficient import TennisSetNetworkEfficient
 from TennisMatchNetwork2 import TennisMatchNetwork2
+from loopybeliefprop import beliefpropagation
 import sys
 import numpy as np
 
 # This script is a test suite for all the unit tests for functions contributing to our Markov Model.
 
 # Functions to test:
-# 1) ComputeTBProbabilities (Additional Functions)
-# 2) TennisSetNetwork
-# 3) TennisMatchNetwork1
-# 4) TennisMatchNetwork2
-# 5) RunMarkovModel
-
-# Testing ComputeTBProbabilities:
-# 1) Tests if the correct TB probabilities (approximately) are returned for a given P1S and P2S
+# 1) TennisSetNetwork (Done)
+# 2) TennisMatchNetwork1 (Not Complete)
+# 3) TennisMatchNetwork2 (Not Complete)
+# 4) RunMarkovModel (Not Complete)
+# 5) FirstImplementation (Not Complete)
 
 # Testing TennisSetNetwork:
-# 2Set) Tests if the 'Set' node has the correct distributions for a given sequence of game outcomes.
-# 2SetScore) Tests if the 'SetScore' node has the correct distributions for a given sequence of game outcomes.
-# 2NumGames) Tests if the 'NumGames' node has the correct distributions for a given sequence of game outcomes.
-
+# 1Set) Tests if the 'Set' node has the correct distributions for a given sequence of game outcomes.
+# 1SetScore) Tests if the 'SetScore' node has the correct distributions for a given sequence of game outcomes.
+# 1NumGames) Tests if the 'NumGames' node has the correct distributions for a given sequence of game outcomes.
+# 1SetUp) Tests the general set up of the network.
+# 1Network) Checks the network gives qualitatively correct distributions for specific p values.
+# 1SetScoreAdv) Allows the user to input their own sequence of games and expected set score distribution to test.
+# 1SetEvents) Tests if the network responds qualitatively accurately when events are set fixed.
+            
 # Testing TennisMatchNetwork1:
 # a. and and b. for 3 and 5 sets respectively.
-# 3Network) Tests the general Network set up.
+# 3SetUp) Tests the general Network set up.
 # 3Match) Tests if the 'Match' node has the correct distributions for a given sequence of set outcomes.
-# 3NumSets) Tests if the 'NumSets' node has the correct distributions for a given sequence of set outcomes.
+# 3MatchScore) Tests if the 'MatchScore' node has the correct distributions for a given sequence of set outcomes.
 # 3TotalNumGames) Tests if the 'TotalNumGames' node has the correct distributions for a given sequence of NumSets and Number of games.
 # 3AllSetScores) Tests if the 'AllSetScores' node has the correct distributions for a given sequence of set scores.
 
@@ -46,20 +49,25 @@ import numpy as np
 # 5c) Tests if the first implementation returns qualitatively conrrect distributions when P2S >> P1S
 # 5d) Tests if the second implementation returns qualitatively conrrect distributions when P2S >> P1S
 
-# 3) 
-
 def TestSuite():
-    Test1 = False
+    Test1 = True
     Test2 = False
     Test3 = False
-    Test4 = True
+    Test4 = False
 
     if Test1:
-        UnitTest1()
+        # UnitTest1Set()
+        # UnitTest1NumGames()
+        UnitTest1SetScores()
+        UnitTest1SetUp()
+        UnitTest1Network()
+        UnitTest1SetScoreAdv()
+        # UnitTest1SetEvents()
     if Test2: 
-        UnitTest2Set()
-        UnitTest2SetScores()
-        UnitTest2NumGames()
+        #UnitTest2Set()
+        #UnitTest2SetScores()
+        #UnitTest2NumGames()
+        x = 10
     if Test3:
         UnitTest3Network()
         UnitTest3Match()
@@ -99,7 +107,7 @@ def UnitTest1():
     else:
         print('Test 1b Failed')
 
-def UnitTest2Set():
+def UnitTest1Set():
     # Set up a "Set Network":
     [nodes, dist, parents, outcomes, info] = TennisSetNetwork(0.8, 0.6, 0.85, 0.15)
     
@@ -119,43 +127,120 @@ def UnitTest2Set():
     else:
         print('2. Set Test Passed')
 
-def UnitTest2SetScores():
+def UnitTest1SetScores():
     # Set up a "Set Network":
-    [nodes, dist, parents, outcomes, info] = TennisSetNetwork(0.8, 0.6, 0.85, 0.15)
+    [nodes, dist, parents, outcomes, info] = TennisSetNetworkEfficient(0.8, 0.6)
     SetScores = ["6-0","6-1","6-2","6-3","6-4","7-5","7-6","0-6","1-6","2-6","3-6","4-6","5-7","6-7"]
 
     # Check several different scorelines get the correct set score:
     if (dist['SetScore'][1,1,1,1,1,2,2,2,2,2,2,2,2] != [0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,1.,0.]): # Set Score = 5-7
-        print('2. Set Scores Test Failed')
+        print('1. Set Scores Test Failed')
     elif (dist['SetScore'][2,2,2,2,2,1,1,1,1,1,1,1,1] != [0.,0.,0.,0.,0.,1.,0.,0.,0.,0.,0.,0.,0.,0.]): # Set Score = 7-5
-        print('2. Set Scores Test Failed')
+        print('1. Set Scores Test Failed')
     elif (dist['SetScore'][1,2,1,2,1,2,1,2,1,2,1,2,2] != [0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,1.]): # Set Score = 6-7
-        print('2. Set Scores Test Failed')
+        print('1. Set Scores Test Failed')
     elif (dist['SetScore'][2,2,1,2,1,2,1,1,1,1,1,1,1] != [0.,0.,0.,0.,1.,0.,0.,0.,0.,0.,0.,0.,0.,0.]): # Set Score = 6-4
-        print('2. Set Scores Test Failed')
+        print('1. Set Scores Test Failed')
     elif (dist['SetScore'][1,1,2,2,2,2,1,1,2,1,1,2,1] != [0.,0.,0.,0.,0.,0.,1.,0.,0.,0.,0.,0.,0.,0.]): # Set Score = 7-6
-        print('2. Set Scores Test Failed')
+        print('1. Set Scores Test Failed')
     else:
-        print('2. Set Scores Test Passed')
+        print('1. Set Scores Test Passed')
 
-def UnitTest2NumGames():
+def UnitTest1NumGames():
     # Set up a "Set Network":
-    [nodes, dist, parents, outcomes, info] = TennisSetNetwork(0.8, 0.6, 0.85, 0.15)
+    [nodes, dist, parents, outcomes, info] = TennisSetNetworkEfficient(0.8, 0.6)
     NumGames = [6, 7, 8, 9, 10, 12, 13]
 
     # Check several different scorelines get the correct set score:
     if (dist['NumGames'][1,1,1,1,1,2,2,2,2,2,2,2,2] != [0.,0.,0.,0.,0.,1.,0.]): # Number of games = 12
-        print('2. Number of Games Test Failed')
+        print('1. Number of Games Test Failed')
     elif (dist['NumGames'][2,2,2,2,2,1,1,1,1,1,1,1,1] != [0.,0.,0.,0.,0.,1.,0.]): #  Number of games = 12
-        print('2. Number of Games Failed')
+        print('1. Number of Games Failed')
     elif (dist['NumGames'][1,2,1,2,1,2,1,2,1,2,1,2,2] != [0.,0.,0.,0.,0.,0.,1.]): #  Number of games = 13
-        print('2. Number of Games Test Failed')
+        print('1. Number of Games Test Failed')
     elif (dist['NumGames'][2,2,1,2,1,2,1,1,1,1,1,1,1] != [0.,0.,0.,0.,1.,0.,0.]): #  Number of games = 10
-        print('2. Number of Games Test Failed')
+        print('1. Number of Games Test Failed')
     elif (dist['NumGames'][1,1,1,2,2,1,1,1,1,1,1,1,1] != [0.,0.,1.,0.,0.,0.,0.]): #  Number of games = 8
-        print('2. Number of Games Test Failed')
+        print('1. Number of Games Test Failed')
     else:
-        print('2. Number of Games Test Passed')    
+        print('1. Number of Games Test Passed')    
+
+def UnitTest1SetUp():
+    # Set up a "Set Network":
+    [nodes, dist, parents, outcomes, info] = TennisSetNetworkEfficient(0.8, 0.6)
+
+    # Check parents of game nodes:
+    if (parents['G4'] != ['ServerEven']):
+        print('1. Parents of Game Nodes Failed a')
+    elif (parents['TB'] != ['ServerOdd']):
+        print('1. Parents of Game Nodes Failed b')
+    elif (len(parents['SetScore']) != 13):
+        print('1. Parents of Game Nodes Failed c')
+    else:
+        print('1. Parents of Game Nodes Passed')
+
+def UnitTest1Network():
+    # Check the network gives suitable winners based off the p values inputted:
+
+    # Scenario 1: Player 1 > Player 2
+    [nodes, dist, parents, outcomes, info] = TennisSetNetworkEfficient(0.8, 0.6)
+    [SetScoreDist] = beliefpropagation(nodes,dist,parents,outcomes,info,100,0.001,['SetScore'])
+    if (sum(SetScoreDist[0:7]) <= sum(SetScoreDist[7:14])):
+        print('1. Output Distributions Test Failed a')
+    elif (SetScoreDist[6] > SetScoreDist[5]):
+        print('1. Output Distributions Test Failed b')
+    else:
+        print('1. Output Distributions Test Scenario 1 Passed')
+    
+    # Scenario 2: Player 1 = Player 2
+    [nodes, dist, parents, outcomes, info] = TennisSetNetworkEfficient(0.65, 0.65)
+    [SetScoreDist] = beliefpropagation(nodes,dist,parents,outcomes,info,100,0.0001,['SetScore'])
+    if (abs(sum(SetScoreDist[0:7]) - sum(SetScoreDist[7:14])) > 0.001):
+        print('1. Output Distributions Test Failed a')
+    elif (SetScoreDist[1] > SetScoreDist[6]):
+        print('1. Output Distributions Test Failed b')
+    elif (abs(SetScoreDist[2] - SetScoreDist[9]) > 0.001):
+        print('1. Output Distributions Test Failed c')
+    else:
+        print('1. Output Distributions Test Scenario 2 Passed')
+
+def UnitTest1SetScoreAdv():
+    Game = 0
+    Wins1 = 0
+    Wins2 = 0
+    Sequence = [1,1,1,1,1,1,1,1,1,1,1,1,1]
+    GameOver = [[6,0],[6,1],[6,2],[6,3],[6,4],[7,5],[7,6],[0,6],[1,6],[2,6],[3,6],[4,6],[5,7],[6,7]]
+    Distribution = np.zeros(14, dtype = float)
+    while ([Wins1,Wins2] not in GameOver):
+        Game += 1
+        GameWinner = int(input('Please enter the winner of game {}: '.format(Game)))
+        if (GameWinner == 1):
+            Wins1 += 1
+        elif (GameWinner == 2):
+            Wins2 += 1
+        else:
+            while (GameWinner == 1 or GameWinner == 2):
+                GameWinner = int(input('Enter 1 or 2 you idiot: '))
+        Sequence[Game-1] = GameWinner
+        print('Current Score is: {}-{}'.format(Wins1, Wins2))
+    print('Checking network assigns the correct Set Score')
+
+    # Update Set Score distribution:
+    Distribution[GameOver.index([Wins1,Wins2])] = 1.
+
+    # Set up a "Set Network":
+    [nodes, dist, parents, outcomes, info] = TennisSetNetworkEfficient(0.7, 0.7)
+
+    Sequence = tuple(Sequence)
+    if ((dist['SetScore'][Sequence] == Distribution).all()):
+        print('1. Set Score Advanced Test Passed')
+    else:
+        print('1. Set Score Advanced Test Failed')
+        print(dist['SetScore'][Sequence])
+
+def UnitTest1SetEvents():
+    # Need to modify the network to allow events to be fixed
+    x = 69
 
 def UnitTest3Network():
     SetDists = [np.array([0.51471958, 0.48528042]), np.array([0.51495612, 0.48504388]), np.array([0.51473445, 0.48526555]),
