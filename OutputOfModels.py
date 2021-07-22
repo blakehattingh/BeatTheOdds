@@ -87,7 +87,7 @@ def plotMatchOutcome(matchDist3A1, matchDist3A2):
     labelLocation = np.arange(len(serverTitles))
     width = 0.25
     figMatch, axes = plt.subplots(1, 3,sharey=True, figsize = [18, 12])
-    figMatch.suptitle('Probability Distributions for match outcome')
+    figMatch.suptitle('Probability Distributions for match outcome', fontsize = 25)
 
     player1WinsDists = [matchDist3A1[0][0],matchDist3A1[1][0],matchDist3A1[2][0]]
     player2WinsDists = [matchDist3A1[0][1],matchDist3A1[1][1],matchDist3A1[2][1]]
@@ -108,26 +108,26 @@ def plotMatchOutcome(matchDist3A1, matchDist3A2):
     rects2Diffs = axes[2].bar(labelLocation+width,player2WinsDiffs, width, color='cornflowerblue')
 
 
-    axes[0].legend((rects1[0], rects2[0]), ('Player 1', 'Player 2'))
-    axes[0].set_ylabel('Probability')
-    axes[0].set_xlabel('Serve Probability Differences')
-    axes[0].set_title('Algorithm 1 - first to 3 sets')
+    axes[0].legend((rects1[0], rects2[0]), ('Player 1', 'Player 2'), fontsize = 25)
+    axes[0].set_ylabel('Probability', fontsize = 25)
+    axes[0].set_xlabel('Serve Probability Differences', fontsize = 25)
+    axes[0].set_title('Algorithm 1 - first to 3 sets', fontsize = 25)
     axes[0].set_xticks(labelLocation + width / 2)
-    axes[0].set_xticklabels(('0.01','0.05','0.1'))
+    axes[0].set_xticklabels(('0.01','0.05','0.1'), fontsize = 25)
 
-    axes[1].legend((rects13S2A[0], rects23S2A[0]), ('Player 1', 'Player 2'))
-    axes[1].set_ylabel('Probability')
-    axes[1].set_xlabel('Serve Probability Differences')
-    axes[1].set_title('Algorithm 2 - first to 3 sets')
+    axes[1].legend((rects13S2A[0], rects23S2A[0]), ('Player 1', 'Player 2'), fontsize = 25)
+    axes[1].set_ylabel('Probability', fontsize = 25)
+    axes[1].set_xlabel('Serve Probability Differences', fontsize = 25)
+    axes[1].set_title('Algorithm 2 - first to 3 sets', fontsize = 25)
     axes[1].set_xticks(labelLocation + width / 2)
-    axes[1].set_xticklabels(('0.01','0.05','0.1'))
+    axes[1].set_xticklabels(('0.01','0.05','0.1'), fontsize = 25)
 
-    axes[2].legend((rects1Diffs[0], rects2Diffs[0]), ('Player 1', 'Player 2'))
-    axes[2].set_ylabel('Difference in Probability')
-    axes[2].set_xlabel('Serve Probability Differences')
-    axes[2].set_title('Difference in predictions between algorithms')
+    axes[2].legend((rects1Diffs[0], rects2Diffs[0]), ('Player 1', 'Player 2'), fontsize = 25)
+    axes[2].set_ylabel('Difference in Probability', fontsize = 25)
+    axes[2].set_xlabel('Serve Probability Differences', fontsize = 25)
+    axes[2].set_title('Difference in predictions between algorithms', fontsize = 25)
     axes[2].set_xticks(labelLocation + width / 2)
-    axes[2].set_xticklabels(('0.01','0.05','0.1'))
+    axes[2].set_xticklabels(('0.01','0.05','0.1'), fontsize = 25)
 
     plt.savefig('matchOutcomeDistribution.png')
 
@@ -263,7 +263,7 @@ def plotMatchScore(MatchScoreData3S1A,MatchScoreData3S2A):
 
 
     figSet, axesSet = plt.subplots(1, 3,sharey=True, figsize = [20, 12])
-    figSet.suptitle('Probability Distributions for MatchScore', fontsize=20)
+    figSet.suptitle('Probability Distributions for Match Score', fontsize=25)
 
     rectsMatchScore1 = axesSet[0].bar(labelLocation3Sets-width,twoZeroDists3S1A, width, color='slateblue')
     rectsMatchScore2 = axesSet[0].bar(labelLocation3Sets,twoOneDists3S1A, width, color='navy')
@@ -281,26 +281,26 @@ def plotMatchScore(MatchScoreData3S1A,MatchScoreData3S2A):
     rects3Diffs = axesSet[2].bar(labelLocation3Sets+(2*width),oneTwoDiffs, width, color='lightsteelblue')
 
 
-    axesSet[0].legend((rectsMatchScore1[0], rectsMatchScore2[0], rectsMatchScore3[0], rectsMatchScore4[0] ), ('2-0', '2-1','0-2', '1-2'), fontsize=15)
-    axesSet[0].set_ylabel('Probability', fontsize=15)
-    axesSet[0].set_xlabel('Serve Probability Differences', fontsize=15)
-    axesSet[0].set_title('Algorithm 1 - first to 3 sets', fontsize=15)
+    axesSet[0].legend((rectsMatchScore1[0], rectsMatchScore2[0], rectsMatchScore3[0], rectsMatchScore4[0] ), ('2-0', '2-1','0-2', '1-2'), fontsize=18)
+    axesSet[0].set_ylabel('Probability', fontsize=18)
+    axesSet[0].set_xlabel('Serve Probability Differences', fontsize=18)
+    axesSet[0].set_title('Algorithm 1 - first to 3 sets', fontsize=18)
     axesSet[0].set_xticks(labelLocation3Sets + width / 2)
-    axesSet[0].set_xticklabels(('0.01','0.05','0.1'), fontsize=15)
+    axesSet[0].set_xticklabels(('0.01','0.05','0.1'), fontsize=18)
 
-    axesSet[1].legend((rects1MatchScore3S2A [0], rects2MatchScore3S2A[0],rects3MatchScore3S2A[0], rects3MatchScore3S2A[0]), ('2-0', '2-1','0-2', '1-2'), fontsize=15)
-    axesSet[1].set_ylabel('Probability', fontsize=15)
-    axesSet[1].set_xlabel('Serve Probability Differences', fontsize=15)
-    axesSet[1].set_title('Algorithm 2 - first to 3 sets', fontsize=15)
+    axesSet[1].legend((rects1MatchScore3S2A [0], rects2MatchScore3S2A[0],rects3MatchScore3S2A[0], rects3MatchScore3S2A[0]), ('2-0', '2-1','0-2', '1-2'), fontsize=18)
+    axesSet[1].set_ylabel('Probability', fontsize=18)
+    axesSet[1].set_xlabel('Serve Probability Differences', fontsize=18)
+    axesSet[1].set_title('Algorithm 2 - first to 3 sets', fontsize=18)
     axesSet[1].set_xticks(labelLocation3Sets + width / 2)
-    axesSet[1].set_xticklabels(('0.01','0.05','0.1'), fontsize=15)
+    axesSet[1].set_xticklabels(('0.01','0.05','0.1'), fontsize=18)
 
-    axesSet[2].legend((rects1Diffs [0], rects2Diffs[0],rects3Diffs[0], rects3Diffs[0]), ('2-0', '2-1','0-2', '1-2'), fontsize=15)
-    axesSet[2].set_ylabel('Difference in Probability', fontsize=15)
-    axesSet[2].set_xlabel('Serve Probability Differences', fontsize=15)
-    axesSet[2].set_title('Difference between algorithms - first to 3 sets', fontsize=15)
+    axesSet[2].legend((rects1Diffs [0], rects2Diffs[0],rects3Diffs[0], rects3Diffs[0]), ('2-0', '2-1','0-2', '1-2'), fontsize=18)
+    axesSet[2].set_ylabel('Difference in Probability', fontsize=18)
+    axesSet[2].set_xlabel('Serve Probability Differences', fontsize=18)
+    axesSet[2].set_title('Difference between algorithms - first to 3 sets', fontsize=18)
     axesSet[2].set_xticks(labelLocation3Sets + width / 2)
-    axesSet[2].set_xticklabels(('0.01','0.05','0.1'), fontsize=15)
+    axesSet[2].set_xticklabels(('0.01','0.05','0.1'), fontsize=18)
 
     plt.savefig('matchScoreDistribution.png')
 
