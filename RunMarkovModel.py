@@ -28,9 +28,9 @@ def RunMarkovModel(P1S, P2S, FirstToSets, FirstToTBPoints, Method, Viscosity):
         return MatchDist, MatchScoreDist, TotalNumGamesDist, AllSetScoresDist
 
 def main():
-    P1S = 0.63
-    P2S = 0.5
-    Approach = 1
+    P1S = 0.72
+    P2S = 0.715
+    Approach = 2
     Viscosity = 0.5
 
     if (Approach == 1):

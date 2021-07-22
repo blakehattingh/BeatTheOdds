@@ -14,13 +14,10 @@ def nth_index(iterable, value, n):
 
 
 def main():
-   
+    figTime, axesTime = plt.subplots(1, 1, figsize = [15, 12])
+    figTime.suptitle('Average runtime: algorithm 1 vs algorithm 2')
 
-
-    figGames3S, axesGames3S = plt.subplots(1, 1, figsize = [15, 15])
-    figGames3S.suptitle('Probability Distributions for Number of Games (first to 3 sets)')
-
-    axesGames3S.bar(range(1,15,1), [1,2,3,4,5,6,7,8,9,10,11,12,13,14], color = 'tab20c')
+    axesTime.bar(range(1,15,1), [1,2,3,4,5,6,7,8,9,10,11,12,13,14], color = 'tab20c')
     plt.show()
 
 if __name__ == "__main__":
