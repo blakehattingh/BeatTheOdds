@@ -318,6 +318,8 @@ def plotTime(timeTaken1, timetaken2):
     axesTime.set_ylabel('Time Taken (s)')
     axesTime.set_xlabel('Algorithm')
     axesTime.set_title('Comparing runtimes of different algorithms')
+    plt.savefig('runTimeGraph.png')
+
 
 
 def FirstServerEffects():
