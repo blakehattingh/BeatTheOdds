@@ -133,7 +133,7 @@ def plotMatchOutcome(matchDist3A1, matchDist3A2):
 
 def plotNumberOfGames(numGamesData3SA1,numGamesData3SA2):
     figGames3S, axesGames3S = plt.subplots(3, 3,sharey=True, figsize = [15, 15])
-    figGames3S.suptitle('Probability Distributions for the Number of Games (First to 3 Sets)')
+    figGames3S.suptitle('Probability Distributions for the Number of Games (First to 3 Sets)',fontsize=25)
 
     axesGames3S[0][0].bar(range(12,40,1), numGamesData3SA1[0])
     axesGames3S[0][1].bar(range(12,40,1), numGamesData3SA1[1])
@@ -147,43 +147,41 @@ def plotNumberOfGames(numGamesData3SA1,numGamesData3SA2):
     axesGames3S[2][1].bar(range(12,40,1), abs(np.subtract(numGamesData3SA2[1],numGamesData3SA1[1])))
     axesGames3S[2][2].bar(range(12,40,1), abs(np.subtract(numGamesData3SA2[2],numGamesData3SA1[2])))
 
+    axesGames3S[0,0].set_ylabel('Probability',fontsize=18)
+    axesGames3S[0,0].set_xlabel('Number of Games',fontsize=18)
+    axesGames3S[0,0].set_title('Algorithm 1 - 0.01 Serve Prob Diff',fontsize=18)
 
+    axesGames3S[0,1].set_ylabel('Probability',fontsize=18)
+    axesGames3S[0,1].set_xlabel('Number of Games',fontsize=18)
+    axesGames3S[0,1].set_title('Algorithm 1 - 0.05 Serve Prob Diff',fontsize=18)
 
-    axesGames3S[0,0].set_ylabel('Probability')
-    axesGames3S[0,0].set_xlabel('Number of Games')
-    axesGames3S[0,0].set_title('Algorithm 1 - 0.01 Serve Prob Diff')
+    axesGames3S[0,2].set_ylabel('Probability',fontsize=18)
+    axesGames3S[0,2].set_xlabel('Number of Games',fontsize=18)
+    axesGames3S[0,2].set_title('Algorithm 1 - 0.10 Serve Prob Diff',fontsize=18)
 
-    axesGames3S[0,1].set_ylabel('Probability')
-    axesGames3S[0,1].set_xlabel('Number of Games')
-    axesGames3S[0,1].set_title('Algorithm 1 - 0.05 Serve Prob Diff')
+    axesGames3S[1,0].set_ylabel('Probability',fontsize=18)
+    axesGames3S[1,0].set_xlabel('Number of Games',fontsize=18)
+    axesGames3S[1,0].set_title('Algorithm 2 - 0.01 Serve Prob Diff',fontsize=18)
 
-    axesGames3S[0,2].set_ylabel('Probability')
-    axesGames3S[0,2].set_xlabel('Number of Games')
-    axesGames3S[0,2].set_title('Algorithm 1 - 0.10 Serve Prob Diff')
+    axesGames3S[1,1].set_ylabel('Probability',fontsize=18)
+    axesGames3S[1,1].set_xlabel('Number of Games',fontsize=18)
+    axesGames3S[1,1].set_title('Algorithm 2 - 0.05 Serve Prob Diff',fontsize=18)
 
-    axesGames3S[1,0].set_ylabel('Probability')
-    axesGames3S[1,0].set_xlabel('Number of Games')
-    axesGames3S[1,0].set_title('Algorithm 2 - 0.01 Serve Prob Diff')
+    axesGames3S[1,2].set_ylabel('Probability',fontsize=18)
+    axesGames3S[1,2].set_xlabel('Number of Games',fontsize=18)
+    axesGames3S[1,2].set_title('Algorithm 2 - 0.10 Serve Prob Diff',fontsize=18)
 
-    axesGames3S[1,1].set_ylabel('Probability')
-    axesGames3S[1,1].set_xlabel('Number of Games')
-    axesGames3S[1,1].set_title('Algorithm 2 - 0.05 Serve Prob Diff')
+    axesGames3S[2,0].set_ylabel('Difference in Probability',fontsize=18)
+    axesGames3S[2,0].set_xlabel('Number of Games',fontsize=18)
+    axesGames3S[2,0].set_title('Difference - 0.01 Serve Prob Diff',fontsize=18)
 
-    axesGames3S[1,2].set_ylabel('Probability')
-    axesGames3S[1,2].set_xlabel('Number of Games')
-    axesGames3S[1,2].set_title('Algorithm 2 - 0.10 Serve Prob Diff')
+    axesGames3S[2,1].set_ylabel('Difference in Probability',fontsize=18)
+    axesGames3S[2,1].set_xlabel('Number of Games',fontsize=18)
+    axesGames3S[2,1].set_title('Difference - 0.05 Serve Prob Diff',fontsize=18)
 
-    axesGames3S[2,0].set_ylabel('Difference in Probability')
-    axesGames3S[2,0].set_xlabel('Number of Games')
-    axesGames3S[2,0].set_title('Difference - 0.01 Serve Prob Diff')
-
-    axesGames3S[2,1].set_ylabel('Difference in Probability')
-    axesGames3S[2,1].set_xlabel('Number of Games')
-    axesGames3S[2,1].set_title('Difference - 0.05 Serve Prob Diff')
-
-    axesGames3S[2,2].set_ylabel('Difference in Probability')
-    axesGames3S[2,2].set_xlabel('Number of Games')
-    axesGames3S[2,2].set_title('Difference - 0.10 Serve Prob Diff')
+    axesGames3S[2,2].set_ylabel('Difference in Probability',fontsize=18)
+    axesGames3S[2,2].set_xlabel('Number of Games',fontsize=18)
+    axesGames3S[2,2].set_title('Difference - 0.10 Serve Prob Diff',fontsize=18)
 
     plt.savefig('numGamesDistribution.png')
 
