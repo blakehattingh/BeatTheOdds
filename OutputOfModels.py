@@ -98,14 +98,14 @@ def plotMatchOutcome(matchDist3A1, matchDist3A2):
     player1WinsDiffs = [abs(matchDist3A1[0][0]-matchDist3A2[0][0]),abs(matchDist3A1[1][0]-matchDist3A2[1][0]),abs(matchDist3A1[2][0]-matchDist3A2[2][0])]
     player2WinsDiffs = [abs(matchDist3A1[0][1]-matchDist3A2[0][1]),abs(matchDist3A1[1][1]-matchDist3A2[1][1]),abs(matchDist3A1[2][1]-matchDist3A2[2][1])]
 
-    rects1 = axes[0].bar(labelLocation,player1WinsDists, width, color='r')
-    rects2 = axes[0].bar(labelLocation+width,player2WinsDists, width, color='b')
+    rects1 = axes[0].bar(labelLocation,player1WinsDists, width, color='navy')
+    rects2 = axes[0].bar(labelLocation+width,player2WinsDists, width, color='cornflowerblue')
 
-    rects13S2A = axes[1].bar(labelLocation,player1WinsDists3S2A, width, color='r')
-    rects23S2A = axes[1].bar(labelLocation+width,player2WinsDists3S2A, width, color='b')
+    rects13S2A = axes[1].bar(labelLocation,player1WinsDists3S2A, width, color='navy')
+    rects23S2A = axes[1].bar(labelLocation+width,player2WinsDists3S2A, width, color='cornflowerblue')
 
-    rects1Diffs = axes[2].bar(labelLocation,player1WinsDiffs, width, color='r')
-    rects2Diffs = axes[2].bar(labelLocation+width,player2WinsDiffs, width, color='b')
+    rects1Diffs = axes[2].bar(labelLocation,player1WinsDiffs, width, color='navy')
+    rects2Diffs = axes[2].bar(labelLocation+width,player2WinsDiffs, width, color='cornflowerblue')
 
 
     axes[0].legend((rects1[0], rects2[0]), ('Player 1', 'Player 2'))
@@ -265,20 +265,20 @@ def plotMatchScore(MatchScoreData3S1A,MatchScoreData3S2A):
     figSet, axesSet = plt.subplots(1, 3,sharey=True, figsize = [20, 12])
     figSet.suptitle('Probability Distributions for MatchScore', fontsize=20)
 
-    rectsMatchScore1 = axesSet[0].bar(labelLocation3Sets-width,twoZeroDists3S1A, width, color='y')
-    rectsMatchScore2 = axesSet[0].bar(labelLocation3Sets,twoOneDists3S1A, width, color='b')
-    rectsMatchScore3 = axesSet[0].bar(labelLocation3Sets+width,zeroTwoDists3S1A, width, color='g')
-    rectsMatchScore4 = axesSet[0].bar(labelLocation3Sets+(2*width),oneTwoDists3S1A , width, color='k')
+    rectsMatchScore1 = axesSet[0].bar(labelLocation3Sets-width,twoZeroDists3S1A, width, color='slateblue')
+    rectsMatchScore2 = axesSet[0].bar(labelLocation3Sets,twoOneDists3S1A, width, color='navy')
+    rectsMatchScore3 = axesSet[0].bar(labelLocation3Sets+width,zeroTwoDists3S1A, width, color='cornflowerblue')
+    rectsMatchScore4 = axesSet[0].bar(labelLocation3Sets+(2*width),oneTwoDists3S1A , width, color='lightsteelblue')
 
-    rects1MatchScore3S2A = axesSet[1].bar(labelLocation3Sets-width,twoZeroDists3S2A, width, color='y')
-    rects2MatchScore3S2A = axesSet[1].bar(labelLocation3Sets,twoOneDists3S2A, width, color='b')
-    rects3MatchScore3S2A = axesSet[1].bar(labelLocation3Sets+width,zeroTwoDists3S2A, width, color='g')
-    rects3MatchScore3S2A = axesSet[1].bar(labelLocation3Sets+(2*width),oneTwoDists3S2A, width, color='k')
+    rects1MatchScore3S2A = axesSet[1].bar(labelLocation3Sets-width,twoZeroDists3S2A, width, color='slateblue')
+    rects2MatchScore3S2A = axesSet[1].bar(labelLocation3Sets,twoOneDists3S2A, width, color='navy')
+    rects3MatchScore3S2A = axesSet[1].bar(labelLocation3Sets+width,zeroTwoDists3S2A, width, color='cornflowerblue')
+    rects3MatchScore3S2A = axesSet[1].bar(labelLocation3Sets+(2*width),oneTwoDists3S2A, width, color='lightsteelblue')
 
-    rects1Diffs = axesSet[2].bar(labelLocation3Sets-width,twoZeroDiffs, width, color='y')
-    rects2Diffs = axesSet[2].bar(labelLocation3Sets,twoOneDiffs, width, color='b')
-    rects3Diffs = axesSet[2].bar(labelLocation3Sets+width,zeroTwoDiffs, width, color='g')
-    rects3Diffs = axesSet[2].bar(labelLocation3Sets+(2*width),oneTwoDiffs, width, color='k')
+    rects1Diffs = axesSet[2].bar(labelLocation3Sets-width,twoZeroDiffs, width, color='slateblue')
+    rects2Diffs = axesSet[2].bar(labelLocation3Sets,twoOneDiffs, width, color='navy')
+    rects3Diffs = axesSet[2].bar(labelLocation3Sets+width,zeroTwoDiffs, width, color='cornflowerblue')
+    rects3Diffs = axesSet[2].bar(labelLocation3Sets+(2*width),oneTwoDiffs, width, color='lightsteelblue')
 
 
     axesSet[0].legend((rectsMatchScore1[0], rectsMatchScore2[0], rectsMatchScore3[0], rectsMatchScore4[0] ), ('2-0', '2-1','0-2', '1-2'), fontsize=15)
