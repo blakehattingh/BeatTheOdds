@@ -17,13 +17,7 @@ def main():
     figTime, axesTime = plt.subplots(1, 1, figsize = [15, 12])
     figTime.suptitle('Average runtime: algorithm 1 vs algorithm 2')
 
-    avgTimes = [3, 4]
-
-    axesTime.bar(['Alg 1', 'Alg 2'], avgTimes)
-
-    axesTime.set_ylabel('Time Taken')
-    axesTime.set_xlabel('Algorithm')
-    axesTime.set_title('Comparing runtimes of different algorithms')
+    axesTime.bar(range(1,15,1), [1,2,3,4,5,6,7,8,9,10,11,12,13,14], color = 'tab20c')
     plt.show()
 
 if __name__ == "__main__":
