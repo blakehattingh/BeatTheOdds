@@ -4,6 +4,8 @@ from TennisSetNetwork import TennisSetNetwork
 from loopybeliefprop import beliefpropagation
 import numpy as np
 import matplotlib.pyplot as plt
+import time as tme
+from statistics import mean
 
 def main():
     # This file runs each implementation, for each of the 3 scenarios and outputs each distribution as a plot.
@@ -28,6 +30,8 @@ def main():
     #NumberOfSetsDistributions5 = []
     #TotalNumberOfGamesDistributions5 = []
     #AllSetScoresDistributions5 = []
+    timeTaken1 = []
+    timeTaken2 = []
 
     # Possible Outcomes:
     MatchOutcomes = ['Player 1 Wins', 'Player 2 Wins']
@@ -39,10 +43,15 @@ def main():
     # First Implementation:
     Approach = 1
     for P1 in P1S:
+        start1 = tme.time()
         [MatchDist3A1, MatchScoreDist3A1, TotalNumGamesDist3A1, AllSetScoresDist3A1] = RunMarkovModel(P1,P2S,3,FirstToTBPoints,Approach,Viscosity)
+        end1 = tme.time()
+        timeTaken1.append(end1 - start1)
         #[MatchDist5, NumSetsDist5, TotalNumGamesDist5, AllSetScoresDist5] = RunMarkovModel(P1,P2S,5,FirstToTBPoints,Approach,Viscosity)
-
-        ####[MatchDist3A2, MatchScoreDist3A2, TotalNumGamesDist3A2, AllSetScoresDist3A2] = RunMarkovModel(P1,P2S,3,FirstToTBPoints,2,Viscosity)
+        start2 = tme.time()
+        [MatchDist3A2, MatchScoreDist3A2, TotalNumGamesDist3A2, AllSetScoresDist3A2] = RunMarkovModel(P1,P2S,3,FirstToTBPoints,2,Viscosity)
+        end2 = tme.time()
+        timeTaken2.append(end2-start2)
 
         #[MatchDist5A2, NumSetsDist5A2, TotalNumGamesDist5A2, AllSetScoresDist5A2] = RunMarkovModel(P1,P2S,5,FirstToTBPoints,2,Viscosity,'Complex')
 
@@ -53,16 +62,16 @@ def main():
         AllSetScoresDistributions3A1.append(AllSetScoresDist3A1)
 
         #UNCOMMENT !!!!!
-        #MatchDistributions3A2.append(MatchDist3A2)
-        #MatchScoreDistributions3A2.append(MatchScoreDist3A2)
-        #TotalNumberOfGamesDistributions3A2.append(TotalNumGamesDist3A2)
-        #AllSetScoresDistributions3A2.append(AllSetScoresDist3A2)
+        MatchDistributions3A2.append(MatchDist3A2)
+        MatchScoreDistributions3A2.append(MatchScoreDist3A2)
+        TotalNumberOfGamesDistributions3A2.append(TotalNumGamesDist3A2)
+        AllSetScoresDistributions3A2.append(AllSetScoresDist3A2)
 
         #JUST FOR TRIAL RUN
-        MatchDistributions3A2.append(MatchDist3A1)
-        MatchScoreDistributions3A2.append(MatchScoreDist3A1)
-        TotalNumberOfGamesDistributions3A2.append(TotalNumGamesDist3A1)
-        AllSetScoresDistributions3A2.append(AllSetScoresDist3A1)
+        #MatchDistributions3A2.append(MatchDist3A1)
+        #MatchScoreDistributions3A2.append(MatchScoreDist3A1)
+        #TotalNumberOfGamesDistributions3A2.append(TotalNumGamesDist3A1)
+        #AllSetScoresDistributions3A2.append(AllSetScoresDist3A1)
         
 
     plotMatchOutcome(MatchDistributions3A1, MatchDistributions3A2)
@@ -70,13 +79,14 @@ def main():
     plotSetScore(AllSetScoresDistributions3A1, AllSetScoresDistributions3A2)
     #plotNumberOfSets(NumberOfSetsDistributions3A1, NumberOfSetsDistributions5A1, NumberOfSetsDistributions3A2, NumberOfSetsDistributions5A2)
     plotMatchScore(MatchScoreDistributions3A1,MatchScoreDistributions3A2)
+    plotTime(timeTaken1,timeTaken2)
 
 
 def plotMatchOutcome(matchDist3A1, matchDist3A2):
     serverTitles = ['P1 v P2','P1 v P2','P1 v P2']
     labelLocation = np.arange(len(serverTitles))
     width = 0.25
-    figMatch, axes = plt.subplots(1, 2, figsize = [15, 12])
+    figMatch, axes = plt.subplots(1, 3,sharey=True, figsize = [18, 12])
     figMatch.suptitle('Probability Distributions for match outcome')
 
     player1WinsDists = [matchDist3A1[0][0],matchDist3A1[1][0],matchDist3A1[2][0]]
@@ -85,11 +95,17 @@ def plotMatchOutcome(matchDist3A1, matchDist3A2):
     player1WinsDists3S2A = [matchDist3A2[0][0],matchDist3A2[1][0],matchDist3A2[2][0]]
     player2WinsDists3S2A = [matchDist3A2[0][1],matchDist3A2[1][1],matchDist3A2[2][1]]
 
+    player1WinsDiffs = [abs(matchDist3A1[0][0]-matchDist3A2[0][0]),abs(matchDist3A1[1][0]-matchDist3A2[1][0]),abs(matchDist3A1[2][0]-matchDist3A2[2][0])]
+    player2WinsDiffs = [abs(matchDist3A1[0][1]-matchDist3A2[0][1]),abs(matchDist3A1[1][1]-matchDist3A2[1][1]),abs(matchDist3A1[2][1]-matchDist3A2[2][1])]
+
     rects1 = axes[0].bar(labelLocation,player1WinsDists, width, color='r')
     rects2 = axes[0].bar(labelLocation+width,player2WinsDists, width, color='b')
 
     rects13S2A = axes[1].bar(labelLocation,player1WinsDists3S2A, width, color='r')
     rects23S2A = axes[1].bar(labelLocation+width,player2WinsDists3S2A, width, color='b')
+
+    rects1Diffs = axes[2].bar(labelLocation,player1WinsDiffs, width, color='r')
+    rects2Diffs = axes[2].bar(labelLocation+width,player2WinsDiffs, width, color='b')
 
 
     axes[0].legend((rects1[0], rects2[0]), ('Player 1', 'Player 2'))
@@ -106,10 +122,17 @@ def plotMatchOutcome(matchDist3A1, matchDist3A2):
     axes[1].set_xticks(labelLocation + width / 2)
     axes[1].set_xticklabels(('0.01','0.05','0.1'))
 
+    axes[2].legend((rects1Diffs[0], rects2Diffs[0]), ('Player 1', 'Player 2'))
+    axes[2].set_ylabel('Difference in Probability')
+    axes[2].set_xlabel('Serve Probability Differences')
+    axes[2].set_title('Difference in predictions between algorithms')
+    axes[2].set_xticks(labelLocation + width / 2)
+    axes[2].set_xticklabels(('0.01','0.05','0.1'))
+
     plt.savefig('matchOutcomeDistribution.png')
 
 def plotNumberOfGames(numGamesData3SA1,numGamesData3SA2):
-    figGames3S, axesGames3S = plt.subplots(2, 3, figsize = [15, 12])
+    figGames3S, axesGames3S = plt.subplots(3, 3,sharey=True, figsize = [15, 15])
     figGames3S.suptitle('Probability Distributions for Number of Games (first to 3 sets)')
 
     axesGames3S[0][0].bar(range(12,40,1), numGamesData3SA1[0])
@@ -119,6 +142,12 @@ def plotNumberOfGames(numGamesData3SA1,numGamesData3SA2):
     axesGames3S[1][0].bar(range(12,40,1), numGamesData3SA2[0])
     axesGames3S[1][1].bar(range(12,40,1), numGamesData3SA2[1])
     axesGames3S[1][2].bar(range(12,40,1), numGamesData3SA2[2])
+
+    axesGames3S[2][0].bar(range(12,40,1), abs(np.subtract(numGamesData3SA2[0],numGamesData3SA1[0])))
+    axesGames3S[2][1].bar(range(12,40,1), abs(np.subtract(numGamesData3SA2[1],numGamesData3SA1[1])))
+    axesGames3S[2][2].bar(range(12,40,1), abs(np.subtract(numGamesData3SA2[2],numGamesData3SA1[2])))
+
+
 
     axesGames3S[0,0].set_ylabel('Probability')
     axesGames3S[0,0].set_xlabel('Number of Games')
@@ -144,11 +173,23 @@ def plotNumberOfGames(numGamesData3SA1,numGamesData3SA2):
     axesGames3S[1,2].set_xlabel('Number of Games')
     axesGames3S[1,2].set_title('Alg 2 - first to 3 sets - 0.1 serve prob diff')
 
+    axesGames3S[2,0].set_ylabel('Difference in Probability')
+    axesGames3S[2,0].set_xlabel('Number of Games')
+    axesGames3S[2,0].set_title('Difference between algorithms - 0.01 serve prob diff')
+
+    axesGames3S[2,1].set_ylabel('Difference in Probability')
+    axesGames3S[2,1].set_xlabel('Number of Games')
+    axesGames3S[2,1].set_title('Difference between algorithms -  0.05 serve prob diff')
+
+    axesGames3S[2,2].set_ylabel('Difference in Probability')
+    axesGames3S[2,2].set_xlabel('Number of Games')
+    axesGames3S[2,2].set_title('Difference between algorithms - 0.1 serve prob diff')
+
     plt.savefig('numGamesDistribution.png')
 
 def plotSetScore(setScoreData3SA1,setScoreData3SA2):
     AllSetScoreOutcomes = ["6-0","6-1","6-2","6-3","6-4","7-5","7-6","0-6","1-6","2-6","3-6","4-6","5-7","6-7"]
-    figSetScore3S, axesSetScore3S = plt.subplots(2, 3, figsize = [15, 12])
+    figSetScore3S, axesSetScore3S = plt.subplots(3, 3,sharey=True, figsize = [18, 16])
     figSetScore3S.suptitle('Probability Distributions for Set Scores(first to 3 sets)')
 
     axesSetScore3S[0][0].bar(AllSetScoreOutcomes, setScoreData3SA1[0])
@@ -158,6 +199,10 @@ def plotSetScore(setScoreData3SA1,setScoreData3SA2):
     axesSetScore3S[1][0].bar(AllSetScoreOutcomes, setScoreData3SA2[0])
     axesSetScore3S[1][1].bar(AllSetScoreOutcomes, setScoreData3SA2[1])
     axesSetScore3S[1][2].bar(AllSetScoreOutcomes, setScoreData3SA2[2])
+
+    axesSetScore3S[2][0].bar(AllSetScoreOutcomes, abs(np.subtract(setScoreData3SA1[0],setScoreData3SA2[0])))
+    axesSetScore3S[2][1].bar(AllSetScoreOutcomes, abs(np.subtract(setScoreData3SA1[1],setScoreData3SA2[1])))
+    axesSetScore3S[2][2].bar(AllSetScoreOutcomes, abs(np.subtract(setScoreData3SA1[2],setScoreData3SA2[2])))
 
     axesSetScore3S[0,0].set_ylabel('Probability')
     axesSetScore3S[0,0].set_xlabel('Set Scores')
@@ -183,6 +228,18 @@ def plotSetScore(setScoreData3SA1,setScoreData3SA2):
     axesSetScore3S[1,2].set_xlabel('Set Scores')
     axesSetScore3S[1,2].set_title('Alg 2 - first to 3 sets - 0.1 serve prob diff')
 
+    axesSetScore3S[2,0].set_ylabel('Difference in Probability')
+    axesSetScore3S[2,0].set_xlabel('Set Scores')
+    axesSetScore3S[2,0].set_title('Difference between algorithms - 0.01 serve prob diff')
+
+    axesSetScore3S[2,1].set_ylabel('Difference in Probability')
+    axesSetScore3S[2,1].set_xlabel('Set Scores')
+    axesSetScore3S[2,1].set_title('Difference between algorithms - 0.05 serve prob diff')
+
+    axesSetScore3S[2,2].set_ylabel('Difference in Probability')
+    axesSetScore3S[2,2].set_xlabel('Set Scores')
+    axesSetScore3S[2,2].set_title('Difference between algorithms - 0.1 serve prob diff')
+
     plt.savefig('SetScoreDistribution.png')
 
 def plotMatchScore(MatchScoreData3S1A,MatchScoreData3S2A):
@@ -199,7 +256,13 @@ def plotMatchScore(MatchScoreData3S1A,MatchScoreData3S2A):
     zeroTwoDists3S2A = [MatchScoreData3S2A[0][2],MatchScoreData3S2A[1][2],MatchScoreData3S2A[2][2]]
     oneTwoDists3S2A = [MatchScoreData3S2A[0][3],MatchScoreData3S2A[1][3],MatchScoreData3S2A[2][3]]
 
-    figSet, axesSet = plt.subplots(1, 2, figsize = [20, 12])
+    twoZeroDiffs = abs(np.subtract(twoZeroDists3S2A,twoZeroDists3S1A))
+    twoOneDiffs = abs(np.subtract(twoOneDists3S2A,twoOneDists3S1A))
+    zeroTwoDiffs = abs(np.subtract(zeroTwoDists3S2A,zeroTwoDists3S1A))
+    oneTwoDiffs = abs(np.subtract(oneTwoDists3S2A,oneTwoDists3S1A))
+
+
+    figSet, axesSet = plt.subplots(1, 3,sharey=True, figsize = [20, 12])
     figSet.suptitle('Probability Distributions for MatchScore', fontsize=20)
 
     rectsMatchScore1 = axesSet[0].bar(labelLocation3Sets-width,twoZeroDists3S1A, width, color='y')
@@ -211,6 +274,11 @@ def plotMatchScore(MatchScoreData3S1A,MatchScoreData3S2A):
     rects2MatchScore3S2A = axesSet[1].bar(labelLocation3Sets,twoOneDists3S2A, width, color='b')
     rects3MatchScore3S2A = axesSet[1].bar(labelLocation3Sets+width,zeroTwoDists3S2A, width, color='g')
     rects3MatchScore3S2A = axesSet[1].bar(labelLocation3Sets+(2*width),oneTwoDists3S2A, width, color='k')
+
+    rects1Diffs = axesSet[2].bar(labelLocation3Sets-width,twoZeroDiffs, width, color='y')
+    rects2Diffs = axesSet[2].bar(labelLocation3Sets,twoOneDiffs, width, color='b')
+    rects3Diffs = axesSet[2].bar(labelLocation3Sets+width,zeroTwoDiffs, width, color='g')
+    rects3Diffs = axesSet[2].bar(labelLocation3Sets+(2*width),oneTwoDiffs, width, color='k')
 
 
     axesSet[0].legend((rectsMatchScore1[0], rectsMatchScore2[0], rectsMatchScore3[0], rectsMatchScore4[0] ), ('2-0', '2-1','0-2', '1-2'), fontsize=15)
@@ -227,7 +295,29 @@ def plotMatchScore(MatchScoreData3S1A,MatchScoreData3S2A):
     axesSet[1].set_xticks(labelLocation3Sets + width / 2)
     axesSet[1].set_xticklabels(('0.01','0.05','0.1'), fontsize=15)
 
+    axesSet[2].legend((rects1Diffs [0], rects2Diffs[0],rects3Diffs[0], rects3Diffs[0]), ('2-0', '2-1','0-2', '1-2'), fontsize=15)
+    axesSet[2].set_ylabel('Difference in Probability', fontsize=15)
+    axesSet[2].set_xlabel('Serve Probability Differences', fontsize=15)
+    axesSet[2].set_title('Difference between algorithms - first to 3 sets', fontsize=15)
+    axesSet[2].set_xticks(labelLocation3Sets + width / 2)
+    axesSet[2].set_xticklabels(('0.01','0.05','0.1'), fontsize=15)
+
     plt.savefig('matchScoreDistribution.png')
+
+def plotTime(timeTaken1, timetaken2):
+    avgTime1 = mean(timeTaken1)
+    avgTime2 = mean(timetaken2)
+
+    figTime, axesTime = plt.subplots(1, 1, figsize = [15, 12])
+    figTime.suptitle('Average runtime: algorithm 1 vs algorithm 2')
+
+    avgTimes = [avgTime1, avgTime2]
+
+    axesTime.bar(['Alg 1', 'Alg 2'], avgTimes)
+
+    axesTime.set_ylabel('Time Taken (s)')
+    axesTime.set_xlabel('Algorithm')
+    axesTime.set_title('Comparing runtimes of different algorithms')
 
 
 def FirstServerEffects():
