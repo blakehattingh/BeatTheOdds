@@ -5,7 +5,7 @@ from AdditionalFunctions import combine_recursion, nth_index
 import numpy as np
 from OMalleysEqns import TB
  
-def TennisMatchNetwork2Efficient(P1S, P2S, FirstToSets):
+def TennisMatchNetwork2Efficient(P1S, P2S, FirstToSets, ConditionalEvents = {}):
     if (FirstToSets == 3):
         # Specify the names of the nodes in the Bayesian network
         nodes=['Set1Server','SetScore1','G1','G2','G3','G4','G5','G6','G7','G8','G9','G10','G11','G12','TB','Set2Server',
@@ -687,6 +687,10 @@ def TennisMatchNetwork2Efficient(P1S, P2S, FirstToSets):
     # Set up initial information:
     info={}
     for i in nodes:
-        info[i] = choose(outcomes[i], "NotSure")
-    
+        if (i in ConditionalEvents):
+            # Fix certian nodes identfied by user:
+            info[i] = choose(outcomes[i], ConditionalEvents[i])
+        else:
+            # Otherwise leave them unfixed:
+            info[i] = choose(outcomes[i], "NotSure")
     return(nodes, dist, parents, outcomes, info)

@@ -1,9 +1,10 @@
 from TennisMatchNetwork1Efficient import TennisMatchNetwork1Efficient
 from itertools import islice
-from AdditionalFunctions import TieBreakerProbability, ComputeTBProbabilities
+from AdditionalFunctions import RemainingOdds, TieBreakerProbability, ComputeTBProbabilities, OddsComputer, RemainingOdds
 from TennisMatchNetwork1Efficient import TennisMatchNetwork1Efficient
-from loopybeliefprop import beliefpropagation
+from loopybeliefprop import beliefpropagation, choose
 from OMalleysEqns import TB, Matrices
+from CVaRModel import CVaRModel
 import numpy as np
 import csv
 import matplotlib.pyplot as plt
@@ -14,11 +15,13 @@ def nth_index(iterable, value, n):
 
 
 def main():
-    figTime, axesTime = plt.subplots(1, 1, figsize = [15, 12])
-    figTime.suptitle('Average runtime: algorithm 1 vs algorithm 2')
-
-    axesTime.bar(range(1,15,1), [1,2,3,4,5,6,7,8,9,10,11,12,13,14], color = 'tab20c')
-    plt.show()
+    Bets = ['AWins', 'BWins', '3-0', '3-1', '3-2', '0-3', '1-3', '2-3']
+    Probabilities = [0.04470312, 0.10620195, 0.09589186, 0.10717187, 0.3687957, 0.37723549]
+    Z = [[1.80,0,4.5,0,0,0,0,0],[1.80,0,0,3.2,0,0,0,0],[1.80,0,0,0,3.8,0,0,0],
+    [0,2.06,0,0,0,12.0,0,0],[0,2.06,0,0,0,0,10.0,0],[0,2.06,0,0,0,0,0,9.0]]
+    lam = 1
+    beta = 0.5
+    CVaRModel(Probabilities, Z, lam, beta, Bets)
 
 if __name__ == "__main__":
     main()

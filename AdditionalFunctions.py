@@ -56,3 +56,19 @@ def ComputeTBProbabilities(P1S, P2S):
                 return P1TB, P2TB
             else:
                 line_count += 1
+
+def OddsComputer(FirstOdds, Margin = 0.08):
+    SecondOdds = FirstOdds / (FirstOdds * (1. + 0.5 * Margin) - 1)
+    return SecondOdds
+
+def RemainingOdds(Odds, Margin = 0.08):
+    Probs = 0.
+    for i in Odds:
+        Probs += (1. / i)
+    
+    # Check if odds are too low:
+    if (1. + Margin <= Probs):
+        print("Increase Odds, current implied probability is {}".format(100*Probs))
+    else:
+        RemainP = (1. + Margin - Probs)
+        return (1. / RemainP)
