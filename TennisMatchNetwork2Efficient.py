@@ -43,9 +43,9 @@ def TennisMatchNetwork2Efficient(P1S, P2S, FirstToSets, ConditionalEvents = {}):
 
         # Set up the possible outcomes for each node:
         outcomes={}
-        outcomes['Set1Server']=["P1Serves","P2Serves"]
-        outcomes['Set2Server']=["P1Serves","P2Serves"]
-        outcomes['Set3Server']=["P1Serves","P2Serves"]
+        outcomes['Set1Server']=['P1Serves','P2Serves']
+        outcomes['Set2Server']=['P1Serves','P2Serves']
+        outcomes['Set3Server']=['P1Serves','P2Serves']
         outcomes['SetScore1']=[1,2,3,4,5,6,7,8,9,10,11,12,13,14]
         outcomes['SetScore2']=[1,2,3,4,5,6,7,8,9,10,11,12,13,14]
         outcomes['SetScore3']=[1,2,3,4,5,6,7,8,9,10,11,12,13,14]
@@ -54,53 +54,6 @@ def TennisMatchNetwork2Efficient(P1S, P2S, FirstToSets, ConditionalEvents = {}):
         for set in range(3):
             for node in AllGameNodes[set]:
                 outcomes[node] = [1, 2]
-
-        '''      
-        outcomes['G1']=[1,2]
-        outcomes['G2']=[1,2]
-        outcomes['G3']=[1,2]
-        outcomes['G4']=[1,2]
-        outcomes['G5']=[1,2]
-        outcomes['G6']=[1,2]
-        outcomes['G7']=[1,2]
-        outcomes['G8']=[1,2]
-        outcomes['G9']=[1,2]
-        outcomes['G10']=[1,2]
-        outcomes['G11']=[1,2]
-        outcomes['G12']=[1,2]
-        outcomes['TB']=[1,2]
-        outcomes['SetScore1']=[1,2,3,4,5,6,7,8,9,10,11,12,13,14]
-        outcomes['SetScore2']=[1,2,3,4,5,6,7,8,9,10,11,12,13,14]
-        outcomes['SetScore3']=[1,2,3,4,5,6,7,8,9,10,11,12,13,14]
-        outcomes['Set2Server']=["P1Serves","P2Serves"]
-        outcomes['S2G1']=[1,2]
-        outcomes['S2G2']=[1,2]
-        outcomes['S2G3']=[1,2]
-        outcomes['S2G4']=[1,2]
-        outcomes['S2G5']=[1,2]
-        outcomes['S2G6']=[1,2]
-        outcomes['S2G7']=[1,2]
-        outcomes['S2G8']=[1,2]
-        outcomes['S2G9']=[1,2]
-        outcomes['S2G10']=[1,2]
-        outcomes['S2G11']=[1,2]
-        outcomes['S2G12']=[1,2]
-        outcomes['S2TB']=[1,2]
-        outcomes['Set3Server']=["P1Serves","P2Serves"]
-        outcomes['S3G1']=[1,2]
-        outcomes['S3G2']=[1,2]
-        outcomes['S3G3']=[1,2]
-        outcomes['S3G4']=[1,2]
-        outcomes['S3G5']=[1,2]
-        outcomes['S3G6']=[1,2]
-        outcomes['S3G7']=[1,2]
-        outcomes['S3G8']=[1,2]
-        outcomes['S3G9']=[1,2]
-        outcomes['S3G10']=[1,2]
-        outcomes['S3G11']=[1,2]
-        outcomes['S3G12']=[1,2]
-        outcomes['S3TB']=[1,2]
-        '''
         
         # outcomes for output nodes:
         outcomes['Match'] = [1,2]
@@ -126,123 +79,28 @@ def TennisMatchNetwork2Efficient(P1S, P2S, FirstToSets, ConditionalEvents = {}):
 
         # Create the conditional distributions for the starting server of each set, given the previous sets first server and the
         # number of games played in the last set:
-        for i in outcomes["SetScore1"]:
+        for i in outcomes['SetScore1']:
             # Odd Number of games: (i = 2, 4, 7, 9, 11, 14)
             if (i in [2,4,7,9,11,14]):
-                dist['Set2Server']["P1Serves",i] = [0., 1.]
-                dist['Set3Server']["P1Serves",i] = [0., 1.]
-                dist['Set2Server']["P2Serves",i] = [1., 0.]
-                dist['Set3Server']["P2Serves",i] = [1., 0.]
+                dist['Set2Server']['P1Serves',i] = [0., 1.]
+                dist['Set3Server']['P1Serves',i] = [0., 1.]
+                dist['Set2Server']['P2Serves',i] = [1., 0.]
+                dist['Set3Server']['P2Serves',i] = [1., 0.]
             else:
-                dist['Set2Server']["P1Serves",i] = [1., 0.]
-                dist['Set3Server']["P1Serves",i] = [1., 0.]
-                dist['Set2Server']["P2Serves",i] = [0., 1.]
-                dist['Set3Server']["P2Serves",i] = [0., 1.]
+                dist['Set2Server']['P1Serves',i] = [1., 0.]
+                dist['Set3Server']['P1Serves',i] = [1., 0.]
+                dist['Set2Server']['P2Serves',i] = [0., 1.]
+                dist['Set3Server']['P2Serves',i] = [0., 1.]
 
         # Define the probabilities for each game, given the server:
         for set in range(3):
             for node in AllGameNodes[set]:
                 if ('TB' in node):
-                    dist[node]["P1Serves"] = [P1TB, 1. - P1TB]
-                    dist[node]["P2Serves"] = [1. - P2TB, P2TB]
+                    dist[node]['P1Serves'] = [P1TB, 1. - P1TB]
+                    dist[node]['P2Serves'] = [1. - P2TB, P2TB]
                 else:
-                    dist[node]["P1Serves"] = [P1G, 1. - P1G]
-                    dist[node]["P2Serves"] = [1. - P2G, P2G]
-        
-        '''
-        # Player 1 serving:
-        dist['G1']["P1Serves"]=[P1G,1.-P1G]
-        dist['G2']["P1Serves"]=[P1G,1.-P1G]
-        dist['G3']["P1Serves"]=[P1G,1.-P1G]
-        dist['G4']["P1Serves"]=[P1G,1.-P1G]
-        dist['G5']["P1Serves"]=[P1G,1.-P1G]
-        dist['G6']["P1Serves"]=[P1G,1.-P1G]
-        dist['G7']["P1Serves"]=[P1G,1.-P1G]
-        dist['G8']["P1Serves"]=[P1G,1.-P1G]
-        dist['G9']["P1Serves"]=[P1G,1.-P1G]
-        dist['G10']["P1Serves"]=[P1G,1.-P1G]
-        dist['G11']["P1Serves"]=[P1G,1.-P1G]
-        dist['G12']["P1Serves"]=[P1G,1.-P1G]
-        dist['TB']["P1Serves"]=[P1TB,1.-P1TB]
-
-        # Player 2 serving:
-        dist['G1']["P2Serves"]=[1.-P2G,P2G]
-        dist['G2']["P2Serves"]=[1.-P2G,P2G]
-        dist['G3']["P2Serves"]=[1.-P2G,P2G]
-        dist['G4']["P2Serves"]=[1.-P2G,P2G]
-        dist['G5']["P2Serves"]=[1.-P2G,P2G]
-        dist['G6']["P2Serves"]=[1.-P2G,P2G]
-        dist['G7']["P2Serves"]=[1.-P2G,P2G]
-        dist['G8']["P2Serves"]=[1.-P2G,P2G]
-        dist['G9']["P2Serves"]=[1.-P2G,P2G]
-        dist['G10']["P2Serves"]=[1.-P2G,P2G]
-        dist['G11']["P2Serves"]=[1.-P2G,P2G]
-        dist['G12']["P2Serves"]=[1.-P2G,P2G]
-        dist['TB']["P2Serves"]=[1.-P2TB,P2TB]
-
-        print(dist['G1']["P1Serves"])
-        print(dist['G1']["P2Serves"])
-
-        # Player 1 serving:
-        dist['S2G1']["P1Serves"]=[P1G,1.-P1G]
-        dist['S2G2']["P1Serves"]=[P1G,1.-P1G]
-        dist['S2G3']["P1Serves"]=[P1G,1.-P1G]
-        dist['S2G4']["P1Serves"]=[P1G,1.-P1G]
-        dist['S2G5']["P1Serves"]=[P1G,1.-P1G]
-        dist['S2G6']["P1Serves"]=[P1G,1.-P1G]
-        dist['S2G7']["P1Serves"]=[P1G,1.-P1G]
-        dist['S2G8']["P1Serves"]=[P1G,1.-P1G]
-        dist['S2G9']["P1Serves"]=[P1G,1.-P1G]
-        dist['S2G10']["P1Serves"]=[P1G,1.-P1G]
-        dist['S2G11']["P1Serves"]=[P1G,1.-P1G]
-        dist['S2G12']["P1Serves"]=[P1G,1.-P1G]
-        dist['S2TB']["P1Serves"]=[P1TB,1.-P1TB]
-
-        # Player 2 serving:
-        dist['S2G1']["P2Serves"]=[1.-P2G,P2G]
-        dist['S2G2']["P2Serves"]=[1.-P2G,P2G]
-        dist['S2G3']["P2Serves"]=[1.-P2G,P2G]
-        dist['S2G4']["P2Serves"]=[1.-P2G,P2G]
-        dist['S2G5']["P2Serves"]=[1.-P2G,P2G]
-        dist['S2G6']["P2Serves"]=[1.-P2G,P2G]
-        dist['S2G7']["P2Serves"]=[1.-P2G,P2G]
-        dist['S2G8']["P2Serves"]=[1.-P2G,P2G]
-        dist['S2G9']["P2Serves"]=[1.-P2G,P2G]
-        dist['S2G10']["P2Serves"]=[1.-P2G,P2G]
-        dist['S2G11']["P2Serves"]=[1.-P2G,P2G]
-        dist['S2G12']["P2Serves"]=[1.-P2G,P2G]
-        dist['S2TB']["P2Serves"]=[1.-P2TB,P2TB]
-
-        # Player 1 serving:
-        dist['S3G1']["P1Serves"]=[P1G,1.-P1G]
-        dist['S3G2']["P1Serves"]=[P1G,1.-P1G]
-        dist['S3G3']["P1Serves"]=[P1G,1.-P1G]
-        dist['S3G4']["P1Serves"]=[P1G,1.-P1G]
-        dist['S3G5']["P1Serves"]=[P1G,1.-P1G]
-        dist['S3G6']["P1Serves"]=[P1G,1.-P1G]
-        dist['S3G7']["P1Serves"]=[P1G,1.-P1G]
-        dist['S3G8']["P1Serves"]=[P1G,1.-P1G]
-        dist['S3G9']["P1Serves"]=[P1G,1.-P1G]
-        dist['S3G10']["P1Serves"]=[P1G,1.-P1G]
-        dist['S3G11']["P1Serves"]=[P1G,1.-P1G]
-        dist['S3G12']["P1Serves"]=[P1G,1.-P1G]
-        dist['S3TB']["P1Serves"]=[P1TB,1.-P1TB]
-
-        # Player 2 serving:
-        dist['S3G1']["P2Serves"]=[1.-P2G,P2G]
-        dist['S3G2']["P2Serves"]=[1.-P2G,P2G]
-        dist['S3G3']["P2Serves"]=[1.-P2G,P2G]
-        dist['S3G4']["P2Serves"]=[1.-P2G,P2G]
-        dist['S3G5']["P2Serves"]=[1.-P2G,P2G]
-        dist['S3G6']["P2Serves"]=[1.-P2G,P2G]
-        dist['S3G7']["P2Serves"]=[1.-P2G,P2G]
-        dist['S3G8']["P2Serves"]=[1.-P2G,P2G]
-        dist['S3G9']["P2Serves"]=[1.-P2G,P2G]
-        dist['S3G10']["P2Serves"]=[1.-P2G,P2G]
-        dist['S3G11']["P2Serves"]=[1.-P2G,P2G]
-        dist['S3G12']["P2Serves"]=[1.-P2G,P2G]
-        dist['S3TB']["P2Serves"]=[1.-P2TB,P2TB]
-        '''
+                    dist[node]['P1Serves'] = [P1G, 1. - P1G]
+                    dist[node]['P2Serves'] = [1. - P2G, P2G]
 
         # Define the possible outcomes of the set, given a sequence of outcomes from all 12 games and the TB:   
         dist['SetScore1'][1,1,1,1,1,1,1,1,1,1,1,1,1] = [1., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.]
@@ -435,11 +293,11 @@ def TennisMatchNetwork2Efficient(P1S, P2S, FirstToSets, ConditionalEvents = {}):
 
         # Set up the possible outcomes for each node:
         outcomes={}
-        outcomes['Set1Server']=["P1Serves","P2Serves"]
-        outcomes['Set2Server']=["P1Serves","P2Serves"]
-        outcomes['Set3Server']=["P1Serves","P2Serves"]
-        outcomes['Set4Server']=["P1Serves","P2Serves"]
-        outcomes['Set5Server']=["P1Serves","P2Serves"]
+        outcomes['Set1Server']=['P1Serves','P2Serves']
+        outcomes['Set2Server']=['P1Serves','P2Serves']
+        outcomes['Set3Server']=['P1Serves','P2Serves']
+        outcomes['Set4Server']=['P1Serves','P2Serves']
+        outcomes['Set5Server']=['P1Serves','P2Serves']
         outcomes['SetScore1']=[1,2,3,4,5,6,7,8,9,10,11,12,13,14]
         outcomes['SetScore2']=[1,2,3,4,5,6,7,8,9,10,11,12,13,14]
         outcomes['SetScore3']=[1,2,3,4,5,6,7,8,9,10,11,12,13,14]
@@ -476,25 +334,25 @@ def TennisMatchNetwork2Efficient(P1S, P2S, FirstToSets, ConditionalEvents = {}):
         # Create the conditional distributions for the starting server of each set, given the previous sets first server and the
         # number of games played in the last set:
         SetServers = ['Set2Server', 'Set3Server', 'Set4Server', 'Set5Server']
-        for i in outcomes["SetScore1"]:
+        for i in outcomes['SetScore1']:
             for node in SetServers:
                 # Odd Number of games: (i = 2, 4, 7, 9, 11, 14)
                 if (i in [2,4,7,9,11,14]):
-                    dist[node]["P1Serves",i] = [0., 1.]
-                    dist[node]["P2Serves",i] = [1., 0.]
+                    dist[node]['P1Serves',i] = [0., 1.]
+                    dist[node]['P2Serves',i] = [1., 0.]
                 else:
-                    dist[node]["P1Serves",i] = [1., 0.]
-                    dist[node]["P2Serves",i] = [0., 1.]
+                    dist[node]['P1Serves',i] = [1., 0.]
+                    dist[node]['P2Serves',i] = [0., 1.]
 
         # Define the probabilities for each game, given the server:
         for set in range(FirstToSets):
             for node in AllGameNodes[set]:
                 if ('TB' in node):
-                    dist[node]["P1Serves"] = [P1TB, 1. - P1TB]
-                    dist[node]["P2Serves"] = [P2TB, 1. - P2TB]
+                    dist[node]['P1Serves'] = [P1TB, 1. - P1TB]
+                    dist[node]['P2Serves'] = [P2TB, 1. - P2TB]
                 else:
-                    dist[node]["P1Serves"] = [P1G, 1. - P1G]
-                    dist[node]["P2Serves"] = [P2G, 1. - P2G]
+                    dist[node]['P1Serves'] = [P1G, 1. - P1G]
+                    dist[node]['P2Serves'] = [P2G, 1. - P2G]
 
         # Define the possible outcomes of the set, given a sequence of outcomes from all 12 games and the TB:   
         dist['SetScore1'][1,1,1,1,1,1,1,1,1,1,1,1,1] = [1., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.]
@@ -687,10 +545,10 @@ def TennisMatchNetwork2Efficient(P1S, P2S, FirstToSets, ConditionalEvents = {}):
     # Set up initial information:
     info={}
     for i in nodes:
-        if (i in ConditionalEvents):
+        if (i in ConditionalEvents.keys()):
             # Fix certian nodes identfied by user:
             info[i] = choose(outcomes[i], ConditionalEvents[i])
         else:
             # Otherwise leave them unfixed:
-            info[i] = choose(outcomes[i], "NotSure")
+            info[i] = choose(outcomes[i], [])
     return(nodes, dist, parents, outcomes, info)
