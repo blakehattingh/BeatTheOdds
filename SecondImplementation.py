@@ -11,6 +11,6 @@ def MarkovModelSecondImplementation(P1S,P2S,FirstToSets,FirstToTBPoints,Viscosit
     # Run the belief propagation algorithm on this network:
     [MatchDist,MatchScoreDist,TotalNumGamesDist,AllSetScoresDist] = beliefpropagation(nodes,dist,
     parents,outcomes,info,Iterations,Tol,['Match','MatchScore','TotalNumGames','AllSetScores'],
-    Viscosity, True)
+    Viscosity, False)
     return MatchDist,MatchScoreDist,TotalNumGamesDist,AllSetScoresDist
     

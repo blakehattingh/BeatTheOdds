@@ -32,7 +32,7 @@ def main():
     P2S = 0.6
     Approach = 2
     Viscosity = 0.5
-    ConditionalEvents = {'Set1Server': "P2Serves", 'Match': 2}
+    ConditionalEvents = {'Set1Server': ["P2Serves"], 'Match': [2], 'MatchScore':[3,4]}
 
     if (Approach == 1):
         # Run the Markov Model using Implementation 1:
