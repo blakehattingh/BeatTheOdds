@@ -8,14 +8,21 @@ def choose(option, total):
     temp[option] = 1.
     return temp
 
-def choose(outcomes,choice):
-    for i in range(len(outcomes)):
-        if outcomes[i]==choice:
-            temp = np.zeros(len(outcomes))
-            temp[i] = 1.
-            return temp
-
-    return np.ones(len(outcomes))
+def choose(outcomes,choices):
+    if (len(choices) == 0):
+        return np.ones(len(outcomes))
+    else:
+        temp = np.zeros(len(outcomes))
+        for i in choices:
+            counter = 0
+            Searching = True
+            while (Searching):
+                if (i == outcomes[counter]):
+                    temp[counter] = 1
+                    Searching = False
+                else:
+                    counter += 1
+        return temp
 
 def appendOutcomes(dx,pars,outcomes,p,index,n):
     if p==n:
