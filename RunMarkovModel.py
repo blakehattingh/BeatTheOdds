@@ -4,7 +4,7 @@ from AdditionalFunctions import ComputeTBProbabilities
 from FirstImplementation import MarkovModelFirstImplementation
 from SecondImplementation import MarkovModelSecondImplementation
 
-def RunMarkovModel(P1S, P2S, FirstToSets, FirstToTBPoints, Method, Viscosity, ConditionalEvents):
+def RunMarkovModel(P1S, P2S, FirstToSets, FirstToTBPoints, Method, Viscosity, ConditionalEvents = {}):
     # This function runs the Markov Model using one of the approaches implemented.
 
     # Model Parameters:
@@ -19,7 +19,7 @@ def RunMarkovModel(P1S, P2S, FirstToSets, FirstToTBPoints, Method, Viscosity, Co
     # Run the Markov Model using the method specified by the user:
     if (Method == 1):
         [MatchDist, MatchScoreDist, TotalNumGamesDist, AllSetScoresDist] = MarkovModelFirstImplementation(P1S, P2S, 
-        FirstToSets, FirstToTBPoints, Viscosity, Iterations, Tol)
+        FirstToSets, FirstToTBPoints, ConditionalEvents, Iterations, Tol)
         return MatchDist, MatchScoreDist, TotalNumGamesDist, AllSetScoresDist
 
     elif (Method == 2):
@@ -28,11 +28,11 @@ def RunMarkovModel(P1S, P2S, FirstToSets, FirstToTBPoints, Method, Viscosity, Co
         return MatchDist, MatchScoreDist, TotalNumGamesDist, AllSetScoresDist
 
 def main():
-    P1S = 0.7
-    P2S = 0.6
+    P1S = 0.6
+    P2S = 0.55
     Approach = 2
     Viscosity = 0.5
-    ConditionalEvents = {'Set1Server': ['P2Serves'], 'Match': [2], 'MatchScore': [3,4]}
+    ConditionalEvents = {}
 
     if (Approach == 1):
         # Run the Markov Model using Implementation 1:
