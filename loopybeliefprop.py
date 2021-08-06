@@ -111,12 +111,12 @@ def beliefpropagation(nodes, dist, parents, outcomes, info, iterations, toleranc
             converged=True
             for v in nodes:
                 conv=np.linalg.norm(previous[v]-variable_data[v])
-                # print(variable_data[v])
-                print("Conv = " + str(conv))
+                #print("Conv = " + str(conv))
                 if conv>tolerance:
                     converged=False
                     break
             if converged:
+                print("Converged!")
                 break
                 
         previous=variable_data.copy()
@@ -124,8 +124,6 @@ def beliefpropagation(nodes, dist, parents, outcomes, info, iterations, toleranc
         #f to v
         for f in nodes:
             temp={}
-            # print(f)
-            # print(factor_adj[f])
             if len(factor_adj[f])==1:
                 v=factor_adj[f][0]
                 msg_f_to_v[f][v]=M[f]
@@ -133,10 +131,8 @@ def beliefpropagation(nodes, dist, parents, outcomes, info, iterations, toleranc
                 count=1
                 div={}
                 for v in factor_adj[f]:
-                    # print(v)
                     div[v]=count
                     count*=info[v].size
-                    # print(count)
 
                 for v in factor_adj[f]:
                     temp=msg_f_to_v[f][v]
@@ -159,11 +155,12 @@ def beliefpropagation(nodes, dist, parents, outcomes, info, iterations, toleranc
                     if UsingVis:
                         msg_f_to_v[f][v] = ( Viscosity) * temp + (1. - Viscosity) * msg_f_to_v[f][v]
 
-    for v in nodes:
-        print(v+': Outcomes ',end='')
-        print(outcomes[v],end='')
-        print(', Distribution ',end='')
-        print(variable_data[v])
+
+    # for v in nodes:
+        #print(v+': Outcomes ',end='')
+        #print(outcomes[v],end='')
+        #print(', Distribution ',end='')
+        #print(variable_data[v])
         
     # Return the distributions of interest (usually the leaf nodes):
     ReturnDists = []

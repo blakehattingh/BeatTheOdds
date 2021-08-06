@@ -28,7 +28,7 @@ def Set(P, Q, A, B):
     Set = 0
     for i in range(21):
         Set += B[i][0] * pow(Game(P),B[i][1]) * pow((1-Game(P)),B[i][2]) * pow(Game(Q),B[i][3]) * pow((1-Game(Q)),B[i][4])\
-        * pow((Game(P)*Game(Q) + (Game(P)*(1-Game(Q)) + (1-Game(P))*Game(Q)) * TB(P,Q,A)),B[i][5])
+        * pow((Game(P)*Game(Q) + (Game(P)*(1-Game(Q)) + (1-Game(P))*Game(Q)) * TB(P,Q)),B[i][5])
     return Set
 
 def Match3(P, Q, A, B):

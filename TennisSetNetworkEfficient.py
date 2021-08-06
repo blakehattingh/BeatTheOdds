@@ -3,7 +3,7 @@ from AdditionalFunctions import combine_recursion, nth_index
 from loopybeliefprop import choose
 from OMalleysEqns import TB
 
-def TennisSetNetworkEfficient(P1S, P2S, InitServerDist = [0.5, 0.5]):
+def TennisSetNetworkEfficient(P1S, P2S, InitServerDist = [0.5, 0.5], ConditionalEvents = {}):
     # Specify the names of the nodes in the Bayesian network
     nodes=['ServerOdd','ServerEven','SetScore','G1','G2','G3','G4','G5','G6','G7','G8','G9','G10','G11','G12','TB']
 
@@ -22,8 +22,8 @@ def TennisSetNetworkEfficient(P1S, P2S, InitServerDist = [0.5, 0.5]):
 
     # Set up the possible outcomes for each node:
     outcomes={}
-    outcomes['ServerOdd']=["P1Serves","P2Serves"]
-    outcomes['ServerEven']=["P1Serves","P2Serves"]
+    outcomes['ServerOdd']=['P1Serves','P2Serves']
+    outcomes['ServerEven']=['P1Serves','P2Serves']
     for node in GameNodes:
         outcomes[node] = [1, 2]
     outcomes['SetScore']=[1,2,3,4,5,6,7,8,9,10,11,12,13,14]
@@ -43,17 +43,17 @@ def TennisSetNetworkEfficient(P1S, P2S, InitServerDist = [0.5, 0.5]):
 
     # Equal chance of each player serving the first game: (Can update if the toss has been done)
     dist['ServerOdd'] = InitServerDist
-    dist['ServerEven']["P1Serves"] = [0.,1.]
-    dist['ServerEven']["P2Serves"] = [1.,0.]
+    dist['ServerEven']['P1Serves'] = [0.,1.]
+    dist['ServerEven']['P2Serves'] = [1.,0.]
 
     # Define the probabilities for each game, given the server:
     for node in GameNodes:
         if (node == 'TB'):
-            dist[node]["P1Serves"] = [P1TB, 1. - P1TB]
-            dist[node]["P2Serves"] = [1. - P2TB, P2TB]
+            dist[node]['P1Serves'] = [P1TB, 1. - P1TB]
+            dist[node]['P2Serves'] = [1. - P2TB, P2TB]
         else:
-            dist[node]["P1Serves"] = [P1G, 1. - P1G]
-            dist[node]["P2Serves"] = [1. - P2G, P2G]
+            dist[node]['P1Serves'] = [P1G, 1. - P1G]
+            dist[node]['P2Serves'] = [1. - P2G, P2G]
 
     # Define the possible outcomes of the set, given a sequence of outcomes from all 12 games and the TB:
     dist['SetScore'][1,1,1,1,1,1,1,1,1,1,1,1,1] = [1., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.]
@@ -146,6 +146,10 @@ def TennisSetNetworkEfficient(P1S, P2S, InitServerDist = [0.5, 0.5]):
     # Set up initial information:
     info={}
     for i in nodes:
-        info[i] = choose(outcomes[i], "NotSure")
-    
+        if (i in ConditionalEvents.keys()):
+            # Fix certian nodes identfied by user:
+            info[i] = choose(outcomes[i], ConditionalEvents[i])
+        else:
+            # Otherwise leave them unfixed:
+            info[i] = choose(outcomes[i], [])
     return(nodes, dist, parents, outcomes, info)

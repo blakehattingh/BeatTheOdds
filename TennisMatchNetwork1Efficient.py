@@ -3,7 +3,7 @@ from loopybeliefprop import choose
 from AdditionalFunctions import combine_recursion, nth_index
 import numpy as np
 
-def TennisMatchNetwork1Efficient(SetScoreDists, FirstToSets):
+def TennisMatchNetwork1Efficient(SetScoreDists, FirstToSets, ConditionalEvents = {}):
     if (FirstToSets == 3):
         # Specify the names of the nodes in the Bayesian network
         nodes=['SetScore1','SetScore2','SetScore3','Match','MatchScore','TotalNumGames','AllSetScores']
@@ -258,8 +258,12 @@ def TennisMatchNetwork1Efficient(SetScoreDists, FirstToSets):
     # Set up initial information:
     info={}
     for i in nodes:
-        info[i] = choose(outcomes[i], "NotSure")
-    
+        if (i in ConditionalEvents.keys()):
+            # Fix certian nodes identfied by user:
+            info[i] = choose(outcomes[i], ConditionalEvents[i])
+        else:
+            # Otherwise leave them unfixed:
+            info[i] = choose(outcomes[i], [])
     return(nodes, dist, parents, outcomes, info)
 
 
