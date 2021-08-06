@@ -22,7 +22,7 @@ def BuildingDB(PStart, PEnd, Increment):
     DataBase = {}
 
     # Create an array of P values:
-    PValues = np.linspace(PStart, PEnd, N)
+    PValues = np.linspace(PStart/100., PEnd/100., N)
 
     for P1 in PValues:
         for P2 in PValues:
@@ -38,13 +38,13 @@ def BuildingDB(PStart, PEnd, Increment):
 
     # Export the dictionary of distributions to a csv file:
     with open('ModelDistributions.csv', mode='w') as csv_file:
-        writer = csv.Writer(csv_file)
+        writer = csv.writer(csv_file)
         for key, value in DataBase.items():
             writer.writerow([key, value])
 
 def main():
     # Run function:
-    BuildingDB(0.5, 0.6, 0.05)
+    BuildingDB(50, 60, 5)
 
 if __name__ == "__main__":
     main()
