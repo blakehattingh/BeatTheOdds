@@ -19,7 +19,7 @@ def MarkovModelFirstImplementation(P1S, P2S, FirstToSets, FirstToTBPoints, Condi
     
     # Construct the initial distribution for the next set, based off the number of games in set 1:
     InitServerDist = [sum(NumGamesDist1[[0,2,4,5]]), sum(NumGamesDist1[[1,3,6]])]
-    print(InitServerDist)
+
     # Set 2:
     print("Set 2:")
     [nodes, dist, parents, outcomes, info] = TennisSetNetworkEfficient(P1S, P2S, InitServerDist)
@@ -33,7 +33,7 @@ def MarkovModelFirstImplementation(P1S, P2S, FirstToSets, FirstToTBPoints, Condi
     # Construct the initial distribution for the next set, based off the number of games in set 2 and the initial server:
     P1Serving = (InitServerDist[0]*sum(NumGamesDist2[[0,2,4,5]]) + InitServerDist[1]*sum(NumGamesDist2[[1,3,6]]))
     InitServerDist = [P1Serving, 1. - P1Serving]
-    print(InitServerDist)
+    
     # Set 3:
     print("Set 3:")
     [nodes, dist, parents, outcomes, info] = TennisSetNetworkEfficient(P1S, P2S, InitServerDist)
