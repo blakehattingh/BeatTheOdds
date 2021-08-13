@@ -29,6 +29,7 @@ def BuildingDB(PStart, PEnd, Increment):
 
     for P1 in PValues:
         for P2 in PValues:
+            print('P-values: ', [P1],[P2])
             # Run the model:
             [MatchDist, MatchScoreDist, TotalNumGamesDist, AllSetScoresDist] = MarkovModelFirstImplementation(P1, P2, 3, 7)
 
