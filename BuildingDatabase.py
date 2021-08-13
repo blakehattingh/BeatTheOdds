@@ -45,7 +45,7 @@ def BuildingDB(PStart, PEnd, Increment):
 
 def main():
     # Run function:
-    BuildingDB(50, 60, 5)
+    BuildingDB(50, 90, 2)
 
 if __name__ == "__main__":
     main()
