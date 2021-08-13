@@ -1,5 +1,8 @@
 from typing import List
-from MarkovModel.FirstImplementation import MarkovModelFirstImplementation
+import os, sys
+relativePath = os.path.abspath('')
+sys.path.append(relativePath + '\\MarkovModel')
+from FirstImplementation import MarkovModelFirstImplementation
 import numpy as np
 import pandas as pd
 import csv

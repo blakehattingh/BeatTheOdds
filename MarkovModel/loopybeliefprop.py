@@ -1,6 +1,5 @@
 import numpy as np
 import math as math
-
 from numpy.core.fromnumeric import var
 
 def choose(option, total):

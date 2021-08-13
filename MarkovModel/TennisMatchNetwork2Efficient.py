@@ -1,9 +1,9 @@
 # Import the required functions:
 from typing import Set
 from loopybeliefprop import choose
-from OtherFunctions.AdditionalFunctions import combine_recursion, nth_index
+from AdditionalFunctions import combine_recursion, nth_index
 import numpy as np
-from OtherFunctions.OMalleysEqns import TB
+from OMalleysEqns import TB
  
 def TennisMatchNetwork2Efficient(P1S, P2S, FirstToSets, ConditionalEvents = {}):
     if (FirstToSets == 3):
