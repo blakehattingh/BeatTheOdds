@@ -47,6 +47,12 @@ def ObjectiveMetricSetScore(AllSetScoreDist, SetScores):
 
 def ObjectiveMatchScoreDist(MatchScoreDist, MatchScore):
     x = 10
+<<<<<<< HEAD
+
+def InterpolateDists(Pa, Pb):
+    x = 10
+=======
+>>>>>>> d0d03ab6ca45d8093cb79f96209f37de77a7938a
     
 def try_parsing_date(text):
     for fmt in ('%d/%m/%Y', '%d-%m-%Y', '%Y-%m-%d'):
@@ -85,6 +91,13 @@ def EvalEquation(age):
 def CalcPEquation1(MatchData,PrevMatches,PrevMatchesCommA,PrevMatchesCommB,CommonOpps,Lamda,SurfaceParameter):
     # This function takes in a match, extracts who is playing, when the match is/was played, and what surface it is/was played on
     # It then computes the P values for both players using method 1 (FOR NOW, can integrate it to use a specified method)
+    # Inputs:
+    # - MatchData = Data on a single match to be predicted on
+    # - PrevMatches = The previous matches between the players playing in the match
+    # - PrevMatchesCommA / B = The matches between player A / B and the common opponents
+    # - CommonOpps = A list of common opponent IDs
+    # - Lamda = A parameter corresponding to the weighting between spw(A,B) and spw(A,C)
+    # - SurfaceParameter = A hyperparameter corresponding to the weighting on matches played on the same surface
 
     # Extract required info:
     Date = MatchData[3]
@@ -106,8 +119,8 @@ def CalcPEquation1(MatchData,PrevMatches,PrevMatchesCommA,PrevMatchesCommB,Commo
     rpwBA = 1. - spwAB
 
     # Compute SPW(A,C) and SPW(B,C):
-    [spwAC, rpwAC] = ComputeSPWCommon(PlayerA, CommonOpps, Age, Surface, MatchDataFileNameCommA, DateOfMatch, SurfaceOfMatch) 
-    [spwBC, rpwBC] = ComputeSPWCommon(PlayerB, CommonOpps, Age, Surface, MatchDataFileNameCommB, DateOfMatch, SurfaceOfMatch)
+    [spwAC, rpwAC] = ComputeSPWCommon(PlayerA, PrevMatchesCommA, CommonOpps, SurfaceParameter, Date, Surface) 
+    [spwBC, rpwBC] = ComputeSPWCommon(PlayerB, PrevMatchesCommB, CommonOpps, SurfaceParameter, Date, Surface)
 
     print('spwAC:', spwAC, 'rpwAC:', rpwAC)
     print('spwBC:', spwBC, 'rpwBC:', rpwBC) 
@@ -117,6 +130,7 @@ def CalcPEquation1(MatchData,PrevMatches,PrevMatchesCommA,PrevMatchesCommB,Commo
     Pb = (1  - Lamda) * spwBA + Lamda * spwBC
 
     print('Pa:', Pa, 'Pb:', Pb)
+    return [Pa, Pb]
 
 def ComputeSPW(PlayerA, PlayerB, PrevMatches, SurfaceParameter, Date, Surface):
     # Inputs:
@@ -195,33 +209,33 @@ def ComputeSPWCommon(PlayerA, PrevMatchesCommOpps, CommonOpps, SurfaceParameter,
             if (Surface == PrevMatchesCommOpps[match][4]):
                 if (PrevMatchesCommOpps[match][8] == PlayerA):
                     # Find who the opponent was:
-                    Opp = CommonOpps.index(PrevMatchesCommOpps[match]['loser_id'])
-                    PlayerAServePointsSurface[Opp] += PrevMatchesCommOpps[match]['w_sv_pt']
-                    PlayerAServePointsWonSurface[Opp] += (PrevMatchesCommOpps[match]['w_1st_won'] + PrevMatchesCommOpps[match]['w_2nd_won'])
-                    PlayerAReturnPointsSurface[Opp] += PrevMatchesCommOpps[match]['l_sv_pt']
-                    PlayerAReturnPointsWonSurface[Opp] += (PrevMatchesCommOpps[match]['l_sv_pt'] - (PrevMatchesCommOpps[match]['l_1st_won'] + PrevMatchesCommOpps[match]['l_2nd_won']))
+                    Opp = CommonOpps.index(PrevMatchesCommOpps[match][18])
+                    PlayerAServePointsSurface[Opp] += PrevMatchesCommOpps[match][42]
+                    PlayerAServePointsWonSurface[Opp] += (PrevMatchesCommOpps[match][44] + PrevMatchesCommOpps[match][45])
+                    PlayerAReturnPointsSurface[Opp] += PrevMatchesCommOpps[match][51]
+                    PlayerAReturnPointsWonSurface[Opp] += (PrevMatchesCommOpps[match][51] - (PrevMatchesCommOpps[match][53] + PrevMatchesCommOpps[match][54]))
                 else:
                     # Find who the opponent was:
-                    Opp = CommonOpps.index(PrevMatchesCommOpps[match]['winner_id'])
-                    PlayerAServePointsSurface[Opp] += PrevMatchesCommOpps[match]['l_sv_pt']
-                    PlayerAServePointsWonSurface[Opp] += (PrevMatchesCommOpps[match]['l_1st_won'] + PrevMatchesCommOpps[match]['l_2nd_won'])
-                    PlayerAReturnPointsSurface[Opp] += PrevMatchesCommOpps[match]['w_sv_pt']
-                    PlayerAReturnPointsWonSurface[Opp] += (PrevMatchesCommOpps[match]['w_sv_pt'] - (PrevMatchesCommOpps[match]['w_1st_won'] + PrevMatchesCommOpps[match]['w_2nd_won']))
+                    Opp = CommonOpps.index(PrevMatchesCommOpps[match][8])
+                    PlayerAServePointsSurface[Opp] += PrevMatchesCommOpps[match][51]
+                    PlayerAServePointsWonSurface[Opp] += (PrevMatchesCommOpps[match][53] + PrevMatchesCommOpps[match][54])
+                    PlayerAReturnPointsSurface[Opp] += PrevMatchesCommOpps[match][42]
+                    PlayerAReturnPointsWonSurface[Opp] += (PrevMatchesCommOpps[match][42] - (PrevMatchesCommOpps[match][44] + PrevMatchesCommOpps[match][45]))
             else:
-                if (PrevMatchesCommOpps[match]['winner_id'] == PlayerA):
+                if (PrevMatchesCommOpps[match][8] == PlayerA):
                     # Find who the opponent was:
-                    Opp = CommonOpps.index(PrevMatchesCommOpps[match]['loser_id'])
-                    PlayerAServePointsNS[Opp] += PrevMatchesCommOpps[match]['w_sv_pt']
-                    PlayerAServePointsWonNS[Opp] += (PrevMatchesCommOpps[match]['w_1st_won'] + PrevMatchesCommOpps[match]['w_2nd_won'])
-                    PlayerAReturnPointsNS[Opp] += PrevMatchesCommOpps[match]['l_sv_pt']
-                    PlayerAReturnPointsWonNS[Opp] += (PrevMatchesCommOpps[match]['l_sv_pt'] - (PrevMatchesCommOpps[match]['l_1st_won'] + PrevMatchesCommOpps[match]['l_2nd_won']))
+                    Opp = CommonOpps.index(PrevMatchesCommOpps[match][18])
+                    PlayerAServePointsNS[Opp] += PrevMatchesCommOpps[match][42]
+                    PlayerAServePointsWonNS[Opp] += (PrevMatchesCommOpps[match][44] + PrevMatchesCommOpps[match][45])
+                    PlayerAReturnPointsNS[Opp] += PrevMatchesCommOpps[match][51]
+                    PlayerAReturnPointsWonNS[Opp] += (PrevMatchesCommOpps[match][51] - (PrevMatchesCommOpps[match][53] + PrevMatchesCommOpps[match][54]))
                 else:
                     # Find who the opponent was:
-                    Opp = CommonOpps.index(PrevMatchesCommOpps[match]['winner_id'])
-                    PlayerAServePointsNS[Opp] += PrevMatchesCommOpps[match]['l_sv_pt']
-                    PlayerAServePointsWonNS[Opp] += (PrevMatchesCommOpps[match]['l_1st_won'] + PrevMatchesCommOpps[match]['l_2nd_won'])
-                    PlayerAReturnPointsNS[Opp] += PrevMatchesCommOpps[match]['w_sv_pt']
-                    PlayerAReturnPointsWonNS[Opp] += (PrevMatchesCommOpps[match]['w_sv_pt'] - (PrevMatchesCommOpps[match]['w_1st_won'] + PrevMatchesCommOpps[match]['w_2nd_won']))
+                    Opp = CommonOpps.index(PrevMatchesCommOpps[match][8])
+                    PlayerAServePointsNS[Opp] += PrevMatchesCommOpps[match][51]
+                    PlayerAServePointsWonNS[Opp] += (PrevMatchesCommOpps[match][53] + PrevMatchesCommOpps[match][54])
+                    PlayerAReturnPointsNS[Opp] += PrevMatchesCommOpps[match][42]
+                    PlayerAReturnPointsWonNS[Opp] += (PrevMatchesCommOpps[match][42] - (PrevMatchesCommOpps[match][44] + PrevMatchesCommOpps[match][45]))
     
     # Remove any common opponents
     # Compute the proportion of service points won against each common opponent:
