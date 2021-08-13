@@ -1,5 +1,5 @@
 from itertools import islice
-from MarkovModel.MarkovSimulations import MarkovChainTieBreaker
+from MarkovSimulations import MarkovChainTieBreaker
 import csv
 import os
 
@@ -45,7 +45,7 @@ def ComputeTBProbabilities(P1S, P2S):
 
     # Compute the tie-breaker probabilities using pre-calculated values from a simulation:
     THIS_FOLDER = os.path.dirname(os.path.abspath(__file__))
-    with open(os.path.join(THIS_FOLDER,'TBProbabilities.csv')) as csv_file:
+    with open(os.path.join(THIS_FOLDER, 'TBProbabilities.csv')) as csv_file:
         csv_reader = csv.reader(csv_file, delimiter=',')
         line_count = 0
         for row in csv_reader:

@@ -1,7 +1,10 @@
 from datetime import datetime, timedelta
 from typing import Match
 from pandas.core.base import DataError
-from MarkovModel.FirstImplementation import MarkovModelFirstImplementation
+import os, sys
+relativePath = os.path.abspath('')
+sys.path.append(relativePath + '\\MarkovModel')
+from FirstImplementation import MarkovModelFirstImplementation
 import pandas as pd
 import numpy as np
 
@@ -42,7 +45,7 @@ def ObjectiveMetricSetScore(AllSetScoreDist, SetScores):
 def ObjectiveMatchScoreDist(MatchScoreDist, MatchScore):
     x = 10
 
-def CreateTestData(MatchDataFileName):
+def CreateTestData():
     # This function takes in a csv file of matches and extracts the required information to run the model
     # It returns a dictionary of match data consisting of:
     # Keys:
@@ -87,7 +90,7 @@ def EvalEquation(Pa, Pb, MatchData):
     # - ObjectiveVals = A dictionary of the various objective metric values
     #                   Keys = 'MatchOutcome', 'SetScores', 'MatchScore'
 
-    # Run the model with the given inputs:
+    # Extract the model with the given inputs:
     [MatchDist, MatchScoreDist, TotalNumGamesDist, AllSetScoresDist] = MarkovModelFirstImplementation(Pa, Pb, 3, 7)
 
     print('MatchDist:', MatchDist)
@@ -104,10 +107,23 @@ def EvalEquation(Pa, Pb, MatchData):
     ObjectiveVals = {'MatchOutcome': Prop, 'SetScores': Points, 'MatchScore': 0}
     return ObjectiveVals
 
-def CalcPEquation1(PlayerA, PlayerB, CommonOpps, MatchDataFileName, MatchDataFileNameCommA, MatchDataFileNameCommB, DateOfMatch, SurfaceOfMatch, 
-Lamda, Age, Surface):
+def CalcPEquation1(MatchData,PrevMatches,PrevMatchesCommA,PrevMatchesCommB,CommonOpps,Lamda,SurfaceParameter):
+    # This function takes in a match, extracts who is playing, when the match is/was played, and what surface it is/was played on
+    # It then computes the P values for both players using method 1 (FOR NOW, can integrate it to use a specified method)
+
+    # Extract required info:
+    Date = MatchData[3]
+    Surface = MatchData[4]
+    PlayerA = MatchData[8]
+    PlayerB = MatchData[18]
+    SetScores = MatchData[28]
+    AwonSets = MatchData[30]
+    BwonSets = MatchData[31]
+    AwonGames = MatchData[32]
+    BwonGames = MatchData[32]
+
     # Compute SPW(A,B) and SPW(B, A):
-    [spwAB, spwBA] = ComputeSPW(PlayerA, PlayerB, Age, Surface, MatchDataFileName, DateOfMatch, SurfaceOfMatch)
+    [spwAB, spwBA] = ComputeSPW(PlayerA, PlayerB, PrevMatches, SurfaceParameter, Date, Surface)
     print('spwAB:', spwAB, 'spwBA:', spwBA)
 
     # Compute RPW(A,B) and RPW(B,A)
@@ -127,26 +143,13 @@ Lamda, Age, Surface):
 
     print('Pa:', Pa, 'Pb:', Pb)
 
-def ComputeSPW(PlayerA, PlayerB, Age, Surface, MatchDataFileName, DateOfMatch, SurfaceOfMatch):
+def ComputeSPW(PlayerA, PlayerB, PrevMatches, SurfaceParameter, Date, Surface):
     # Inputs:
     # - PlayerA & PlayerB = IDs of both players of interest 
-    # - Age = A hyperparameter corresponding to how far back we go in terms of the data (integer, units = Years)
-    # - Surface = A hyperparameter corresponding to the weighting on matches played on the same surface
-    # - MatchDataFileName = The name of the csv file containing all match data between player A and player B
-    # - DateOfMatch = The date of the match as a string in format '%d/%m/%Y'
-    # - SurfaceOfMatch = The surface that the match will be played on (as an abbrev, e.g. C = Clay)
-
-    # Required Columns:
-    ColNames = ['date', 'surface', 'winner_id', 'w_sv_pt', 'w_1st_won', 'w_2nd_won', 'l_sv_pt', 'l_1st_won', 'l_2nd_won']
-
-    # Read in the csv file corresponding to all the games between player A and player B:
-    MatchData = pd.read_csv(MatchDataFileName, usecols = ColNames)
-
-    # Compute the date of the match:
-    DOMDate = datetime.strptime(DateOfMatch, '%d/%m/%Y')
-
-    # Compute the date we want to collect data up until:
-    AgeGap = timedelta(days = 365.25 * Age)
+    # - PrevMatches = A list of tuples of all previous matches between player A and player B
+    # - SurfaceParameter = A hyperparameter corresponding to the weighting on matches played on the same surface
+    # - Date = The date of the match as a string in format '%Y-%m-%d'
+    # - Surface = The surface that the match will be played on (as an abbrev, e.g. C = Clay)
 
     # Sum up the service points played for each player:
     PlayerAServePointsSurface = 0
@@ -157,52 +160,48 @@ def ComputeSPW(PlayerA, PlayerB, Age, Surface, MatchDataFileName, DateOfMatch, S
     PlayerAServePointsWonNS = 0
     PlayerBServePointsNS = 0
     PlayerBServePointsWonNS = 0
-    for match in range(len(MatchData)):
+    for match in range(len(PrevMatches)):
         # Check when the match was played:
-        MatchDate = datetime.strptime(MatchData.iloc[match].loc['date'], '%d/%m/%Y')
+        MatchDate = datetime.strptime(PrevMatches[match][3], '%Y-%m-%d')
 
-        if (((DOMDate - MatchDate).days > 0) and (((DOMDate - AgeGap) - MatchDate).days < 0)):
-            if (MatchData.iloc[match].loc['surface'] == SurfaceOfMatch):
-                if (MatchData.iloc[match].loc['winner_id'] == PlayerA):
-                    PlayerAServePointsSurface += MatchData.iloc[match].loc['w_sv_pt']
-                    PlayerAServePointsWonSurface += (MatchData.iloc[match].loc['w_1st_won'] + MatchData.iloc[match].loc['w_2nd_won'])
-                    PlayerBServePointsSurface += MatchData.iloc[match].loc['l_sv_pt']
-                    PlayerBServePointsWonSurface += (MatchData.iloc[match].loc['l_1st_won'] + MatchData.iloc[match].loc['l_2nd_won'])
+        if ((Date - MatchDate).days > 0):
+            if (PrevMatches[match][4] == Surface):
+                if (PrevMatches[match][8] == PlayerA):
+                    PlayerAServePointsSurface += PrevMatches[match][42]
+                    PlayerAServePointsWonSurface += (PrevMatches[match][44] + PrevMatches[match][45])
+                    PlayerBServePointsSurface += PrevMatches[match][51]
+                    PlayerBServePointsWonSurface += (PrevMatches[match][53] + PrevMatches[match][54])
                 else:
-                    PlayerAServePointsSurface += MatchData.iloc[match].loc['l_sv_pt']
-                    PlayerAServePointsWonSurface += (MatchData.iloc[match].loc['l_1st_won'] + MatchData.iloc[match].loc['l_2nd_won'])
-                    PlayerBServePointsSurface += MatchData.iloc[match].loc['w_sv_pt']
-                    PlayerBServePointsWonSurface += (MatchData.iloc[match].loc['w_1st_won'] + MatchData.iloc[match].loc['w_2nd_won'])
+                    PlayerAServePointsSurface += PrevMatches[match][51]
+                    PlayerAServePointsWonSurface += (PrevMatches[match][53] + PrevMatches[match][54])
+                    PlayerBServePointsSurface += PrevMatches[match][42]
+                    PlayerBServePointsWonSurface += (PrevMatches[match][44] + PrevMatches[match][45])
             else:
-                if (MatchData.iloc[match].loc['winner_id'] == PlayerA):
-                    PlayerAServePointsNS += MatchData.iloc[match].loc['w_sv_pt']
-                    PlayerAServePointsWonNS += (MatchData.iloc[match].loc['w_1st_won'] + MatchData.iloc[match].loc['w_2nd_won'])
-                    PlayerBServePointsNS += MatchData.iloc[match].loc['l_sv_pt']
-                    PlayerBServePointsWonNS += (MatchData.iloc[match].loc['l_1st_won'] + MatchData.iloc[match].loc['l_2nd_won'])
+                if (PrevMatches[match][8] == PlayerA):
+                    PlayerAServePointsNS += PrevMatches[match][42]
+                    PlayerAServePointsWonNS += (PrevMatches[match][44] + PrevMatches[match][45])
+                    PlayerBServePointsNS += PrevMatches[match][51]
+                    PlayerBServePointsWonNS += (PrevMatches[match][53] + PrevMatches[match][54])
                 else:
-                    PlayerAServePointsNS += MatchData.iloc[match].loc['l_sv_pt']
-                    PlayerAServePointsWonNS += (MatchData.iloc[match].loc['l_1st_won'] + MatchData.iloc[match].loc['l_2nd_won'])
-                    PlayerBServePointsNS += MatchData.iloc[match].loc['w_sv_pt']
-                    PlayerBServePointsWonNS += (MatchData.iloc[match].loc['w_1st_won'] + MatchData.iloc[match].loc['w_2nd_won'])
+                    PlayerAServePointsNS += PrevMatches[match][51]
+                    PlayerAServePointsWonNS += (PrevMatches[match][53] + PrevMatches[match][54])
+                    PlayerBServePointsNS += PrevMatches[match][42]
+                    PlayerBServePointsWonNS += (PrevMatches[match][44] + PrevMatches[match][45])
             
     # Compute the proportion of service points won:
-    PlayerAServiceProp = (1 - Surface) * (PlayerAServePointsWonSurface / PlayerAServePointsSurface) + Surface * (PlayerAServePointsWonNS / PlayerAServePointsNS)
-    PlayerBServiceProp = (1 - Surface) * (PlayerBServePointsWonSurface / PlayerBServePointsSurface) + Surface * (PlayerBServePointsWonNS / PlayerBServePointsNS)
+    PlayerAServiceProp = (1 - SurfaceParameter) * (PlayerAServePointsWonSurface / PlayerAServePointsSurface) + SurfaceParameter * (PlayerAServePointsWonNS / PlayerAServePointsNS)
+    PlayerBServiceProp = (1 - SurfaceParameter) * (PlayerBServePointsWonSurface / PlayerBServePointsSurface) + SurfaceParameter * (PlayerBServePointsWonNS / PlayerBServePointsNS)
 
     return PlayerAServiceProp, PlayerBServiceProp
 
-def ComputeSPWCommon(PlayerA, CommonOpps, Age, Surface, MatchDataFileName, DateOfMatch, SurfaceOfMatch):    
-    # Required Columns:
-    ColNames = ['date', 'surface', 'winner_id', 'loser_id', 'w_sv_pt', 'w_1st_won', 'w_2nd_won', 'l_sv_pt', 'l_1st_won', 'l_2nd_won']
-
-    # Read in the csv file corresponding to all the games between player A and player B:
-    MatchData = pd.read_csv(MatchDataFileName, usecols = ColNames)
-
-    # Compute Match date:
-    DOMDate = datetime.strptime(DateOfMatch, '%d/%m/%Y')
-
-    # Compute the date we want to collect data up until:
-    AgeGap = timedelta(days = 365.25 * Age)
+def ComputeSPWCommon(PlayerA, PrevMatchesCommOpps, CommonOpps, SurfaceParameter, Date, Surface):    
+    # Inputs:
+    # - PlayerA = ID of both player A
+    # - PrevMatchesCommOpps = A list of tuples of all previous matches between player A the common opponents
+    # - CommonOpps = A list of the IDs of all common opponents
+    # - SurfaceParameter = A hyperparameter corresponding to the weighting on matches played on the same surface
+    # - Date = The date of the match as a string in format '%Y-%m-%d'
+    # - Surface = The surface that the match will be played on (as an abbrev, e.g. C = Clay)
 
     # Sum up the service points played for each player:
     PlayerAServePointsSurface = np.zeros(len(CommonOpps), dtype = int)
@@ -213,42 +212,41 @@ def ComputeSPWCommon(PlayerA, CommonOpps, Age, Surface, MatchDataFileName, DateO
     PlayerAReturnPointsWonSurface = np.zeros(len(CommonOpps), dtype = int)
     PlayerAReturnPointsNS = np.zeros(len(CommonOpps), dtype = int)
     PlayerAReturnPointsWonNS = np.zeros(len(CommonOpps), dtype = int)
-    for match in range(len(MatchData)):
+    for match in range(len(PrevMatchesCommOpps)):
         # Check when the match was played:
-        MatchDate = try_parsing_date(MatchData.iloc[match].loc['date'])
-        #MatchDate = datetime.strptime(MatchData.iloc[match].loc['date'], '%d/%m/%Y')
+        MatchDate = datetime.strptime(PrevMatchesCommOpps[match][3], '%Y-%m-%d')
 
-        if (((DOMDate - MatchDate).days > 0) and (((DOMDate - AgeGap) - MatchDate).days < 0)):
-            if (MatchData.iloc[match].loc['surface'] == SurfaceOfMatch):
-                if (MatchData.iloc[match].loc['winner_id'] == PlayerA):
+        if ((Date - MatchDate).days > 0):
+            if (Surface == PrevMatchesCommOpps[match][4]):
+                if (PrevMatchesCommOpps[match][8] == PlayerA):
                     # Find who the opponent was:
-                    Opp = CommonOpps.index(MatchData.iloc[match].loc['loser_id'])
-                    PlayerAServePointsSurface[Opp] += MatchData.iloc[match].loc['w_sv_pt']
-                    PlayerAServePointsWonSurface[Opp] += (MatchData.iloc[match].loc['w_1st_won'] + MatchData.iloc[match].loc['w_2nd_won'])
-                    PlayerAReturnPointsSurface[Opp] += MatchData.iloc[match].loc['l_sv_pt']
-                    PlayerAReturnPointsWonSurface[Opp] += (MatchData.iloc[match].loc['l_sv_pt'] - (MatchData.iloc[match].loc['l_1st_won'] + MatchData.iloc[match].loc['l_2nd_won']))
+                    Opp = CommonOpps.index(PrevMatchesCommOpps[match]['loser_id'])
+                    PlayerAServePointsSurface[Opp] += PrevMatchesCommOpps[match]['w_sv_pt']
+                    PlayerAServePointsWonSurface[Opp] += (PrevMatchesCommOpps[match]['w_1st_won'] + PrevMatchesCommOpps[match]['w_2nd_won'])
+                    PlayerAReturnPointsSurface[Opp] += PrevMatchesCommOpps[match]['l_sv_pt']
+                    PlayerAReturnPointsWonSurface[Opp] += (PrevMatchesCommOpps[match]['l_sv_pt'] - (PrevMatchesCommOpps[match]['l_1st_won'] + PrevMatchesCommOpps[match]['l_2nd_won']))
                 else:
                     # Find who the opponent was:
-                    Opp = CommonOpps.index(MatchData.iloc[match].loc['winner_id'])
-                    PlayerAServePointsSurface[Opp] += MatchData.iloc[match].loc['l_sv_pt']
-                    PlayerAServePointsWonSurface[Opp] += (MatchData.iloc[match].loc['l_1st_won'] + MatchData.iloc[match].loc['l_2nd_won'])
-                    PlayerAReturnPointsSurface[Opp] += MatchData.iloc[match].loc['w_sv_pt']
-                    PlayerAReturnPointsWonSurface[Opp] += (MatchData.iloc[match].loc['w_sv_pt'] - (MatchData.iloc[match].loc['w_1st_won'] + MatchData.iloc[match].loc['w_2nd_won']))
+                    Opp = CommonOpps.index(PrevMatchesCommOpps[match]['winner_id'])
+                    PlayerAServePointsSurface[Opp] += PrevMatchesCommOpps[match]['l_sv_pt']
+                    PlayerAServePointsWonSurface[Opp] += (PrevMatchesCommOpps[match]['l_1st_won'] + PrevMatchesCommOpps[match]['l_2nd_won'])
+                    PlayerAReturnPointsSurface[Opp] += PrevMatchesCommOpps[match]['w_sv_pt']
+                    PlayerAReturnPointsWonSurface[Opp] += (PrevMatchesCommOpps[match]['w_sv_pt'] - (PrevMatchesCommOpps[match]['w_1st_won'] + PrevMatchesCommOpps[match]['w_2nd_won']))
             else:
-                if (MatchData.iloc[match].loc['winner_id'] == PlayerA):
+                if (PrevMatchesCommOpps[match]['winner_id'] == PlayerA):
                     # Find who the opponent was:
-                    Opp = CommonOpps.index(MatchData.iloc[match].loc['loser_id'])
-                    PlayerAServePointsNS[Opp] += MatchData.iloc[match].loc['w_sv_pt']
-                    PlayerAServePointsWonNS[Opp] += (MatchData.iloc[match].loc['w_1st_won'] + MatchData.iloc[match].loc['w_2nd_won'])
-                    PlayerAReturnPointsNS[Opp] += MatchData.iloc[match].loc['l_sv_pt']
-                    PlayerAReturnPointsWonNS[Opp] += (MatchData.iloc[match].loc['l_sv_pt'] - (MatchData.iloc[match].loc['l_1st_won'] + MatchData.iloc[match].loc['l_2nd_won']))
+                    Opp = CommonOpps.index(PrevMatchesCommOpps[match]['loser_id'])
+                    PlayerAServePointsNS[Opp] += PrevMatchesCommOpps[match]['w_sv_pt']
+                    PlayerAServePointsWonNS[Opp] += (PrevMatchesCommOpps[match]['w_1st_won'] + PrevMatchesCommOpps[match]['w_2nd_won'])
+                    PlayerAReturnPointsNS[Opp] += PrevMatchesCommOpps[match]['l_sv_pt']
+                    PlayerAReturnPointsWonNS[Opp] += (PrevMatchesCommOpps[match]['l_sv_pt'] - (PrevMatchesCommOpps[match]['l_1st_won'] + PrevMatchesCommOpps[match]['l_2nd_won']))
                 else:
                     # Find who the opponent was:
-                    Opp = CommonOpps.index(MatchData.iloc[match].loc['winner_id'])
-                    PlayerAServePointsNS[Opp] += MatchData.iloc[match].loc['l_sv_pt']
-                    PlayerAServePointsWonNS[Opp] += (MatchData.iloc[match].loc['l_1st_won'] + MatchData.iloc[match].loc['l_2nd_won'])
-                    PlayerAReturnPointsNS[Opp] += MatchData.iloc[match].loc['w_sv_pt']
-                    PlayerAReturnPointsWonNS[Opp] += (MatchData.iloc[match].loc['w_sv_pt'] - (MatchData.iloc[match].loc['w_1st_won'] + MatchData.iloc[match].loc['w_2nd_won']))
+                    Opp = CommonOpps.index(PrevMatchesCommOpps[match]['winner_id'])
+                    PlayerAServePointsNS[Opp] += PrevMatchesCommOpps[match]['l_sv_pt']
+                    PlayerAServePointsWonNS[Opp] += (PrevMatchesCommOpps[match]['l_1st_won'] + PrevMatchesCommOpps[match]['l_2nd_won'])
+                    PlayerAReturnPointsNS[Opp] += PrevMatchesCommOpps[match]['w_sv_pt']
+                    PlayerAReturnPointsWonNS[Opp] += (PrevMatchesCommOpps[match]['w_sv_pt'] - (PrevMatchesCommOpps[match]['w_1st_won'] + PrevMatchesCommOpps[match]['w_2nd_won']))
     
     # Remove any common opponents
     # Compute the proportion of service points won against each common opponent:
