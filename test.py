@@ -35,12 +35,12 @@ def main():
     [MatchDist, MatchScoreDist, TotalNumGamesDist, AllSetScoresDist] = RunMarkovModel(P1S,P2S,3,7,1,Viscosity)
     print('Match Distribution: ', end = '')
     print(MatchDist)
-    '''
+    
     # Implementation 2:
     [MatchDist, MatchScoreDist, TotalNumGamesDist, AllSetScoresDist] = RunMarkovModel(P1S,P2S,3,7,2,Viscosity)
     print('Match Distribution: ', end = '')
     print(MatchDist)
-    
+    '''
     '''
     # Run a single set and compare to O'Malley:
     [nodes,dist,parents,outcomes,info] = TennisSetNetworkEfficient(P1S, P2S, InitServerDist = [1., 0.])
@@ -56,7 +56,7 @@ def main():
 
     # O'Malley's:
     [A, B] = Matrices()
-    print(Match3(P1S, 1. - P2S, A, B))
+    print(Set(P1S, 1. - P2S, A, B))
 
 if __name__ == "__main__":
     main()
