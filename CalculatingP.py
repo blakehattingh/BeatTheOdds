@@ -42,6 +42,9 @@ def ObjectiveMetricSetScore(AllSetScoreDist, SetScores):
 def ObjectiveMatchScoreDist(MatchScoreDist, MatchScore):
     x = 10
 
+def CreateTestData(MatchData):
+    x = 10
+    
 def try_parsing_date(text):
     for fmt in ('%d/%m/%Y', '%d-%m-%Y', '%Y-%m-%d'):
         try:

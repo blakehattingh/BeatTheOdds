@@ -55,8 +55,13 @@ def main():
     '''
 
     # O'Malley's:
-    [A, B] = Matrices()
-    print(Set(P1S, 1. - P2S, A, B))
+    #[A, B] = Matrices()
+    #print(Set(P1S, 1. - P2S, A, B))
+
+    x = [2,3,4,5]
+    y = [1,2,3,4]
+    print(x-y)
+
 
 if __name__ == "__main__":
     main()
