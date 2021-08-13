@@ -4,7 +4,10 @@ from pandas.core.base import DataError
 import os, sys
 relativePath = os.path.abspath('')
 sys.path.append(relativePath + '\\MarkovModel')
+sys.path.append(relativePath + '\\DataExtraction')
 from FirstImplementation import MarkovModelFirstImplementation
+from TestSetCollector import *
+from DataCollector import *
 import pandas as pd
 import numpy as np
 
@@ -53,21 +56,20 @@ def try_parsing_date(text):
             pass
     raise ValueError('no valid date format found')
 
-def EvalEquation(Pa, Pb, MatchData):
-    # For given P Values, this function runs the model and evaluates the objective metrics
-    # Inputs:
-    # - Pa & Pb = Markov Model Parameters
-    # - MatchData = A dictionary of the match data:
-    #               Keys = 'Winner', 'Set Scores', 'Match Score'
-    # Returns:
-    # - ObjectiveVals = A dictionary of the various objective metric values
-    #                   Keys = 'MatchOutcome', 'SetScores', 'MatchScore'
+def EvalEquation(age):
+    testYears = [2012,2014,2016,2018,2019]
+    sampledMatchesByYears = getTestMatchData(testYears)
+    ageGap = timedelta(days=365.25*age)
 
-    # Extract the model with the given inputs:
-    [MatchDist, MatchScoreDist, TotalNumGamesDist, AllSetScoresDist] = MarkovModelFirstImplementation(Pa, Pb, 3, 7)
+    for year in sampledMatchesByYears:
+        for match in year:
+            dateOfMatch = datetime.strptime(match[3],'%Y-%m-%d')
+            startOfDataCollection = dateOfMatch - ageGap
+            p1vP2,p1vCO,p2vCO,COIds = getSPWData(match, startOfDataCollection)
+            Pa,Pb = CalcPEquation1(match, p1vP2, p1vCO, p2vCO, COIds, 0.3,0.3)
 
-    print('MatchDist:', MatchDist)
-    print('AllSetScoresDist:', AllSetScoresDist)
+    
+
     # Evaluate the objective metrics:
 
     # Match Outcome:

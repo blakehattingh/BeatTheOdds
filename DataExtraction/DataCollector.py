@@ -5,7 +5,9 @@ import psycopg2 as psy
 def getSPWData(matchDetails, startOfDataCollection):
     conn = psy.connect('dbname=tcb user=postgres password=12qwaszx host=localhost')
     cursor = conn.cursor()
-    p1ID,p2ID = getIds(matchDetails, cursor)
+    #p1ID,p2ID = getIds(matchDetails, cursor)
+    p1ID = matchDetails[8]
+    p2ID = matchDetails[18]
     p1vP2 = getP1vP2(startOfDataCollection,cursor,p1ID,p2ID)
     p1vCO = getPlayerVsCO(startOfDataCollection,cursor,p1ID,p2ID)
     p2vCO = getPlayerVsCO(startOfDataCollection,cursor,p2ID,p1ID)
@@ -17,9 +19,9 @@ def getSPWData(matchDetails, startOfDataCollection):
     return p1vP2,p1vCO,p2vCO,COIds
 
 def getIds(matchDetails, cursor):
-    P1FirstInit = matchDetails['P1FirstInitial']
+    P1FirstInit = matchDetails['P1FirstName']
     P1LastName = matchDetails['P1LastName']
-    P2FirstInit = matchDetails['P2FirstInitial']
+    P2FirstInit = matchDetails['P2FirstName']
     P2LastName = matchDetails['P2LastName']
     queryP1 = "SELECT player_id FROM tcb.player WHERE UPPER(first_name) LIKE UPPER('"+P1FirstInit+"%') AND UPPER(last_name) = UPPER('"+P1LastName+"')"
     cursor.execute(queryP1)
@@ -105,7 +107,7 @@ def getCOs(p1vCO,p1ID,p2ID):
     return commonOpsIDs
 
 def main():
-    matchDetails = {'P1FirstInitial': 'r', 'P1LastName': 'federer', 'P2FirstInitial': 'n', 'P2LastName': 'djokovic', 'Date': '10-08-2020'}
+    #matchDetails = {'P1FirstInitial': 'r', 'P1LastName': 'federer', 'P2FirstInitial': 'n', 'P2LastName': 'djokovic', 'Date': '10-08-2020'}
     getSPWData(matchDetails, '2018-01-01')
 
 
