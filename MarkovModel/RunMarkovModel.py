@@ -1,6 +1,6 @@
 import random
 from typing import Match
-from AdditionalFunctions import ComputeTBProbabilities
+from OtherFunctions.AdditionalFunctions import ComputeTBProbabilities
 from FirstImplementation import MarkovModelFirstImplementation
 from SecondImplementation import MarkovModelSecondImplementation
 

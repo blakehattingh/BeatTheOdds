@@ -1,7 +1,7 @@
 # Import the required functions:
-from AdditionalFunctions import combine_recursion, nth_index
+from OtherFunctions.AdditionalFunctions import combine_recursion, nth_index
 from loopybeliefprop import choose
-from OMalleysEqns import TB
+from OtherFunctions.OMalleysEqns import TB
 
 def TennisSetNetworkEfficient(P1S, P2S, InitServerDist = [0.5, 0.5], ConditionalEvents = {}):
     # Specify the names of the nodes in the Bayesian network
