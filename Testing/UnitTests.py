@@ -1,10 +1,10 @@
 from typing import Set
-from TennisMatchNetwork1Efficient import TennisMatchNetwork1Efficient
-from TennisMatchNetwork1 import TennisMatchNetwork1
-from RunMarkovModel import RunMarkovModel
-from TennisSetNetworkEfficient import TennisSetNetworkEfficient
-from TennisMatchNetwork2 import TennisMatchNetwork2
-from loopybeliefprop import beliefpropagation
+from MarkovModel.TennisMatchNetwork1Efficient import TennisMatchNetwork1Efficient
+from MarkovModel.TennisMatchNetwork1 import TennisMatchNetwork1
+from MarkovModel.RunMarkovModel import RunMarkovModel
+from MarkovModel.TennisSetNetworkEfficient import TennisSetNetworkEfficient
+from MarkovModel.TennisMatchNetwork2 import TennisMatchNetwork2
+from MarkovModel.loopybeliefprop import beliefpropagation
 import sys
 import numpy as np
 

@@ -1,6 +1,6 @@
  # Import the required functions:
 from loopybeliefprop import choose
-from AdditionalFunctions import combine_recursion, nth_index
+from OtherFunctions.AdditionalFunctions import combine_recursion, nth_index
 import numpy as np
  
 def TennisMatchNetwork2(P1S, P2S, P1TB, P2TB, FirstToSets, Mode):

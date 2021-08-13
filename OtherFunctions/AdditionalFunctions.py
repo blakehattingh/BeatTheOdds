@@ -1,5 +1,5 @@
 from itertools import islice
-from MarkovSimulations import MarkovChainTieBreaker
+from MarkovModel.MarkovSimulations import MarkovChainTieBreaker
 import csv
 import os
 

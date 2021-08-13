@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
 from typing import Match
 from pandas.core.base import DataError
-from FirstImplementation import MarkovModelFirstImplementation
+from MarkovModel.FirstImplementation import MarkovModelFirstImplementation
 import pandas as pd
 import numpy as np
 
@@ -42,8 +42,32 @@ def ObjectiveMetricSetScore(AllSetScoreDist, SetScores):
 def ObjectiveMatchScoreDist(MatchScoreDist, MatchScore):
     x = 10
 
-def CreateTestData(MatchData):
-    x = 10
+def CreateTestData(MatchDataFileName):
+    # This function takes in a csv file of matches and extracts the required information to run the model
+    # It returns a dictionary of match data consisting of:
+    # Keys:
+    # - Date
+    # - Surface
+    # - Player1ID
+    # - Player2ID
+    # - Match Outcome
+    # - Match Score
+    # - Set Scores
+    # - Number of Games
+    # - ODDs (TBC)
+
+    # Required Columns:
+    ColNames = ['Date','Surface','Winner','Loser','W1','L1','W2','L2','W3','L3','Wsets','Lsets']
+
+    # Read in the csv file corresponding to all the games between player A and player B:
+    MatchData = pd.read_csv(MatchDataFileName, usecols = ColNames)
+
+    # Create a dictionary with the required data for all matches in the file:
+    for match in MatchData:
+        # Splitting up the names:
+        [LastName, FirstInit] = MatchData[match][2].split()
+
+
     
 def try_parsing_date(text):
     for fmt in ('%d/%m/%Y', '%d-%m-%Y', '%Y-%m-%d'):

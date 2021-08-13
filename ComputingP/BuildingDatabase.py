@@ -1,5 +1,5 @@
 from typing import List
-from FirstImplementation import MarkovModelFirstImplementation
+from MarkovModel.FirstImplementation import MarkovModelFirstImplementation
 import numpy as np
 import pandas as pd
 import csv
@@ -70,15 +70,16 @@ def ValidatingStepSize(DB,StepSize):
         if (CountA % 2 == 1):
             if (CountB % 2 == 1):
                 # Case 1: Mid point - Use bi-linear interpolation
-                AvDists = BiLinearInterp(DB[PCombos[0]-StepSize,PCombos[1]-StepSize],DB[PCombos[0]+StepSize,PCombos[1]-StepSize], 
-                    DB[PCombos[0]-StepSize,PCombos[1]+StepSize],DB[PCombos[0]+StepSize,PCombos[1]+StepSize])
+                AvDists = BiLinearInterp(DB[round(PCombos[0]-StepSize,2),round(PCombos[1]-StepSize,2)],DB[round(PCombos[0]+
+                StepSize,2),round(PCombos[1]-StepSize,2)],DB[round(PCombos[0]-StepSize,2),round(PCombos[1]+StepSize,2)],
+                DB[round(PCombos[0]+StepSize,2),round(PCombos[1]+StepSize,2)])
             else:
                 # Case 2: Type 2 point (between 2 points laterally)
-                AvDists = BiLinearInterp(DB[PCombos[0], PCombos[1]-StepSize], DB[PCombos[0], PCombos[1]+StepSize])
+                AvDists = LinearInterp(DB[round(PCombos[0]-StepSize,2),PCombos[1]],DB[round(PCombos[0]+StepSize,2),PCombos[1]])
         else:
             if (CountB % 2 == 1):
                 # Case 3: Type 3 point (between 2 points vertically)
-                AvDists = BiLinearInterp(DB[PCombos[0]-StepSize, PCombos[1]], DB[PCombos[0]+StepSize, PCombos[1]])
+                AvDists = LinearInterp(DB[PCombos[0],round(PCombos[1]-StepSize,2)],DB[PCombos[0],round(PCombos[1]+StepSize,2)])
             else:
                 NoNeedToInterpolate = True
         
@@ -94,6 +95,10 @@ def ValidatingStepSize(DB,StepSize):
                 MSE = np.mean(SE)
                 RMSE = pow(MSE, 0.5)
                 RMSEs[dist] += RMSE
+                if (dist == "Match Outcome"):
+                    if (RMSE > 0.2):
+                        print(PCombos)
+                        print(RMSE)
             
         # Increase / reset counters:
         if (CountB == (N-1)):
@@ -133,28 +138,49 @@ def BiLinearInterp(PCombo1, PCombo2, PCombo3, PCombo4):
     'Set Score': AvSetScoreDist}
     return AvDists
 
+def LinearInterp(PCombo1, PCombo2):
+    # Takes in 2 points either sidewith corresponding distributions and computes their average
+    # Assumes an equally weighted averaged is required
+
+    # Match Outcome Distribution:
+    AvMatchOutcomeDist = ComputeAverageArray([PCombo1['Match Outcome'],PCombo2['Match Outcome']])
+
+    # Match Score Distribution:
+    AvMatchScoreDist = ComputeAverageArray([PCombo1['Match Score'],PCombo2['Match Score']])
+
+    # Number of Games Distribution:
+    AvNumGamesDist = ComputeAverageArray([PCombo1['Number of Games'],PCombo2['Number of Games']])
+
+    # Set Score Distribution:
+    AvSetScoreDist = ComputeAverageArray([PCombo1['Set Score'],PCombo2['Set Score']])
+
+    # Create dictionary of average distributions:
+    AvDists = {'Match Outcome': AvMatchOutcomeDist, 'Match Score': AvMatchScoreDist, 'Number of Games': AvNumGamesDist,
+    'Set Score': AvSetScoreDist}
+    return AvDists
+
 def ComputeAverageArray(ListOfArrays):
     # Each row is an array
 
     AvArray = np.zeros(len(ListOfArrays[0]), dtype = float)
-    for i in len(ListOfArrays[0]):
-        for j in len(ListOfArrays):
+    for i in range(len(ListOfArrays[0])):
+        for j in range(len(ListOfArrays)):
             AvArray[i] += ListOfArrays[j][i]
     
     # Average the array:
-    AvArray = AvArray / len(AvArray)
+    AvArray = AvArray / len(ListOfArrays)
+
+    return AvArray
 
 def main():
     # Read in the model distributions database: 
-    DB = {}     
-    with open('ModelDistributions.csv', mode='r') as csv_file:
-        csv_reader = csv.reader(csv_file)
-        for row in csv_reader:
-            if (row == []):
-                break
-            else:
-                DB[row[0]] = row[1]
-
+    DB = {} 
+    x = pd.read_csv('ModelDistributions.csv', header = None)
+    for row in range(len(x)):
+        Pa = round(eval(x[0][row])[0],2)
+        Pb = round(eval(x[0][row])[1],2)
+        DB[(Pa, Pb)] = eval(x[1][row])
+ 
     # Compute the RMSEs:
     RMSEs = ValidatingStepSize(DB, 0.02)
     print(RMSEs)
