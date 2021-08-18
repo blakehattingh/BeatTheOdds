@@ -2,7 +2,7 @@ from typing import List
 import os, sys
 relativePath = os.path.abspath('')
 sys.path.append(relativePath + '\\MarkovModel')
-from FirstImplementation import MarkovModelFirstImplementation
+from MarkovModel import FirstImplementation
 import numpy as np
 import pandas as pd
 import csv
@@ -34,7 +34,7 @@ def BuildingDB(PStart, PEnd, Increment):
         for P2 in PValues:
             print('P-values: ', [P1],[P2])
             # Run the model:
-            [MatchDist, MatchScoreDist, TotalNumGamesDist, AllSetScoresDist] = MarkovModelFirstImplementation(P1, P2, 3, 7)
+            [MatchDist,MatchScoreDist,TotalNumGamesDist,AllSetScoresDist]=FirstImplementation.MarkovModelFirstImplementation(P1,P2,3,7)
 
             # Create the dictionary of distributions for this run:
             Distributions = {'Match Outcome': [round(Num, 5) for Num in MatchDist], 'Match Score': [round(Num, 5) for Num in
