@@ -5,9 +5,9 @@ import os, sys
 relativePath = os.path.abspath('')
 sys.path.append(relativePath + '\\MarkovModel')
 sys.path.append(relativePath + '\\DataExtraction')
-from MarkovModel import FirstImplementation
+#from MarkovModel import FirstImplementation
 from DataExtraction import TestSetCollector, DataCollector
-from BuildingDatabase import *
+from ComputingP import BuildingDatabase
 import pandas as pd
 import numpy as np
 
@@ -67,14 +67,14 @@ def InterpolateDists(Pa, Pb, DB, Spacing = 0.02):
     DDists = DB[(round((APointA+0.02),2),round((APointB+0.02),2))]
 
     # Compute the weighting between side points (alpha) and bottom and top points (beta):
-    [alpha, beta] = ComputeWeighting(Pa, Pb)
+    [alpha, beta] = BuildingDatabase.ComputeWeighting(Pa, Pb)
 
     # Extract the average distributions along each side:
     XDists = {}
     for dist in ADists:
-        EDists = WeightedAverage(ADists[dist], BDists[dist], alpha)
-        FDists = WeightedAverage(CDists[dist], DDists[dist], alpha)
-        XDists[dist] = WeightedAverage(EDists, FDists, beta)
+        EDists = BuildingDatabase.WeightedAverage(ADists[dist], BDists[dist], alpha)
+        FDists = BuildingDatabase.WeightedAverage(CDists[dist], DDists[dist], alpha)
+        XDists[dist] = BuildingDatabase.WeightedAverage(EDists, FDists, beta)
 
     return XDists
     
@@ -144,8 +144,8 @@ def CalcPEquation1(MatchData,PrevMatches,PrevMatchesCommA,PrevMatchesCommB,Commo
     rpwBA = 1. - spwAB
 
     # Compute SPW(A,C) and SPW(B,C):
-    [spwAC, rpwAC] = ComputeSPWCommon(PlayerA, PrevMatchesCommA, CommonOpps, SurfaceParameter, Date, Surface) 
-    [spwBC, rpwBC] = ComputeSPWCommon(PlayerB, PrevMatchesCommB, CommonOpps, SurfaceParameter, Date, Surface)
+    [spwAC, rpwAC] = ComputeSPWCommon(PlayerA, PrevMatchesCommA, CommonOpps, SurfaceParameter, Date, Surface, PlayerB,PrevMatchesCommB) 
+    [spwBC, rpwBC] = ComputeSPWCommon(PlayerB, PrevMatchesCommB, CommonOpps, SurfaceParameter, Date, Surface, PlayerA,PrevMatchesCommA)
 
     print('spwAC:', spwAC, 'rpwAC:', rpwAC)
     print('spwBC:', spwBC, 'rpwBC:', rpwBC) 
@@ -235,7 +235,7 @@ def ComputeSPW(PlayerA, PlayerB, PrevMatches, SurfaceParameter, Date, Surface):
 
     return PlayerAServiceProp, PlayerBServiceProp
 
-def ComputeSPWCommon(PlayerA, PrevMatchesCommOpps, CommonOpps, SurfaceParameter, Date, Surface):    
+def ComputeSPWCommon(PlayerA, PrevMatchesCommOpps, CommonOpps, SurfaceParameter, Date, Surface, PlayerB, PrevMatchesCommOppsB):    
     # Inputs:
     # - PlayerA = ID of both player A
     # - PrevMatchesCommOpps = A list of tuples of all previous matches between player A the common opponents
