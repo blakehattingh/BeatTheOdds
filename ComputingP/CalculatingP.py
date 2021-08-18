@@ -6,8 +6,7 @@ relativePath = os.path.abspath('')
 #sys.path.append(relativePath + '\\MarkovModel')
 sys.path.append(relativePath + '\\DataExtraction')
 #from FirstImplementation import MarkovModelFirstImplementation
-from TestSetCollector import *
-from DataCollector import *
+from DataExtraction import DataCollector,TestSetCollector
 import pandas as pd
 import numpy as np
 
@@ -61,14 +60,14 @@ def try_parsing_date(text):
 
 def EvalEquation(age):
     testYears = [2012,2014,2016,2018,2019]
-    sampledMatchesByYears = getTestMatchData(testYears)
+    sampledMatchesByYears = TestSetCollector.getTestMatchData(testYears)
     ageGap = timedelta(days=365.25*age)
 
     for year in sampledMatchesByYears:
         for match in year:
             dateOfMatch = match[3]
             startOfDataCollection = dateOfMatch - ageGap
-            p1vP2,p1vCO,p2vCO,COIds = getSPWData(match, startOfDataCollection)
+            p1vP2,p1vCO,p2vCO,COIds = DataCollector.getSPWData(match, startOfDataCollection)
             Pa,Pb = CalcPEquation1(match, p1vP2, p1vCO, p2vCO, COIds, 0.3,0.3)
             print(Pa,Pb)
 
@@ -176,8 +175,8 @@ def ComputeSPW(PlayerA, PlayerB, PrevMatches, SurfaceParameter, Date, Surface):
                     PlayerBServePointsWonNS += (PrevMatches[match][44] + PrevMatches[match][45])
             
     # Compute the proportion of service points won:
-    print(PlayerAServePointsSurface, PlayerAServePointsNS)
-    print(len(PrevMatches))
+    #print(PlayerAServePointsSurface, PlayerAServePointsNS)
+    print('number of previous matches: ', len(PrevMatches))
     PlayerAServiceProp = (1 - SurfaceParameter) * (PlayerAServePointsWonSurface / PlayerAServePointsSurface) + SurfaceParameter * (PlayerAServePointsWonNS / PlayerAServePointsNS)
     PlayerBServiceProp = (1 - SurfaceParameter) * (PlayerBServePointsWonSurface / PlayerBServePointsSurface) + SurfaceParameter * (PlayerBServePointsWonNS / PlayerBServePointsNS)
 
@@ -241,8 +240,7 @@ def ComputeSPWCommon(PlayerA, PrevMatchesCommOpps, CommonOpps, SurfaceParameter,
     # Compute the proportion of service points won against each common opponent:
     SPWCommonOppProps = np.zeros(len(CommonOpps), dtype = float)
     RPWCommonOppProps = np.zeros(len(CommonOpps), dtype = float)
-    print(PlayerAServePointsSurface)
-    print(PlayerAServePointsNS)
+    print('number of previous common matches', len(PrevMatchesCommOpps))
     for Opp in range(len(CommonOpps)):
         SPWCommonOppProps[Opp] = ((1 - Surface) * (PlayerAServePointsWonSurface[Opp] / PlayerAServePointsSurface[Opp]) + Surface * (PlayerAServePointsWonNS[Opp] / PlayerAServePointsNS[Opp]))
         RPWCommonOppProps[Opp] = ((1 - Surface) * (PlayerAReturnPointsWonSurface[Opp] / PlayerAReturnPointsSurface[Opp]) + Surface * (PlayerAReturnPointsWonNS[Opp] / PlayerAReturnPointsNS[Opp]))

@@ -42,8 +42,8 @@ def getRandomSamples(matchesByYears):
 
     for matches in matchesByYears:
         length = len(matches)
-        print("length is : ")
-        print(length)
+        #print("length is : ")
+        #print(length)
         indices = random.sample(range(0,length-1),20)
         sampledMatches = []
         for index in indices:
