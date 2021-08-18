@@ -183,31 +183,34 @@ def ComputeSPW(PlayerA, PlayerB, PrevMatches, SurfaceParameter, Date, Surface):
         # Check when the match was played:
         # MatchDate = PrevMatches[match][3]
 
-        # if ((Date - MatchDate).days > 0):
-        if (PrevMatches[match][4] == Surface):
-            surfaceMatchesCount += 1
-            if (PrevMatches[match][8] == PlayerA):
-                PlayerAServePointsSurface += PrevMatches[match][42]
-                PlayerAServePointsWonSurface += (PrevMatches[match][44] + PrevMatches[match][45])
-                PlayerBServePointsSurface += PrevMatches[match][51]
-                PlayerBServePointsWonSurface += (PrevMatches[match][53] + PrevMatches[match][54])
+        # Ensure the match has statistics:
+        if (PrevMatches[match][42 != None]):
+
+            # if ((Date - MatchDate).days > 0):
+            if (PrevMatches[match][4] == Surface):
+                surfaceMatchesCount += 1
+                if (PrevMatches[match][8] == PlayerA):
+                    PlayerAServePointsSurface += PrevMatches[match][42]
+                    PlayerAServePointsWonSurface += (PrevMatches[match][44] + PrevMatches[match][45])
+                    PlayerBServePointsSurface += PrevMatches[match][51]
+                    PlayerBServePointsWonSurface += (PrevMatches[match][53] + PrevMatches[match][54])
+                else:
+                    PlayerAServePointsSurface += PrevMatches[match][51]
+                    PlayerAServePointsWonSurface += (PrevMatches[match][53] + PrevMatches[match][54])
+                    PlayerBServePointsSurface += PrevMatches[match][42]
+                    PlayerBServePointsWonSurface += (PrevMatches[match][44] + PrevMatches[match][45])
             else:
-                PlayerAServePointsSurface += PrevMatches[match][51]
-                PlayerAServePointsWonSurface += (PrevMatches[match][53] + PrevMatches[match][54])
-                PlayerBServePointsSurface += PrevMatches[match][42]
-                PlayerBServePointsWonSurface += (PrevMatches[match][44] + PrevMatches[match][45])
-        else:
-            nonSurfaceMatchesCount += 1
-            if (PrevMatches[match][8] == PlayerA):
-                PlayerAServePointsNS += PrevMatches[match][42]
-                PlayerAServePointsWonNS += (PrevMatches[match][44] + PrevMatches[match][45])
-                PlayerBServePointsNS += PrevMatches[match][51]
-                PlayerBServePointsWonNS += (PrevMatches[match][53] + PrevMatches[match][54])
-            else:
-                PlayerAServePointsNS += PrevMatches[match][51]
-                PlayerAServePointsWonNS += (PrevMatches[match][53] + PrevMatches[match][54])
-                PlayerBServePointsNS += PrevMatches[match][42]
-                PlayerBServePointsWonNS += (PrevMatches[match][44] + PrevMatches[match][45])
+                nonSurfaceMatchesCount += 1
+                if (PrevMatches[match][8] == PlayerA):
+                    PlayerAServePointsNS += PrevMatches[match][42]
+                    PlayerAServePointsWonNS += (PrevMatches[match][44] + PrevMatches[match][45])
+                    PlayerBServePointsNS += PrevMatches[match][51]
+                    PlayerBServePointsWonNS += (PrevMatches[match][53] + PrevMatches[match][54])
+                else:
+                    PlayerAServePointsNS += PrevMatches[match][51]
+                    PlayerAServePointsWonNS += (PrevMatches[match][53] + PrevMatches[match][54])
+                    PlayerBServePointsNS += PrevMatches[match][42]
+                    PlayerBServePointsWonNS += (PrevMatches[match][44] + PrevMatches[match][45])
     
     print('Number of Previous Matches: ', len(PrevMatches))
     # Check if any matches were analysed:
@@ -262,43 +265,44 @@ def ComputeSPWCommon(PlayerA, PrevMatchesCommOpps, CommonOpps, SurfaceParameter,
         # Check when the match was played:
         #MatchDate = PrevMatchesCommOpps[match][3]
 
+        # Make sure the match has statistics:
+        if (PrevMatchesCommOpps[match][42] != None):
+
         #if ((Date - MatchDate).days > 0):
-        if (Surface == PrevMatchesCommOpps[match][4]):
-            if (PrevMatchesCommOpps[match][8] == PlayerA):
-                # Find who the opponent was:
-                Opp = CommonOpps.index(PrevMatchesCommOpps[match][18])
-                PlayerAServePointsSurface[Opp] += PrevMatchesCommOpps[match][42]
-                PlayerAServePointsWonSurface[Opp] += (PrevMatchesCommOpps[match][44] + PrevMatchesCommOpps[match][45])
-                PlayerAReturnPointsSurface[Opp] += PrevMatchesCommOpps[match][51]
-                PlayerAReturnPointsWonSurface[Opp] += (PrevMatchesCommOpps[match][51] - (PrevMatchesCommOpps[match][53] + PrevMatchesCommOpps[match][54]))
-                surfaceMatchesCount[Opp] += 1
+            if (Surface == PrevMatchesCommOpps[match][4]):
+                if (PrevMatchesCommOpps[match][8] == PlayerA):
+                    # Find who the opponent was:
+                    Opp = CommonOpps.index(PrevMatchesCommOpps[match][18])
+                    PlayerAServePointsSurface[Opp] += PrevMatchesCommOpps[match][42]
+                    PlayerAServePointsWonSurface[Opp] += (PrevMatchesCommOpps[match][44] + PrevMatchesCommOpps[match][45])
+                    PlayerAReturnPointsSurface[Opp] += PrevMatchesCommOpps[match][51]
+                    PlayerAReturnPointsWonSurface[Opp] += (PrevMatchesCommOpps[match][51] - (PrevMatchesCommOpps[match][53] + PrevMatchesCommOpps[match][54]))
+                    surfaceMatchesCount[Opp] += 1
+                else:
+                    # Find who the opponent was:
+                    Opp = CommonOpps.index(PrevMatchesCommOpps[match][8])
+                    PlayerAServePointsSurface[Opp] += PrevMatchesCommOpps[match][51]
+                    PlayerAServePointsWonSurface[Opp] += (PrevMatchesCommOpps[match][53] + PrevMatchesCommOpps[match][54])
+                    PlayerAReturnPointsSurface[Opp] += PrevMatchesCommOpps[match][42]
+                    PlayerAReturnPointsWonSurface[Opp] += (PrevMatchesCommOpps[match][42] - (PrevMatchesCommOpps[match][44] + PrevMatchesCommOpps[match][45]))
+                    surfaceMatchesCount[Opp] += 1
             else:
-                # Find who the opponent was:
-                Opp = CommonOpps.index(PrevMatchesCommOpps[match][8])
-                PlayerAServePointsSurface[Opp] += PrevMatchesCommOpps[match][51]
-                PlayerAServePointsWonSurface[Opp] += (PrevMatchesCommOpps[match][53] + PrevMatchesCommOpps[match][54])
-                PlayerAReturnPointsSurface[Opp] += PrevMatchesCommOpps[match][42]
-                PlayerAReturnPointsWonSurface[Opp] += (PrevMatchesCommOpps[match][42] - (PrevMatchesCommOpps[match][44] + PrevMatchesCommOpps[match][45]))
-                surfaceMatchesCount[Opp] += 1
-        else:
-            if (PrevMatchesCommOpps[match][8] == PlayerA):
-                # Find who the opponent was:
-                Opp = CommonOpps.index(PrevMatchesCommOpps[match][18])
-                PlayerAServePointsNS[Opp] += PrevMatchesCommOpps[match][42]
-                PlayerAServePointsWonNS[Opp] += (PrevMatchesCommOpps[match][44] + PrevMatchesCommOpps[match][45])
-                PlayerAReturnPointsNS[Opp] += PrevMatchesCommOpps[match][51]
-                PlayerAReturnPointsWonNS[Opp] += (PrevMatchesCommOpps[match][51] - (PrevMatchesCommOpps[match][53] + PrevMatchesCommOpps[match][54]))
-                nonSurfaceMatchesCount[Opp] += 1
-            else:
-                # Find who the opponent was:
-                Opp = CommonOpps.index(PrevMatchesCommOpps[match][8])
-                PlayerAServePointsNS[Opp] += PrevMatchesCommOpps[match][51]
-                PlayerAServePointsWonNS[Opp] += (PrevMatchesCommOpps[match][53] + PrevMatchesCommOpps[match][54])
-                PlayerAReturnPointsNS[Opp] += PrevMatchesCommOpps[match][42]
-                PlayerAReturnPointsWonNS[Opp] += (PrevMatchesCommOpps[match][42] - (PrevMatchesCommOpps[match][44] + PrevMatchesCommOpps[match][45]))
-                nonSurfaceMatchesCount[Opp] += 1
-
-
+                if (PrevMatchesCommOpps[match][8] == PlayerA):
+                    # Find who the opponent was:
+                    Opp = CommonOpps.index(PrevMatchesCommOpps[match][18])
+                    PlayerAServePointsNS[Opp] += PrevMatchesCommOpps[match][42]
+                    PlayerAServePointsWonNS[Opp] += (PrevMatchesCommOpps[match][44] + PrevMatchesCommOpps[match][45])
+                    PlayerAReturnPointsNS[Opp] += PrevMatchesCommOpps[match][51]
+                    PlayerAReturnPointsWonNS[Opp] += (PrevMatchesCommOpps[match][51] - (PrevMatchesCommOpps[match][53] + PrevMatchesCommOpps[match][54]))
+                    nonSurfaceMatchesCount[Opp] += 1
+                else:
+                    # Find who the opponent was:
+                    Opp = CommonOpps.index(PrevMatchesCommOpps[match][8])
+                    PlayerAServePointsNS[Opp] += PrevMatchesCommOpps[match][51]
+                    PlayerAServePointsWonNS[Opp] += (PrevMatchesCommOpps[match][53] + PrevMatchesCommOpps[match][54])
+                    PlayerAReturnPointsNS[Opp] += PrevMatchesCommOpps[match][42]
+                    PlayerAReturnPointsWonNS[Opp] += (PrevMatchesCommOpps[match][42] - (PrevMatchesCommOpps[match][44] + PrevMatchesCommOpps[match][45]))
+                    nonSurfaceMatchesCount[Opp] += 1
 
     # Compute the proportion of service points won against each common opponent:
     SPWCommonOppPropsSurface = np.zeros(len(CommonOpps), dtype = float)
