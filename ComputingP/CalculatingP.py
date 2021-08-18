@@ -135,6 +135,13 @@ def CalcPEquation1(MatchData,PrevMatches,PrevMatchesCommA,PrevMatchesCommB,Commo
     AwonGames = MatchData[32]
     BwonGames = MatchData[32]
 
+    # See how many matches have been played between A and B:
+    numMatches = len(PrevMatches)
+
+    # See how many matches each player has for the common opponents:
+    numCommOppsMatchesA = len(PrevMatchesCommA)
+    numCommOppsMatchesB = len(PrevMatchesCommB)
+
     # Compute SPW(A,B) and SPW(B, A):
     [spwAB, spwBA] = ComputeSPW(PlayerA, PlayerB, PrevMatches, SurfaceParameter, Date, Surface)
     print('spwAB:', spwAB, 'spwBA:', spwBA)
@@ -143,16 +150,21 @@ def CalcPEquation1(MatchData,PrevMatches,PrevMatchesCommA,PrevMatchesCommB,Commo
     rpwAB = 1. - spwBA
     rpwBA = 1. - spwAB
 
-    # Compute SPW(A,C) and SPW(B,C):
-    [spwAC, rpwAC] = ComputeSPWCommon(PlayerA, PrevMatchesCommA, CommonOpps, SurfaceParameter, Date, Surface) 
-    [spwBC, rpwBC] = ComputeSPWCommon(PlayerB, PrevMatchesCommB, CommonOpps, SurfaceParameter, Date, Surface)
+    # Check if there are any common opponents:
+    if (len(CommonOpps) > 0):
+        # Compute SPW(A,C) and SPW(B,C):
+        [spwAC, rpwAC] = ComputeSPWCommon(PlayerA, PrevMatchesCommA, CommonOpps, SurfaceParameter, Date, Surface) 
+        [spwBC, rpwBC] = ComputeSPWCommon(PlayerB, PrevMatchesCommB, CommonOpps, SurfaceParameter, Date, Surface)
+        print('spwAC:', spwAC, 'rpwAC:', rpwAC)
+        print('spwBC:', spwBC, 'rpwBC:', rpwBC) 
 
-    print('spwAC:', spwAC, 'rpwAC:', rpwAC)
-    print('spwBC:', spwBC, 'rpwBC:', rpwBC) 
-
-    # Compute P Values:
-    Pa = (1  - Lamda) * spwAB + Lamda * spwAC
-    Pb = (1  - Lamda) * spwBA + Lamda * spwBC
+        # Compute the P values as per equation 1:
+        Pa = (1  - Lamda) * spwAB + Lamda * spwAC
+        Pb = (1  - Lamda) * spwBA + Lamda * spwBC
+    else:
+        # Cannot use common opponent data anymore to compute P values, equation changed:
+        Pa = spwAB
+        Pb = spwBA
 
     print('Pa:', Pa, 'Pb:', Pb)
     return Pa, Pb
