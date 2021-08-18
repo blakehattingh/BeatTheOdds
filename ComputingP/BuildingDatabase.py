@@ -141,21 +141,34 @@ def BiLinearInterp(PCombo1, PCombo2, PCombo3, PCombo4):
     'Set Score': AvSetScoreDist}
     return AvDists
 
-def LinearInterp(PCombo1, PCombo2):
+def LinearInterp(PCombo1, PCombo2, EvenWeight = True, Weighting = 0.5):
     # Takes in 2 points either sidewith corresponding distributions and computes their average
-    # Assumes an equally weighted averaged is required
+    # Assumes an equally weighted averaged is required unless specified otherwise
 
-    # Match Outcome Distribution:
-    AvMatchOutcomeDist = ComputeAverageArray([PCombo1['Match Outcome'],PCombo2['Match Outcome']])
+    if (EvenWeight):
+        # Match Outcome Distribution:
+        AvMatchOutcomeDist = ComputeAverageArray([PCombo1['Match Outcome'],PCombo2['Match Outcome']])
 
-    # Match Score Distribution:
-    AvMatchScoreDist = ComputeAverageArray([PCombo1['Match Score'],PCombo2['Match Score']])
+        # Match Score Distribution:
+        AvMatchScoreDist = ComputeAverageArray([PCombo1['Match Score'],PCombo2['Match Score']])
 
-    # Number of Games Distribution:
-    AvNumGamesDist = ComputeAverageArray([PCombo1['Number of Games'],PCombo2['Number of Games']])
+        # Number of Games Distribution:
+        AvNumGamesDist = ComputeAverageArray([PCombo1['Number of Games'],PCombo2['Number of Games']])
 
-    # Set Score Distribution:
-    AvSetScoreDist = ComputeAverageArray([PCombo1['Set Score'],PCombo2['Set Score']])
+        # Set Score Distribution:
+        AvSetScoreDist = ComputeAverageArray([PCombo1['Set Score'],PCombo2['Set Score']])
+    else:
+        # Match Outcome Distribution:
+        AvMatchOutcomeDist = WeightedAverage([PCombo1['Match Outcome'],PCombo2['Match Outcome']],Weighting)
+
+        # Match Score Distribution:
+        AvMatchScoreDist = WeightedAverage([PCombo1['Match Score'],PCombo2['Match Score']],Weighting)
+
+        # Number of Games Distribution:
+        AvNumGamesDist = WeightedAverage([PCombo1['Number of Games'],PCombo2['Number of Games']],Weighting)
+
+        # Set Score Distribution:
+        AvSetScoreDist = WeightedAverage([PCombo1['Set Score'],PCombo2['Set Score']],Weighting)    
 
     # Create dictionary of average distributions:
     AvDists = {'Match Outcome': AvMatchOutcomeDist, 'Match Score': AvMatchScoreDist, 'Number of Games': AvNumGamesDist,
@@ -175,15 +188,54 @@ def ComputeAverageArray(ListOfArrays):
 
     return AvArray
 
-def main():
+def WeightedAverage(Dist1, Dist2, alpha):
+    # This function computes a weighted average distribution between 2 points
+    # Inputs:
+    # - Dist1 / 2 = The 2 distributions to weight
+    # - alpha = Weighting between Dist1 and Dist2 
+
+    # Create average array:
+    AvArray = np.zeros(len(Dist1), dtype = float)
+    for i in range(len(Dist1)):
+        AvArray[i] = alpha * Dist1[i] + (1. - alpha) * Dist2[i]
+    
+    return AvArray
+
+def ComputeWeighting(Pa, Pb, Spacing = 0.02):
+    # This function takes in two computed P values and finds the weighting between the grid points
+    # Inputs:
+    # - Pa, Pb = The p-values of the point
+    # - Spacing = The spacing between points on the grid (assumed to be 0.02)
+
+    # Compute distance from Pa and Pb to the Pa and Pb point before this point:
+    a = Pa % Spacing
+    b = Pb % Spacing
+
+    # Compute Weights:
+    alpha = (Spacing - a) / Spacing
+    beta = (Spacing - b) / Spacing
+
+    return [alpha, beta]
+
+def ReadInGridDB(FileName):
+    # Get location of file:
+    THIS_FOLDER = os.path.abspath('CSVFiles')
+    FileName = os.path.join(THIS_FOLDER, FileName)
+
     # Read in the model distributions database: 
     DB = {} 
-    x = pd.read_csv('ModelDistributions.csv', header = None)
+    x = pd.read_csv(FileName, header = None)
     for row in range(len(x)):
         Pa = round(eval(x[0][row])[0],2)
         Pb = round(eval(x[0][row])[1],2)
         DB[(Pa, Pb)] = eval(x[1][row])
- 
+
+    return DB
+
+def main():
+    # Read in grid:
+    DB = ReadInGridDB('ModelDistributions.csv')
+
     # Compute the RMSEs:
     RMSEs = ValidatingStepSize(DB, 0.02)
     print(RMSEs)
