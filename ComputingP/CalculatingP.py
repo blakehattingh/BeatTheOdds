@@ -4,8 +4,11 @@ from pandas.core.base import DataError
 import os, sys
 relativePath = os.path.abspath('')
 sys.path.append(relativePath + '\\MarkovModel')
+sys.path.append(relativePath + '\\DataExtraction')
 from FirstImplementation import MarkovModelFirstImplementation
-from BuildingDatabase import ComputeAverageArray, ComputeWeighting, WeightedAverage, ReadInGridDB
+from TestSetCollector import *
+from DataCollector import *
+from BuildingDatabase import *
 import pandas as pd
 import numpy as np
 
@@ -84,32 +87,32 @@ def try_parsing_date(text):
             pass
     raise ValueError('no valid date format found')
 
-def EvalEquation(Pa, Pb, MatchData):
-    # For given P Values, this function runs the model and evaluates the objective metrics
-    # Inputs:
-    # - Pa & Pb = Markov Model Parameters
-    # - MatchData = A dictionary of the match data:
-    #               Keys = 'Winner', 'Set Scores', 'Match Score'
-    # Returns:
-    # - ObjectiveVals = A dictionary of the various objective metric values
-    #                   Keys = 'MatchOutcome', 'SetScores', 'MatchScore'
+def EvalEquation(age):
+    testYears = [2012,2014,2016,2018,2019]
+    sampledMatchesByYears = getTestMatchData(testYears)
+    ageGap = timedelta(days=365.25*age)
 
-    # Extract the model with the given inputs:
-    [MatchDist, MatchScoreDist, TotalNumGamesDist, AllSetScoresDist] = MarkovModelFirstImplementation(Pa, Pb, 3, 7)
+    for year in sampledMatchesByYears:
+        for match in year:
+            dateOfMatch = match[3]
+            startOfDataCollection = dateOfMatch - ageGap
+            p1vP2,p1vCO,p2vCO,COIds = getSPWData(match, startOfDataCollection)
+            Pa,Pb = CalcPEquation1(match, p1vP2, p1vCO, p2vCO, COIds, 0.3,0.3)
+            print(Pa,Pb)
 
-    print('MatchDist:', MatchDist)
-    print('AllSetScoresDist:', AllSetScoresDist)
+    
+
     # Evaluate the objective metrics:
 
     # Match Outcome:
-    Prop = ObjectiveMatchScoreDist(MatchScoreDist, MatchData['MatchOutcome'])
+    #Prop = ObjectiveMatchScoreDist(MatchScoreDist, MatchData['MatchOutcome'])
     
     # Set Scores:
-    Points = ObjectiveMetricSetScore(AllSetScoresDist, MatchData['SetScores'])
+    #Points = ObjectiveMetricSetScore(AllSetScoresDist, MatchData['SetScores'])
 
     # Return Objective:
-    ObjectiveVals = {'MatchOutcome': Prop, 'SetScores': Points, 'MatchScore': 0}
-    return ObjectiveVals
+    #ObjectiveVals = {'MatchOutcome': Prop, 'SetScores': Points, 'MatchScore': 0}
+    #return ObjectiveVals
 
 def CalcPEquation1(MatchData,PrevMatches,PrevMatchesCommA,PrevMatchesCommB,CommonOpps,Lamda,SurfaceParameter):
     # This function takes in a match, extracts who is playing, when the match is/was played, and what surface it is/was played on
@@ -153,7 +156,7 @@ def CalcPEquation1(MatchData,PrevMatches,PrevMatchesCommA,PrevMatchesCommB,Commo
     Pb = (1  - Lamda) * spwBA + Lamda * spwBC
 
     print('Pa:', Pa, 'Pb:', Pb)
-    return [Pa, Pb]
+    return Pa, Pb
 
 def ComputeSPW(PlayerA, PlayerB, PrevMatches, SurfaceParameter, Date, Surface):
     # Inputs:
@@ -174,7 +177,7 @@ def ComputeSPW(PlayerA, PlayerB, PrevMatches, SurfaceParameter, Date, Surface):
     PlayerBServePointsWonNS = 0
     for match in range(len(PrevMatches)):
         # Check when the match was played:
-        MatchDate = datetime.strptime(PrevMatches[match][3], '%Y-%m-%d')
+        MatchDate = PrevMatches[match][3]
 
         if ((Date - MatchDate).days > 0):
             if (PrevMatches[match][4] == Surface):
@@ -201,6 +204,8 @@ def ComputeSPW(PlayerA, PlayerB, PrevMatches, SurfaceParameter, Date, Surface):
                     PlayerBServePointsWonNS += (PrevMatches[match][44] + PrevMatches[match][45])
             
     # Compute the proportion of service points won:
+    print(PlayerAServePointsSurface, PlayerAServePointsNS)
+    print(len(PrevMatches))
     PlayerAServiceProp = (1 - SurfaceParameter) * (PlayerAServePointsWonSurface / PlayerAServePointsSurface) + SurfaceParameter * (PlayerAServePointsWonNS / PlayerAServePointsNS)
     PlayerBServiceProp = (1 - SurfaceParameter) * (PlayerBServePointsWonSurface / PlayerBServePointsSurface) + SurfaceParameter * (PlayerBServePointsWonNS / PlayerBServePointsNS)
 
@@ -226,7 +231,7 @@ def ComputeSPWCommon(PlayerA, PrevMatchesCommOpps, CommonOpps, SurfaceParameter,
     PlayerAReturnPointsWonNS = np.zeros(len(CommonOpps), dtype = int)
     for match in range(len(PrevMatchesCommOpps)):
         # Check when the match was played:
-        MatchDate = datetime.strptime(PrevMatchesCommOpps[match][3], '%Y-%m-%d')
+        MatchDate = PrevMatchesCommOpps[match][3]
 
         if ((Date - MatchDate).days > 0):
             if (Surface == PrevMatchesCommOpps[match][4]):
