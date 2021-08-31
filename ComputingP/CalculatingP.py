@@ -1,35 +1,37 @@
 from datetime import datetime, timedelta
 from typing import Match
 from pandas.core.base import DataError
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import math
 import os, sys
+
+from BuildingDatabase import *
+from CalculatingP import *
+
+# Add required folders to the system path:
 currentPath = os.path.abspath(os.getcwd()) + '\\BeatTheOdds'
+
 # Markov Model Files:
 sys.path.insert(0, currentPath + '\\MarkovModel')
-#from FirstImplementation import *
+from FirstImplementation import *
 
 # Optimisation Model Files:
 sys.path.insert(0, currentPath + '\\OptimisationModel')
-#from CVaRModel import RunCVaRModel
+from CVaRModel import RunCVaRModel
 
 # Data Extraction Files:
 sys.path.insert(0, currentPath + '\\DataExtraction')
 from TestSetCollector import *
 from DataCollector import *
 
-#sys.path.append(relativePath + '\\MarkovModel')
-#sys.path.append(relativePath + '\\DataExtraction')
-#from MarkovModel import FirstImplementation
-#from DataExtraction import TestSetCollector, DataCollector
-#from ComputingP import BuildingDatabase
-import pandas as pd
-import numpy as np
-
 def ObjectiveMetricMatchOutcome(MatchDist, Winner):
     # See who the Markov Model (MM) has as winner:
     if (MatchDist[0] > 0.5):
         MMWinner = 1
     else:
-        MMWinner = 0
+        MMWinner = 2
     
     # Compare it with the actual winner:
     if (MMWinner == Winner):
@@ -39,6 +41,9 @@ def ObjectiveMetricMatchOutcome(MatchDist, Winner):
     return Obj
 
 def ObjectiveMetricSetScore(AllSetScoreDist, SetScores):
+    # Make sure AllSetScoreDist is a list:
+    AllSetScoreDist = AllSetScoreDist.tolist()
+
     # See which Set Scores the Markov Model has as most likely: (top 3)
     BiggestSS = AllSetScoreDist.index(max(AllSetScoreDist))
     AllSetScoreDist.remove(max(AllSetScoreDist))
@@ -58,8 +63,39 @@ def ObjectiveMetricSetScore(AllSetScoreDist, SetScores):
                 Points += (3-i)
     return Points
 
-def ObjectiveMatchScoreDist(MatchScoreDist, MatchScore):
-    x = 10
+def ObjectiveMetricMatchScore(MatchScoreDist, MatchScore):
+    # Make sure MatchScoreDist is a list:
+    MatchScoreDist = MatchScoreDist.tolist()
+
+    # Possible Match scores:
+    Scores = [[2,0],[2,1],[0,2],[1,2]]
+
+    # See which match score the Markov Model has most likely:
+    Ind = MatchScoreDist.index(max(MatchScoreDist))
+
+    # See if it matches with the actual result:
+    if (Scores[Ind] == MatchScore):
+        Obj = 1
+    else:
+        Obj = 0
+    return Obj
+
+def ObjectiveMetricROI(outcome, Zk, bets):
+    # This function takes an outcome, payoff matrix and bets to take and computes the ROI 
+    ROI = 0
+    for k in Zk:
+        if (k == outcome):
+            for bet in Zk[k]:
+                ROI += bets[bet] * Zk[k][bet]
+            if (sum(bets.values())  == 0):
+                ROI = 0.
+                spent = 0.
+                returns = 0.
+            else:
+                spent = sum(bets.values())
+                returns = ROI
+                ROI = ((returns - spent)/spent) * 100.
+    return [ROI, spent, returns]
 
 def InterpolateDists(Pa, Pb, DB, Spacing = 0.02):
     # Takes in a set of P values and returns the interpolated distributions for them
@@ -69,9 +105,27 @@ def InterpolateDists(Pa, Pb, DB, Spacing = 0.02):
     # |        |
     # C ----F- D
     
+    # Ensure Pa and Pb are within bounds of the DB:
+    if (Pa < 0.5):
+        Pa = 0.5
+    if (Pb < 0.5):
+        Pb = 0.5
+
     # Compute the base point for the 4 points around this point (Point A):
-    APointA = round((Pa - (Pa % 0.02)),2)
-    APointB = round((Pb - (Pb % 0.02)),2)
+    roundedA = round(Pa, 1)
+    roundedB = round(Pb, 1)
+    if (roundedA > Pa):
+        roundedA -= 0.1
+    if (roundedB > Pb):
+        roundedB -= 0.1
+    while (roundedA <= Pa):
+            APointA = roundedA
+            roundedA += Spacing
+    while (roundedB <= Pb):
+        APointB = roundedB
+        roundedB += Spacing
+    APointA = round(APointA,2)
+    APointB = round(APointB,2)
 
     # Extract the distribtions for all 4 corner points:
     ADists = DB[(APointA,APointB)]
@@ -99,54 +153,71 @@ def try_parsing_date(text):
             pass
     raise ValueError('no valid date format found')
 
-def EvalEquation(age):
-    testYears = [2018,2019]
-    sampledMatchesByYears = getTestMatchData(testYears)
+def EvalEquations(DB, testData, equation, age, surface, weighting, theta = 0.5):
+    # Create the set of test matches:
+    testYears = [2012,2014,2016,2018,2019]
+    # sampledMatchesByYears = TestSetCollector.getTestMatchData(testYears)
+    sampledMatchesByYears = testData
     ageGap = timedelta(days=365.25*age)
     matchesForTest = []
 
+    # Create dictionary to store the objective metrics for each equation:
+    objectiveValues = {'Equation 1': {'Match Outcome': 0, 'Match Score': 0, 'Set Score': 0}, 'Equation 2': {'Match Outcome': 0, 
+    'Match Score': 0, 'Set Score': 0}, 'Equation 3': {'Match Outcome': 0, 'Match Score': 0, 'Set Score': 0}}
+    count = 0
     for year in sampledMatchesByYears:
         for match in year:
+            # Extract the test match data:
             dateOfMatch = match[3]
+            MatchScore = [match[30],match[31]]
+            SetScores = ExtractSetScores(match[28])
             startOfDataCollection = dateOfMatch - ageGap
-            p1vP2,p1vCO,p2vCO,COIds = getSPWData(match, startOfDataCollection)
-            Pa,Pb = CalcPEquation1(match, p1vP2, p1vCO, p2vCO, COIds, 0.3,0.3)
-            #print(Pa,Pb)
-            if ((len(p1vP2) > 4) & (len(COIds) > 10)):
-                matchesForTest.append(match)
-    if (len(matchesForTest) >= 20):
-        df = pd.DataFrame(matchesForTest)
-        df.to_csv('matchesToManuallyGetOddsFor.csv')
 
+            # Collect player data for the players in the match:
+            p1vP2,p1vCO,p2vCO,COIds = DataCollector.getSPWData(match, startOfDataCollection)
 
+            # Compute the P values using all 3 equations:
+            eqNum = 0
+            for eq in objectiveValues:
+                eqNum += 1
+                # Compute the P values for the two players:
+                [Pa,Pb,predict] = CalcPEquation(eqNum, age, surface, weighting, match, p1vP2, p1vCO, p2vCO, COIds, theta)
+
+                # Look to make predictions using these P values:
+                if (predict):
+                    count += 1
+                    # Interpolate the distributions for these P values:
+                    Dists = InterpolateDists(Pa, Pb, DB)
+
+                    # Compute the objective metrics for this match:
+                    objectiveValues[eq]['Match Outcome'] += ObjectiveMetricMatchOutcome(Dists['Match Outcome'], 1)
+                    objectiveValues[eq]['Match Score'] += ObjectiveMetricMatchScore(Dists['Match Score'], MatchScore)
+                    objectiveValues[eq]['Set Score'] += ObjectiveMetricSetScore(Dists['Set Score'], SetScores)
     
+    # Compute metrics per match:
+    for eq in objectiveValues:
+        for metric in objectiveValues[eq]:
+            objectiveValues[eq][metric] =  objectiveValues[eq][metric] / count
 
-    # Evaluate the objective metrics:
+    return objectiveValues
 
-    # Match Outcome:
-    #Prop = ObjectiveMatchScoreDist(MatchScoreDist, MatchData['MatchOutcome'])
-    
-    # Set Scores:
-    #Points = ObjectiveMetricSetScore(AllSetScoresDist, MatchData['SetScores'])
-
-    # Return Objective:
-    #ObjectiveVals = {'MatchOutcome': Prop, 'SetScores': Points, 'MatchScore': 0}
-    #return ObjectiveVals
-
-def CalcPEquation1(MatchData,PrevMatches,PrevMatchesCommA,PrevMatchesCommB,CommonOpps,Lamda,SurfaceParameter):
+def CalcPEquation(equation,age,surface,weighting,MatchData,PrevMatches,PrevMatchesCommA,PrevMatchesCommB,CommonOpps,theta=0.5):
     # This function takes in a match, extracts who is playing, when the match is/was played, and what surface it is/was played on
     # It then computes the P values for both players using method 1 (FOR NOW, can integrate it to use a specified method)
     # Inputs:
+    # - equation = What equation we will use to compute P
+    # - age = Alpha hyperparameter
+    # - weighting = A parameter corresponding to the weighting between spw(A,B) and spw(A,C)
+    # - surface = A hyperparameter corresponding to the weighting on matches played on the same surface
+    # - theta = The additional weighting parameter for equation 3
     # - MatchData = Data on a single match to be predicted on
     # - PrevMatches = The previous matches between the players playing in the match
     # - PrevMatchesCommA / B = The matches between player A / B and the common opponents
     # - CommonOpps = A list of common opponent IDs
-    # - Lamda = A parameter corresponding to the weighting between spw(A,B) and spw(A,C)
-    # - SurfaceParameter = A hyperparameter corresponding to the weighting on matches played on the same surface
 
     # Extract required info:
-    Date = MatchData[3]
-    Surface = MatchData[4]
+    dateOfMatch = MatchData[3]
+    surfaceOfMatch = MatchData[4]
     PlayerA = MatchData[8]
     PlayerB = MatchData[18]
     SetScores = MatchData[28]
@@ -158,44 +229,123 @@ def CalcPEquation1(MatchData,PrevMatches,PrevMatchesCommA,PrevMatchesCommB,Commo
     # See how many matches have been played between A and B:
     numMatches = len(PrevMatches)
 
-    # See how many matches each player has for the common opponents:
-    numCommOppsMatchesA = len(PrevMatchesCommA)
-    numCommOppsMatchesB = len(PrevMatchesCommB)
-
-    # Compute SPW(A,B) and SPW(B, A):
-    [spwAB, spwBA] = ComputeSPW(PlayerA, PlayerB, PrevMatches, SurfaceParameter, Date, Surface)
-    print('spwAB:', spwAB, 'spwBA:', spwBA)
-
-    # Compute RPW(A,B) and RPW(B,A)
-    rpwAB = 1. - spwBA
-    rpwBA = 1. - spwAB
-
-    # Check if there are any common opponents:
-    if (len(CommonOpps) > 0):
-        # Compute SPW(A,C) and SPW(B,C):
-        [spwAC, rpwAC] = ComputeSPWCommon(PlayerA, PrevMatchesCommA, CommonOpps, SurfaceParameter, Date, Surface, PlayerB, PrevMatchesCommB) 
-        [spwBC, rpwBC] = ComputeSPWCommon(PlayerB, PrevMatchesCommB, CommonOpps, SurfaceParameter, Date, Surface, PlayerA, PrevMatchesCommA)
-        print('spwAC:', spwAC, 'rpwAC:', rpwAC)
-        print('spwBC:', spwBC, 'rpwBC:', rpwBC) 
-
-        # Compute the P values as per equation 1:
-        Pa = (1  - Lamda) * spwAB + Lamda * spwAC
-        Pb = (1  - Lamda) * spwBA + Lamda * spwBC
+    # Check if we have sufficient historical data to make predictions:
+    if (numMatches == 0):
+        SPW = False
     else:
-        # Cannot use common opponent data anymore to compute P values, equation changed:
-        Pa = spwAB
-        Pb = spwBA
+        SPW = True
+    
+    if (len(CommonOpps) == 0):
+        SPC = False
+    else:
+        SPC = True
+
+    # Compute the P values using Equation 1, given the historical data:
+    if (SPW and SPC):
+        # Compute SPW(A,B) and SPW(B, A):
+        [spwAB, spwBA] = ComputeSPW(PlayerA, PlayerB, PrevMatches, surface, dateOfMatch, surfaceOfMatch)
+        print('spwAB:', spwAB, 'spwBA:', spwBA)
+
+        # Compute RPW(A,B) and RPW(B,A)
+        rpwAB = 1. - spwBA
+        rpwBA = 1. - spwAB
+
+        # Compute SPW(A,C) and SPW(B,C):
+        [spwAC, rpwAC] = ComputeSPWCommon(PlayerA, PrevMatchesCommA, CommonOpps, surface, dateOfMatch, surfaceOfMatch) 
+        [spwBC, rpwBC] = ComputeSPWCommon(PlayerB, PrevMatchesCommB, CommonOpps, surface, dateOfMatch, surfaceOfMatch)
+        print('spwAC:', spwAC, 'rpwAC:', rpwAC)
+        print('spwBC:', spwBC, 'rpwBC:', rpwBC)
+
+        # Compute PaS and PbS:
+        PaS = (1  - weighting) * spwAB + weighting * spwAC
+        PbS = (1  - weighting) * spwBA + weighting * spwBC
+
+        # Compute PaR and PbR:
+        PaR = (1  - weighting) * rpwAB + weighting * rpwAC
+        PbR = (1  - weighting) * rpwBA + weighting * rpwBC
+
+        # Compute P using the equation specified:
+        if (equation == 1):
+            Pa = PaS
+            Pb = PbS
+        elif (equation == 2):
+            Pa = PaS / (PaS + PbR)
+            Pb = PbS / (PbS + PaR)
+        else:
+            Pa = PaS * (1. - theta) - theta * (1. - PbR)
+            Pb = PbS * (1. - theta) - theta * (1. - PaR)
+
+    elif (SPW and not SPC):
+        # Compute SPW(A,B) and SPW(B, A):
+        [spwAB, spwBA] = ComputeSPW(PlayerA, PlayerB, PrevMatches, surface, dateOfMatch, surfaceOfMatch)
+        print('spwAB:', spwAB, 'spwBA:', spwBA)
+
+        # Compute RPW(A,B) and RPW(B,A)
+        rpwAB = 1. - spwBA
+        rpwBA = 1. - spwAB       
+
+        # Compute PaS and PbS:
+        print('Only using SPW to compute P')
+        PaS = spwAB
+        PbS = spwBA
+
+        # Compute PaR and PbR:
+        PaR = rpwAB
+        PbR = rpwBA
+
+        # Compute P using the equation specified:
+        if (equation == 1):
+            Pa = PaS
+            Pb = PbS
+        elif (equation == 2):
+            Pa = PaS / (PaS + PbR)
+            Pb = PbS / (PbS + PaR)
+        else:
+            Pa = PaS * (1. - theta) - theta * (1. - PbR)
+            Pb = PbS * (1. - theta) - theta * (1. - PaR)
+
+    elif (SPC and not SPW):
+        # Compute SPW(A,C) and SPW(B,C):
+        [spwAC, rpwAC] = ComputeSPWCommon(PlayerA, PrevMatchesCommA, CommonOpps, surface, dateOfMatch, surfaceOfMatch) 
+        [spwBC, rpwBC] = ComputeSPWCommon(PlayerB, PrevMatchesCommB, CommonOpps, surface, dateOfMatch, surfaceOfMatch)
+        print('spwAC:', spwAC, 'rpwAC:', rpwAC)
+        print('spwBC:', spwBC, 'rpwBC:', rpwBC)
+
+        # Compute PaS and PbS:
+        print('Only using SPC to compute P')
+        PaS = spwAC
+        PbS = spwBC
+
+        # Compute PaR and PbR:
+        PaR = rpwAC
+        PbR = rpwBC
+
+        # Compute P using the equation specified:
+        if (equation == 1):
+            Pa = PaS
+            Pb = PbS
+        elif (equation == 2):
+            Pa = PaS / (PaS + PbR)
+            Pb = PbS / (PbS + PaR)
+        else:
+            Pa = PaS * (1. - theta) - theta * (1. - PbR)
+            Pb = PbS * (1. - theta) - theta * (1. - PaR)
+    
+    else:
+        # No data on this match up, thus we cannot estimate a Pa and Pb value:
+        print('No historical data for these players')
+        return [0.5,0.5,False]
 
     print('Pa:', Pa, 'Pb:', Pb)
-    return Pa, Pb
+    return [Pa, Pb, True]
 
-def ComputeSPW(PlayerA, PlayerB, PrevMatches, SurfaceParameter, Date, Surface):
+def ComputeSPW(PlayerA, PlayerB, PrevMatches, surface, dateOfMatch, surfaceOfMatch):
     # Inputs:
+    # - surface = A hyperparameter corresponding to the weighting on matches played on the same surface
     # - PlayerA & PlayerB = IDs of both players of interest 
     # - PrevMatches = A list of tuples of all previous matches between player A and player B
-    # - SurfaceParameter = A hyperparameter corresponding to the weighting on matches played on the same surface
-    # - Date = The date of the match as a string in format '%Y-%m-%d'
-    # - Surface = The surface that the match will be played on (as an abbrev, e.g. C = Clay)
+    # - dateOfMatch = The date of the match as a string in format '%Y-%m-%d'
+    # - surfaceOfMatch = The surface that the match will be played on (as an abbrev, e.g. C = Clay)
 
     # Sum up the service points played for each player:
     PlayerAServePointsSurface = 0
@@ -219,7 +369,7 @@ def ComputeSPW(PlayerA, PlayerB, PrevMatches, SurfaceParameter, Date, Surface):
         if (PrevMatches[match][42 != None]):
 
             # if ((Date - MatchDate).days > 0):
-            if (PrevMatches[match][4] == Surface):
+            if (PrevMatches[match][4] == surfaceOfMatch):
                 surfaceMatchesCount += 1
                 if (PrevMatches[match][8] == PlayerA):
                     PlayerAServePointsSurface += PrevMatches[match][42]
@@ -262,22 +412,22 @@ def ComputeSPW(PlayerA, PlayerB, PrevMatches, SurfaceParameter, Date, Surface):
         PlayerBServicePropNS = 0
         
     if ((surfaceMatchesCount > 0) and (nonSurfaceMatchesCount > 0)):
-        PlayerAServiceProp = (1 - SurfaceParameter) * PlayerAServicePropSurface + SurfaceParameter * PlayerAServicePropNS
-        PlayerBServiceProp = (1 - SurfaceParameter) * PlayerBServicePropSurface + SurfaceParameter * PlayerBServicePropNS
+        PlayerAServiceProp = (1 - surface) * PlayerAServicePropSurface + surface * PlayerAServicePropNS
+        PlayerBServiceProp = (1 - surface) * PlayerBServicePropSurface + surface * PlayerBServicePropNS
     else:
         PlayerAServiceProp = PlayerAServicePropSurface + PlayerAServicePropNS
         PlayerBServiceProp = PlayerBServicePropSurface + PlayerBServicePropNS
 
     return PlayerAServiceProp, PlayerBServiceProp
 
-def ComputeSPWCommon(PlayerA, PrevMatchesCommOpps, CommonOpps, SurfaceParameter, Date, Surface, PlayerB, PrevMatchesCommOppsB):    
+def ComputeSPWCommon(PlayerA, PrevMatchesCommOpps, CommonOpps, surface, dateOfMatch, surfaceOfMatch):    
     # Inputs:
     # - PlayerA = ID of both player A
     # - PrevMatchesCommOpps = A list of tuples of all previous matches between player A the common opponents
     # - CommonOpps = A list of the IDs of all common opponents
-    # - SurfaceParameter = A hyperparameter corresponding to the weighting on matches played on the same surface
-    # - Date = The date of the match as a string in format '%Y-%m-%d'
-    # - Surface = The surface that the match will be played on (as an abbrev, e.g. C = Clay)
+    # - surface = A hyperparameter corresponding to the weighting on matches played on the same surface
+    # - dateOfMatch = The date of the match as a string in format '%Y-%m-%d'
+    # - surfaceOfMatch = The surface that the match will be played on (as an abbrev, e.g. C = Clay)
 
     # Sum up the service points played for each player:
     PlayerAServePointsSurface = np.zeros(len(CommonOpps), dtype = int)
@@ -301,7 +451,7 @@ def ComputeSPWCommon(PlayerA, PrevMatchesCommOpps, CommonOpps, SurfaceParameter,
         if (PrevMatchesCommOpps[match][42] != None):
 
         #if ((Date - MatchDate).days > 0):
-            if (Surface == PrevMatchesCommOpps[match][4]):
+            if (surfaceOfMatch == PrevMatchesCommOpps[match][4]):
                 if (PrevMatchesCommOpps[match][8] == PlayerA):
                     # Find who the opponent was:
                     Opp = CommonOpps.index(PrevMatchesCommOpps[match][18])
@@ -358,8 +508,8 @@ def ComputeSPWCommon(PlayerA, PrevMatchesCommOpps, CommonOpps, SurfaceParameter,
         # Check if the weighting is needed:
         if ((surfaceMatchesCount[Opp] > 0) and (nonSurfaceMatchesCount[Opp] > 0)):
             # Compute overall proportion:
-            SPWCommonOppProps[Opp] = ((1 - SurfaceParameter) * (SPWCommonOppPropsSurface[Opp]) + SurfaceParameter * (SPWCommonOppPropsNS[Opp]))
-            RPWCommonOppProps[Opp] = ((1 - SurfaceParameter) * (RPWCommonOppPropsSurface[Opp]) + SurfaceParameter * (RPWCommonOppPropsNS[Opp]))
+            SPWCommonOppProps[Opp] = ((1 - surface) * (SPWCommonOppPropsSurface[Opp]) + surface * (SPWCommonOppPropsNS[Opp]))
+            RPWCommonOppProps[Opp] = ((1 - surface) * (RPWCommonOppPropsSurface[Opp]) + surface * (RPWCommonOppPropsNS[Opp]))
         else:
             SPWCommonOppProps[Opp] = SPWCommonOppPropsSurface[Opp] + SPWCommonOppPropsNS[Opp]
             RPWCommonOppProps[Opp] = RPWCommonOppPropsSurface[Opp] + RPWCommonOppPropsNS[Opp]
@@ -368,12 +518,189 @@ def ComputeSPWCommon(PlayerA, PrevMatchesCommOpps, CommonOpps, SurfaceParameter,
     OverallRPWCommOpps = sum(RPWCommonOppProps) / len(CommonOpps)
     return [OverallSPWCommOpps, OverallRPWCommOpps]
         
+def ExtractSetScores(setScoresStirng):
+    # Extract individual set scores:
+    setScores = setScoresStirng.split()
+
+    # Convert to a 2-element list -> [PlayerAGames, PlayerBGames]
+    # 3 Cases:
+    # 1) Normal set e.g. 6-3
+    # 2) Game reached a TB e.g. 7-6(5)
+    # 3) Game reached a superTB (last set of the match) e.g. 12-10
+
+    extractedSS = []
+    for set in setScores:
+        # Split up A and B's games:
+        [gamesA, gamesB] = set.split("-")
+
+        # Check for case 2:
+        if ('(' in gamesB):
+            # the '(x)' is always on the right of the game number:
+            [gamesB, i] = gamesB.split('(')
+        
+        # Check for case 3:
+        if (int(gamesA) > 7 or int(gamesB) > 7):
+            # Reduce the score down to 7-6 or 6-7:
+            if (gamesA > gamesB):
+                extractedSS.append([7,6])
+            else:
+                extractedSS.append([6,7])
+        else:
+            extractedSS.append([int(gamesA), int(gamesB)])
+
+    return extractedSS
+
+def test(DB, matchesFileName):
+    # Test the ROI as an objective
+    FirstTest = False
+    ExtensiveTest = True
+
+    # Betting Odds from 'OddsPedia':
+    # - These odds are from Bet365 where available, otherwise the average odds are taken
+    # - The number of games odds are formatted as follows:
+    # - Under/Over 18.5, Under/Over 20.5, Under/Over 22.5, Under/Over 24.5, Under/Over 26.5, Under/Over 28.5
+
+    if (FirstTest):
+        # Test Match 1: Andy Murray vs Robin Haase (played 5 times previously)
+        # - Match played on 01/03/2021
+        # - Match Score: 1-2
+        # - Set Scores: 6-2, 6-7, 3-6
+        # - Number of Games: 30
+        # - P1 = 0.628 and P2 = 0.65
+        outcome = '1-2'
+        matchScore = [1,2]
+        setScores = [[6,2],[6,7],[3,6]]
+        NumGames = 30
+        P1 = 0.628
+        P2 = 0.65
+        odds = {'Match Outcome':[2.75,1.44],'Match Score':[4.5,6.0,2.1,4.0],'Number of Sets':[1.51,2.44],'Set Score':[81.0,41.0,15.0,15.0,6.5,
+        19.0,9.5,41.0,11.0,10.0,4.33,7.5,13.0,7.5],'Number of Games':[[4.04,1.23],[2.38,1.55],[1.72,2.0],[1.6,2.26],[1.41,2.9],[1.28,3.63]]}
+    elif (ExtensiveTest):
+        # Test multiple matches that I have collected odds data and their Pa and Pb values for.
+        # Read in the matches, odds, and respective Pa and Pb values:
+        THIS_FOLDER = os.path.abspath('CSVFiles')
+        fileName = os.path.join(THIS_FOLDER, matchesFileName)
+        matches = []
+        with open(fileName) as csv_file:
+            csv_reader = csv.reader(csv_file, delimiter = ',')
+            line_count = 0
+            for row in csv_reader:
+                if (line_count > 0):
+                    matches.append(row)
+                line_count += 1
+            
+    # Iterate through the matches we have data for:
+    objectiveValues = {}
+    objectiveValues['Match Outcome'] = []
+    objectiveValues['Match Score'] = []
+    objectiveValues['Set Score'] = []
+    objectiveValues['ROI'] = {}
+    objectiveValues['ROI']['Risk-Averse'] = []
+    objectiveValues['ROI']['Risk-Neutral'] = []
+    objectiveValues['ROI']['Risk-Seeking'] = []
+    ROIs = {}    
+    ROIs['Risk-Averse'] = []
+    ROIs['Risk-Neutral'] = []
+    ROIs['Risk-Seeking'] = []
+    overallROIs = {}
+    overallROIs['Risk-Averse'] = {}
+    overallROIs['Risk-Neutral'] = {}
+    overallROIs['Risk-Seeking'] = {}
+    overallROIs['Risk-Averse']['Spent'] = []
+    overallROIs['Risk-Averse']['Returns'] = []
+    overallROIs['Risk-Neutral']['Spent'] = []
+    overallROIs['Risk-Neutral']['Returns'] = []
+    overallROIs['Risk-Seeking']['Spent'] = []
+    overallROIs['Risk-Seeking']['Returns'] = []
+
+    # Construct varying possible risk profiles:
+    betsConsidered = [1,1,1,0,0]
+    betas = [0.2, 1./3., 0.5]
+    odds = {}
+    riskProfiles = {'Risk-Averse': [0.5, 1./3., 0.2], 'Risk-Neutral': [0.75, 0.5, 0.3], 'Risk-Seeking': [1., 2./3., 0.5]}
+    N = 20
+    alphaValues_3 = {'Risk-Averse':np.linspace(0.1,1./3.,N),'Risk-Neutral':np.linspace(0.1,0.5,N),
+        'Risk-Seeking':np.linspace(0.1,2./3.,N)}
+
+    for match in matches:
+        # Compute the interpolated distributions:
+        Dists = InterpolateDists(float(match[26]), float(match[27]), DB)
+
+        # Extract the required match details:
+        winner = 1
+        matchScore = [float(match[10]), float(match[11])]
+        setScores = ExtractSetScores(match[8])
+        outcome = '{}-{}'.format(int(matchScore[0]),int(matchScore[1]))
+
+        # Compute the objective metrics for this match:
+        objectiveValues['Match Outcome'].append(ObjectiveMetricMatchOutcome(Dists['Match Outcome'], winner))
+        objectiveValues['Match Score'].append(ObjectiveMetricMatchScore(Dists['Match Score'], matchScore))
+        objectiveValues['Set Score'].append(ObjectiveMetricSetScore(Dists['Set Score'], setScores))
+
+        # Find the best bets to place:
+        for profile in riskProfiles:
+            # Set up the list to store all the ROI values for each alpha 3:
+            allROIs = np.zeros(N, dtype = float)
+            allSpent = np.zeros(N, dtype = float)
+            allReturns = np.zeros(N, dtype = float) 
+            counter = 0
+
+            # Iterate through possible alpha_3 values:
+            for alpha_3 in alphaValues_3[profile]:
+                riskProfiles[profile][2] = alpha_3
+                # Run CVaR model:
+                [Zk, suggestedBets] = RunCVaRModel(betsConsidered,Dists['Match Score'],riskProfiles[profile],
+                betas,[float(match[18]),float(match[19])],[float(match[20]),float(match[21]),float(match[22]),
+                float(match[23])],[float(match[24]),float(match[25])],oddsSS=[],oddsNumGames=[])
+
+                # "place" these bets and the computed the ROI:
+                [ROI, spent, returns] = ObjectiveMetricROI(outcome, Zk, suggestedBets)
+                allROIs[counter] = ROI
+                allSpent[counter] = spent
+                allReturns[counter] = returns
+                counter += 1
+
+            # Store it in ROIs:
+            ROIs[profile].append(allROIs)
+            overallROIs[profile]['Spent'].append(allSpent)
+            overallROIs[profile]['Returns'].append(allReturns) 
+
+    # Compute the average ROI for each profile:
+    averageOverallROIs = {}
+    for profile in objectiveValues['ROI']:
+        averageROIs = np.zeros(N, dtype = float)
+        averageSpent = np.zeros(N, dtype = float)
+        averageReturns = np.zeros(N, dtype = float)
+        for alpha in range(N):
+            for match in range(len(ROIs[profile])):
+                averageROIs[alpha] += ROIs[profile][match][alpha]
+                averageSpent[alpha] += overallROIs[profile]['Spent'][match][alpha]
+                averageReturns[alpha] += overallROIs[profile]['Returns'][match][alpha]
+            averageReturns[alpha] = averageReturns[alpha] - averageSpent[alpha]
+
+        # Divide by number of matches:
+        averageROIs = averageROIs / N
+        objectiveValues['ROI'][profile] = averageROIs
+        averageOverallROIs[profile] = (averageReturns / averageSpent) * 100.
+
+    # Create a plot of the 3 sequences of ROIs:
+    for profile in objectiveValues['ROI']:
+        plt.plot(alphaValues_3[profile], objectiveValues['ROI'][profile], label = profile)
+    plt.xlabel('Alpha 3 - Proportion willing to lose in the worst 50% of cases')
+    plt.ylabel('ROI as a percentage')
+    plt.legend()
+    plt.show()
+
+    for profile in averageOverallROIs:
+        plt.plot(alphaValues_3[profile], averageOverallROIs[profile], label = profile)
+        plt.xlabel('Alpha 3 - Proportion willing to lose in the worst 50% of cases')
+        plt.ylabel('Overall ROI as a percentage')
+    plt.legend()
+    plt.show()
+
 def main():
-    Age = 8
-    EvalEquation(8)
-    #DB = ReadInGridDB('ModelDistributions.csv')
-    #Dists = InterpolateDists(0.615, 0.605, DB)
-    #print(Dists)
+    DB = ReadInGridDB('ModelDistributions.csv')
+    test(DB, '2018_19MatchesWithOdds.csv')
 
 if __name__ == "__main__":
     main()
