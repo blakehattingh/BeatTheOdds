@@ -22,9 +22,9 @@ def getTestMatchData(years):
         hardMatchesByYears.append(cursor.fetchall())
         cursor.execute(queryGrass)
         grassMatchesByYears.append(cursor.fetchall())
-    sampledMatchesByYearClay = getRandomSamples(clayMatchesByYears)
-    sampledMatchesByYearHard = getRandomSamples(hardMatchesByYears)
-    sampledMatchesByYearGrass = getRandomSamples(grassMatchesByYears)
+    sampledMatchesByYearClay = getRandomSamples(clayMatchesByYears,50)
+    sampledMatchesByYearHard = getRandomSamples(hardMatchesByYears,50)
+    sampledMatchesByYearGrass = getRandomSamples(grassMatchesByYears,50)
 
     sampledMatchesByYears = []
     for i in range(len(years)):
@@ -37,12 +37,12 @@ def getTestMatchData(years):
 
     
 
-def getRandomSamples(matchesByYears):
+def getRandomSamples(matchesByYears, numMatches):
     sampledMatchesByYears = []
 
     for matches in matchesByYears:
         length = len(matches)
-        indices = random.sample(range(0,length-1),20)
+        indices = random.sample(range(0,length-1),numMatches)
         sampledMatches = []
         for index in indices:
             sampledMatches.append(matches[index])
@@ -54,6 +54,7 @@ def getRandomSamples(matchesByYears):
 
 def main():
     years = [2012,2014,2016,2018,2019]
+    testYears = [2018, 2019]
     getTestMatchData(years)
 
 

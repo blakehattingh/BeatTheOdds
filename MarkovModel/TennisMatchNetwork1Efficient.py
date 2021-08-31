@@ -1,6 +1,7 @@
 # Import the required functions:
-from loopybeliefprop import choose
-from AdditionalFunctions import combine_recursion, nth_index
+from MarkovModel import loopybeliefprop, AdditionalFunctions
+#from loopybeliefprop import choose
+#from AdditionalFunctions import combine_recursion, nth_index
 import numpy as np
 
 def TennisMatchNetwork1Efficient(SetScoreDists, FirstToSets, ConditionalEvents = {}):
@@ -187,14 +188,14 @@ def TennisMatchNetwork1Efficient(SetScoreDists, FirstToSets, ConditionalEvents =
                                 # Player 1 won
                                 dist['Match'][Score1, Score2, Score3, Score4, Score5] = [1., 0.]
                                 # Find the occurence of the 3rd win for player 1:
-                                Set = nth_index(Sequence, 1, 3)
+                                Set = AdditionalFunctions.nth_index(Sequence, 1, 3)
                                 ScoreDist[Set-2] = 1.
                                 dist['MatchScore'][Score1, Score2, Score3, Score4, Score5] = ScoreDist
                             else:
                                 # Player 2 won
                                 dist['Match'][Score1, Score2, Score3, Score4, Score5] = [0., 1.]
                                 # Find the occurence of the 3rd win for player 2:
-                                Set = nth_index(Sequence, 2, 3)
+                                Set = AdditionalFunctions.nth_index(Sequence, 2, 3)
                                 ScoreDist[Set+1] = 1.
                                 dist['MatchScore'][Score1, Score2, Score3, Score4, Score5] = ScoreDist
                             
@@ -260,10 +261,10 @@ def TennisMatchNetwork1Efficient(SetScoreDists, FirstToSets, ConditionalEvents =
     for i in nodes:
         if (i in ConditionalEvents.keys()):
             # Fix certian nodes identfied by user:
-            info[i] = choose(outcomes[i], ConditionalEvents[i])
+            info[i] = loopybeliefprop.choose(outcomes[i], ConditionalEvents[i])
         else:
             # Otherwise leave them unfixed:
-            info[i] = choose(outcomes[i], [])
+            info[i] = loopybeliefprop.choose(outcomes[i], [])
     return(nodes, dist, parents, outcomes, info)
 
 

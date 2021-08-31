@@ -2,12 +2,25 @@ from datetime import datetime, timedelta
 from typing import Match
 from pandas.core.base import DataError
 import os, sys
-relativePath = os.path.abspath('')
-sys.path.append(relativePath + '\\MarkovModel')
-sys.path.append(relativePath + '\\DataExtraction')
+currentPath = os.path.abspath(os.getcwd()) + '\\BeatTheOdds'
+# Markov Model Files:
+sys.path.insert(0, currentPath + '\\MarkovModel')
+#from FirstImplementation import *
+
+# Optimisation Model Files:
+sys.path.insert(0, currentPath + '\\OptimisationModel')
+#from CVaRModel import RunCVaRModel
+
+# Data Extraction Files:
+sys.path.insert(0, currentPath + '\\DataExtraction')
+from TestSetCollector import *
+from DataCollector import *
+
+#sys.path.append(relativePath + '\\MarkovModel')
+#sys.path.append(relativePath + '\\DataExtraction')
 #from MarkovModel import FirstImplementation
-from DataExtraction import TestSetCollector, DataCollector
-from ComputingP import BuildingDatabase
+#from DataExtraction import TestSetCollector, DataCollector
+#from ComputingP import BuildingDatabase
 import pandas as pd
 import numpy as np
 
@@ -87,17 +100,24 @@ def try_parsing_date(text):
     raise ValueError('no valid date format found')
 
 def EvalEquation(age):
-    testYears = [2012,2014,2016,2018,2019]
-    sampledMatchesByYears = TestSetCollector.getTestMatchData(testYears)
+    testYears = [2018,2019]
+    sampledMatchesByYears = getTestMatchData(testYears)
     ageGap = timedelta(days=365.25*age)
+    matchesForTest = []
 
     for year in sampledMatchesByYears:
         for match in year:
             dateOfMatch = match[3]
             startOfDataCollection = dateOfMatch - ageGap
-            p1vP2,p1vCO,p2vCO,COIds = DataCollector.getSPWData(match, startOfDataCollection)
+            p1vP2,p1vCO,p2vCO,COIds = getSPWData(match, startOfDataCollection)
             Pa,Pb = CalcPEquation1(match, p1vP2, p1vCO, p2vCO, COIds, 0.3,0.3)
-            print(Pa,Pb)
+            #print(Pa,Pb)
+            if ((len(p1vP2) > 4) & (len(COIds) > 10)):
+                matchesForTest.append(match)
+    if (len(matchesForTest) >= 20):
+        df = pd.DataFrame(matchesForTest)
+        df.to_csv('matchesToManuallyGetOddsFor.csv')
+
 
     
 
@@ -153,8 +173,8 @@ def CalcPEquation1(MatchData,PrevMatches,PrevMatchesCommA,PrevMatchesCommB,Commo
     # Check if there are any common opponents:
     if (len(CommonOpps) > 0):
         # Compute SPW(A,C) and SPW(B,C):
-        [spwAC, rpwAC] = ComputeSPWCommon(PlayerA, PrevMatchesCommA, CommonOpps, SurfaceParameter, Date, Surface) 
-        [spwBC, rpwBC] = ComputeSPWCommon(PlayerB, PrevMatchesCommB, CommonOpps, SurfaceParameter, Date, Surface)
+        [spwAC, rpwAC] = ComputeSPWCommon(PlayerA, PrevMatchesCommA, CommonOpps, SurfaceParameter, Date, Surface, PlayerB, PrevMatchesCommB) 
+        [spwBC, rpwBC] = ComputeSPWCommon(PlayerB, PrevMatchesCommB, CommonOpps, SurfaceParameter, Date, Surface, PlayerA, PrevMatchesCommA)
         print('spwAC:', spwAC, 'rpwAC:', rpwAC)
         print('spwBC:', spwBC, 'rpwBC:', rpwBC) 
 

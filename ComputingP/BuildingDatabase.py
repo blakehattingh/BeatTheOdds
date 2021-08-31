@@ -2,7 +2,7 @@ from typing import List
 import os, sys
 relativePath = os.path.abspath('')
 sys.path.append(relativePath + '\\MarkovModel')
-#from MarkovModel import FirstImplementation
+from MarkovModel import FirstImplementation
 import numpy as np
 import pandas as pd
 import csv

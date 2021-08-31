@@ -1,7 +1,8 @@
 # Import the required functions:
-from AdditionalFunctions import combine_recursion, nth_index
-from loopybeliefprop import choose
-from OMalleysEqns import TB
+from MarkovModel import AdditionalFunctions, loopybeliefprop, OMalleysEqns
+#from AdditionalFunctions import combine_recursion, nth_index
+#from loopybeliefprop import choose
+#from OMalleysEqns import TB
 
 def TennisSetNetworkEfficient(P1S, P2S, InitServerDist = [0.5, 0.5], ConditionalEvents = {}):
     # Specify the names of the nodes in the Bayesian network
@@ -33,8 +34,8 @@ def TennisSetNetworkEfficient(P1S, P2S, InitServerDist = [0.5, 0.5], Conditional
     P2G = pow(P2S, 4) * (15 - 4 * P2S - (10 * pow(P2S, 2) / (1 - 2 * P2S * (1 - P2S))))
 
     # Compute the probability of winning a TB starting with service:
-    P1TB = TB(P1S, 1 - P2S)
-    P2TB = TB(P2S, 1 - P1S)
+    P1TB = OMalleysEqns.TB(P1S, 1 - P2S)
+    P2TB = OMalleysEqns.TB(P2S, 1 - P1S)
 
     # Set up dictionaries for each game:
     dist={}
@@ -62,7 +63,7 @@ def TennisSetNetworkEfficient(P1S, P2S, InitServerDist = [0.5, 0.5], Conditional
     SetScores = [[6,0],[6,1],[6,2],[6,3],[6,4],[7,5],[7,6],[0,6],[1,6],[2,6],[3,6],[4,6],[5,7],[6,7]]
 
     for i in range(1,14):
-        Seqs = combine_recursion(13,i)
+        Seqs = AdditionalFunctions.combine_recursion(13,i)
 
         for j in Seqs:
             # Reset Sequences and distributions:
@@ -148,8 +149,8 @@ def TennisSetNetworkEfficient(P1S, P2S, InitServerDist = [0.5, 0.5], Conditional
     for i in nodes:
         if (i in ConditionalEvents.keys()):
             # Fix certian nodes identfied by user:
-            info[i] = choose(outcomes[i], ConditionalEvents[i])
+            info[i] = loopybeliefprop.choose(outcomes[i], ConditionalEvents[i])
         else:
             # Otherwise leave them unfixed:
-            info[i] = choose(outcomes[i], [])
+            info[i] = loopybeliefprop.choose(outcomes[i], [])
     return(nodes, dist, parents, outcomes, info)
