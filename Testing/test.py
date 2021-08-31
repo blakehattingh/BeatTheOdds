@@ -20,15 +20,6 @@ def nth_index(iterable, value, n):
     return next(islice(matches, n-1, n), None)
 
 def main():
-    '''
-    Bets = ['AWins', 'BWins', '3-0', '3-1', '3-2', '0-3', '1-3', '2-3']
-    Probabilities = [0.04470312, 0.10620195, 0.09589186, 0.10717187, 0.3687957, 0.37723549]
-    Z = [[1.80,0,4.5,0,0,0,0,0],[1.80,0,0,3.2,0,0,0,0],[1.80,0,0,0,3.8,0,0,0],
-    [0,2.06,0,0,0,12.0,0,0],[0,2.06,0,0,0,0,10.0,0],[0,2.06,0,0,0,0,0,9.0]]
-    lam = 4.
-    beta = 0.2
-    CVaRModel(Probabilities, Z, lam, beta, Bets)
-    '''
 
     # Comparing our model and O'Malley's Equations:
     P1S = 0.60
@@ -62,9 +53,11 @@ def main():
     #[A, B] = Matrices()
     #print(Set(P1S, 1. - P2S, A, B))
 
-    ageGap = timedelta(days=365.25*8)
-    date = datetime.strptime('2018-03-23', '%Y-%m-%d')
-    print(date-ageGap)
+    x = [[2,3,9],[4,5,6]]
+    y =[]
+    y = y+x[0]
+    y = y+x[1]
+    print(y)
 
 if __name__ == "__main__":
     main()

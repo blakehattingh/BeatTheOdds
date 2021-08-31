@@ -1,12 +1,16 @@
 from typing import List
-import os, sys
-relativePath = os.path.abspath('')
-sys.path.append(relativePath + '\\MarkovModel')
-from MarkovModel import FirstImplementation
 import numpy as np
 import pandas as pd
 import csv
-#import sklearn 
+#import sklearn
+import os, sys
+
+# Add required folders to the system path:
+currentPath = os.path.abspath(os.getcwd())
+
+# Markov Model Files:
+sys.path.insert(0, currentPath + '\\MarkovModel')
+from FirstImplementation import *
 
 def BuildingDB(PStart, PEnd, Increment):
     # This function runs our Markov Model for ALL possible P1 and P2 combinations
