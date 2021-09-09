@@ -44,8 +44,8 @@ def ComputeTBProbabilities(P1S, P2S):
     Col = round((P2S - 0.50) / 0.01)
 
     # Compute the tie-breaker probabilities using pre-calculated values from a simulation:
-    THIS_FOLDER = os.path.dirname(os.path.abspath(__file__))
-    with open(os.path.join(THIS_FOLDER, 'TBProbabilities.csv')) as csv_file:
+    THIS_FOLDER = os.path.abspath(os.getcwd())
+    with open(os.path.join(THIS_FOLDER, 'CSVFiles\\TBProbabilities.csv')) as csv_file:
         csv_reader = csv.reader(csv_file, delimiter=',')
         line_count = 0
         for row in csv_reader:

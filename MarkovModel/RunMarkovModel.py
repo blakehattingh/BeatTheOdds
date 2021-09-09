@@ -18,9 +18,9 @@ def RunMarkovModel(P1S, P2S, FirstToSets, FirstToTBPoints, Method, Viscosity, Co
     
     # Run the Markov Model using the method specified by the user:
     if (Method == 1):
-        [MatchDist, MatchScoreDist, TotalNumGamesDist, AllSetScoresDist] = MarkovModelFirstImplementation(P1S, P2S, 
+        [MatchScoreDist, TotalNumGames,AllSetScoresDist] = MarkovModelFirstImplementation(P1S, P2S, 
         FirstToSets, FirstToTBPoints, ConditionalEvents, Iterations, Tol)
-        return MatchDist, MatchScoreDist, TotalNumGamesDist, AllSetScoresDist
+        return MatchScoreDist, TotalNumGames, AllSetScoresDist
 
     elif (Method == 2):
         [MatchDist,MatchScoreDist,TotalNumGamesDist,AllSetScoresDist] = MarkovModelSecondImplementation(P1S,
@@ -32,13 +32,14 @@ def main():
     P2S = 0.55
     Approach = 1
     Viscosity = 0.5
-    ConditionalEvents = {}
+    ConditionalEvents = {'MatchScore': [1]}
 
     if (Approach == 1):
         # Run the Markov Model using Implementation 1:
-        [MatchDist, MatchScoreDist, TotalNumGamesDist, AllSetScoresDist] = RunMarkovModel(P1S,P2S,3,7,Approach,Viscosity)
-        print('Match Distribution: ', end = '')
-        print(MatchDist)
+        [MatchScoreDist, TotalNumGamesDist, AllSetScoresDist] = RunMarkovModel(P1S,P2S,3,7,Approach,Viscosity,
+        ConditionalEvents)
+        #print('Match Distribution: ', end = '')
+        #print(MatchDist)
         print('Match Score Distribution: ', end = '')
         print(MatchScoreDist)
         print('Number of Games Distribution: ', end = '')
