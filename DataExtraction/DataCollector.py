@@ -12,10 +12,10 @@ def getSPWData(matchDetails, startOfDataCollection):
     p1vCO = getPlayerVsCO(startOfDataCollection,cursor,p1ID,p2ID,matchDetails[3])
     p2vCO = getPlayerVsCO(startOfDataCollection,cursor,p2ID,p1ID,matchDetails[3])
     COIds = getCOs(p1vCO,p1ID,p2ID)
-    print(len(p1vP2))
-    print(len(p1vCO))
-    print(len(p2vCO))
-    print(len(COIds))
+    #print(len(p1vP2))
+    #print(len(p1vCO))
+    #print(len(p2vCO))
+    #print(len(COIds))
     return p1vP2,p1vCO,p2vCO,COIds
 
 def getIds(matchDetails, cursor):

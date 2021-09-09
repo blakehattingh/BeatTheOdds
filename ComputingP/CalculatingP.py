@@ -19,7 +19,7 @@ from FirstImplementation import *
 
 # Optimisation Model Files:
 sys.path.insert(0, currentPath + '\\OptimisationModel')
-from CVaRModel import RunCVaRModel
+#from CVaRModel import RunCVaRModel
 
 # Data Extraction Files:
 sys.path.insert(0, currentPath + '\\DataExtraction')
@@ -134,14 +134,14 @@ def InterpolateDists(Pa, Pb, DB, Spacing = 0.02):
     DDists = DB[(round((APointA+0.02),2),round((APointB+0.02),2))]
 
     # Compute the weighting between side points (alpha) and bottom and top points (beta):
-    [alpha, beta] = BuildingDatabase.ComputeWeighting(Pa, Pb)
+    [alpha, beta] = ComputeWeighting(Pa, Pb)
 
     # Extract the average distributions along each side:
     XDists = {}
     for dist in ADists:
-        EDists = BuildingDatabase.WeightedAverage(ADists[dist], BDists[dist], alpha)
-        FDists = BuildingDatabase.WeightedAverage(CDists[dist], DDists[dist], alpha)
-        XDists[dist] = BuildingDatabase.WeightedAverage(EDists, FDists, beta)
+        EDists = WeightedAverage(ADists[dist], BDists[dist], alpha)
+        FDists = WeightedAverage(CDists[dist], DDists[dist], alpha)
+        XDists[dist] = WeightedAverage(EDists, FDists, beta)
 
     return XDists
     
@@ -153,7 +153,7 @@ def try_parsing_date(text):
             pass
     raise ValueError('no valid date format found')
 
-def EvalEquations(DB, testData, equation, age, surface, weighting, theta = 0.5):
+def EvalEquations(DB, testData, equation, age, surface, weighting, theta = (1.-0.7256202149724478)):
     # Create the set of test matches:
     testYears = [2012,2014,2016,2018,2019]
     # sampledMatchesByYears = TestSetCollector.getTestMatchData(testYears)
@@ -174,12 +174,13 @@ def EvalEquations(DB, testData, equation, age, surface, weighting, theta = 0.5):
             startOfDataCollection = dateOfMatch - ageGap
 
             # Collect player data for the players in the match:
-            p1vP2,p1vCO,p2vCO,COIds = DataCollector.getSPWData(match, startOfDataCollection)
+            p1vP2,p1vCO,p2vCO,COIds = getSPWData(match, startOfDataCollection)
 
             # Compute the P values using all 3 equations:
             eqNum = 0
             for eq in objectiveValues:
                 eqNum += 1
+                print('equation number = ' + str(eqNum))
                 # Compute the P values for the two players:
                 [Pa,Pb,predict] = CalcPEquation(eqNum, age, surface, weighting, match, p1vP2, p1vCO, p2vCO, COIds, theta)
 
@@ -272,8 +273,8 @@ def CalcPEquation(equation,age,surface,weighting,MatchData,PrevMatches,PrevMatch
             Pa = PaS / (PaS + PbR)
             Pb = PbS / (PbS + PaR)
         else:
-            Pa = PaS * (1. - theta) - theta * (1. - PbR)
-            Pb = PbS * (1. - theta) - theta * (1. - PaR)
+            Pa = PaS * (1. - theta) + theta * (1. - PbR)
+            Pb = PbS * (1. - theta) + theta * (1. - PaR)
 
     elif (SPW and not SPC):
         # Compute SPW(A,B) and SPW(B, A):
@@ -700,7 +701,17 @@ def test(DB, matchesFileName):
 
 def main():
     DB = ReadInGridDB('ModelDistributions.csv')
-    test(DB, '2018_19MatchesWithOdds.csv')
+    #test(DB, '2018_19MatchesWithOdds.csv')\
+    matches = getSpecificMatches([178827])
+    #print(matches)
+    surface = [0.2, 0.5, 0.7]
+    weighting = [0.2, 0.5, 0.7]
+    for surfaceWeight in surface :
+        for weight in weighting :
+            print('surface = ' + str(surfaceWeight) ) 
+            print('weighting = ' + str(weight) )  
+            #print(EvalEquations(DB,matches,1,8,surfaceWeight,surfaceWeight))
+            EvalEquations(DB,matches,1,8,surfaceWeight,weight)
 
 if __name__ == "__main__":
     main()

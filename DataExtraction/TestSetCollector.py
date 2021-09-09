@@ -35,6 +35,16 @@ def getTestMatchData(years):
     #print(len(sampledMatchesByYears[0]))
     return sampledMatchesByYears
 
+def getSpecificMatches(matchIds):
+    matches = []
+    conn = psy.connect('dbname=tcb user=postgres password=12qwaszx host=localhost')
+    cursor = conn.cursor()
+    for matchId in matchIds:
+        getMatchByIdQuery = f""" select * from tcb.match m join tcb.match_stats s on m.match_id = s.match_id where m.match_id = {matchId}"""
+        cursor.execute(getMatchByIdQuery)
+        matches.append(cursor.fetchall())
+    return matches
+
     
 
 def getRandomSamples(matchesByYears, numMatches):

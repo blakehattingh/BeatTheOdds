@@ -10,7 +10,7 @@ currentPath = os.path.abspath(os.getcwd())
 
 # Markov Model Files:
 sys.path.insert(0, currentPath + '\\MarkovModel')
-from FirstImplementation import *
+#from FirstImplementation import *
 
 def BuildingDB(PStart, PEnd, Increment):
     # This function runs our Markov Model for ALL possible P1 and P2 combinations
@@ -228,7 +228,7 @@ def ReadInGridDB(FileName):
 
     # Read in the model distributions database: 
     DB = {} 
-    x = pd.read_csv(FileName, header = None)
+    x = pd.read_csv('C:\\Uni\\4thYearProject\\repo\\BeatTheOdds\\CSVFiles\\ModelDistributions.csv', header = None)
     for row in range(len(x)):
         Pa = round(eval(x[0][row])[0],2)
         Pb = round(eval(x[0][row])[1],2)
