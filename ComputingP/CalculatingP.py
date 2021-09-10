@@ -153,50 +153,82 @@ def try_parsing_date(text):
             pass
     raise ValueError('no valid date format found')
 
-def EvalEquations(DB, testData, equation, age, surface, weighting, theta = 0.5):
-    # Create the set of test matches:
-    testYears = [2012,2014,2016,2018,2019]
-    # sampledMatchesByYears = TestSetCollector.getTestMatchData(testYears)
-    sampledMatchesByYears = testData
+def EvalEquations(DB, testDataFN, obj, equations, age, surface, weighting, theta = 0.5, riskProfile = [], betas = []):
+    # This function takes a test or training set of matches, an equation(s) to use and it evaluates the specified 
+    # objective metric across the inputted data set.
+    # Inputs:
+    # - DB = The model distributions database for (Pa, Pb) values
+    # - testDataFN = A csv filename for the test/training set of matches
+    # - obj = the objective metric to use (either 'Match Stats' or 'ROI')
+    # - equations = a list of integer(s) corresponding to the equations to use
+    # - age, surface, weighting, theta are hyperparameters for the equations
+    # - riskProfiles = a list of RHS values for the profile getting used
+    # - betas = a list of beta values to use in the CVaR model
+
+    # Returns:
+    # - The objective metric for the equations given on the data inputted
+
+    # Read in the data:
+    testData = ReadInData(testDataFN)
     ageGap = timedelta(days=365.25*age)
 
-    # Create dictionary to store the objective metrics for each equation:
-    objectiveValues = {'Equation 1': {'Match Outcome': 0, 'Match Score': 0, 'Set Score': 0}, 'Equation 2': {'Match Outcome': 0, 
-    'Match Score': 0, 'Set Score': 0}, 'Equation 3': {'Match Outcome': 0, 'Match Score': 0, 'Set Score': 0}}
-    count = 0
-    for year in sampledMatchesByYears:
-        for match in year:
-            # Extract the test match data:
-            dateOfMatch = match[3]
-            MatchScore = [match[30],match[31]]
-            SetScores = ExtractSetScores(match[28])
-            startOfDataCollection = dateOfMatch - ageGap
+    # Create a dictionary to store the objective metric(s):
+    objectiveValues = {}
+    if (obj == 'Match Stats'):
+        for eq in equations:
+            objectiveValues['Equation {}'.format(eq)] = {'Match Outcome': 0, 'Match Score': 0, 'Set Score': 0, 
+            'Matches Predicted': 0}        
+    elif (obj == 'ROI'):
+        for eq in equations:
+            objectiveValues['Equation {}'.format(eq)] = {'ROI': [], 'Betted': 0, 'Returns': 0}
 
-            # Collect player data for the players in the match:
-            p1vP2,p1vCO,p2vCO,COIds = DataCollector.getSPWData(match, startOfDataCollection)
+    # Using the equations specified, compute the objective metric specified for each match in test data:
+    for match in testData:
+        # Extract the test match data:
+        dateOfMatch = match[3]
+        matchScore = [match[30],match[31]]
+        SetScores = ExtractSetScores(match[28])
+        outcome = '{}-{}'.format(int(matchScore[0]),int(matchScore[1]))
+        startOfDataCollection = dateOfMatch - ageGap
 
-            # Compute the P values using all 3 equations:
-            eqNum = 0
-            for eq in objectiveValues:
-                eqNum += 1
-                # Compute the P values for the two players:
-                [Pa,Pb,predict] = CalcPEquation(eqNum, age, surface, weighting, match, p1vP2, p1vCO, p2vCO, COIds, theta)
+        # Collect player data for the players in the match:
+        p1vP2,p1vCO,p2vCO,COIds = getSPWData(match, startOfDataCollection)
 
-                # Look to make predictions using these P values:
-                if (predict):
-                    count += 1
-                    # Interpolate the distributions for these P values:
-                    Dists = InterpolateDists(Pa, Pb, DB)
+        # Compute the P values using the equations specified:
+        for eq in equations:
+            # Compute the P values for the two players:
+            [Pa,Pb,predict] = CalcPEquation(eq, age, surface, weighting, match, p1vP2, p1vCO, p2vCO, COIds, theta)
 
-                    # Compute the objective metrics for this match:
-                    objectiveValues[eq]['Match Outcome'] += ObjectiveMetricMatchOutcome(Dists['Match Outcome'], 1)
-                    objectiveValues[eq]['Match Score'] += ObjectiveMetricMatchScore(Dists['Match Score'], MatchScore)
-                    objectiveValues[eq]['Set Score'] += ObjectiveMetricSetScore(Dists['Set Score'], SetScores)
-    
-    # Compute metrics per match:
-    for eq in objectiveValues:
-        for metric in objectiveValues[eq]:
-            objectiveValues[eq][metric] =  objectiveValues[eq][metric] / count
+            # Look to make predictions using these P values:
+            if (predict):
+                # Interpolate the distributions for these P values:
+                Dists = InterpolateDists(Pa, Pb, DB)
+
+                # Compute the objective metrics for this match:
+                if (obj == 'Match Stats'):
+                    objectiveValues['Equation {}'.format(eq)]['Match Outcome'] += ObjectiveMetricMatchOutcome(Dists['Match Outcome'], 1)
+                    objectiveValues['Equation {}'.format(eq)]['Match Score'] += ObjectiveMetricMatchScore(Dists['Match Score'], matchScore)
+                    objectiveValues['Equation {}'.format(eq)]['Set Score'] += ObjectiveMetricSetScore(Dists['Set Score'], SetScores)
+                    objectiveValues['Equation {}'.format(eq)]['Matches Predicted'] += 1
+                elif (obj == 'ROI'):
+                    # Import the 'odds' for this match:
+                    oddsMO = 10
+                    oddsMS = 10
+                    oddsNumSets = 10
+
+                    # Infer what odds we are considering from the odds available:
+                    # (Match Outomce, Match Score, Number of Sets, Set Score, Number of Games)
+                    betsConsidered = [1,1,1,0,0]
+
+                    # Find the best set of bets to make:
+                    [Zk, suggestedBets] = RunCVaRModel(betsConsidered,Dists['Match Score'],riskProfile,betas,oddsMO,
+                    oddsMS,oddsNumSets,oddsSS=[],oddsNumGames=[])
+
+                    # Place these bets and compute the ROI:
+                    [ROI, spent, returns] = ObjectiveMetricROI(outcome, Zk, suggestedBets)
+                    objectiveValues['Equation {}'.format(eq)]['ROI'].append(ROI)
+                    objectiveValues['Equation {}'.format(eq)]['Betted'] += spent
+                    objectiveValues['Equation {}'.format(eq)]['Returns'] += returns
 
     return objectiveValues
 
@@ -214,6 +246,10 @@ def CalcPEquation(equation,age,surface,weighting,MatchData,PrevMatches,PrevMatch
     # - PrevMatchesCommA / B = The matches between player A / B and the common opponents
     # - CommonOpps = A list of common opponent IDs
 
+    # Returns:
+    # - Pa and Pb
+    # - Boolean relating to if we can predict or not with the P values
+
     # Extract required info:
     dateOfMatch = MatchData[3]
     surfaceOfMatch = MatchData[4]
@@ -230,111 +266,103 @@ def CalcPEquation(equation,age,surface,weighting,MatchData,PrevMatches,PrevMatch
 
     # Check if we have sufficient historical data to make predictions:
     if (numMatches == 0):
-        SPW = False
-    else:
-        SPW = True
-    
-    if (len(CommonOpps) == 0):
-        SPC = False
-    else:
-        SPC = True
-
-    # Compute the P values using Equation 1, given the historical data:
-    if (SPW and SPC):
-        # Compute SPW(A,B) and SPW(B, A):
-        [spwAB, spwBA] = ComputeSPW(PlayerA, PlayerB, PrevMatches, surface, dateOfMatch, surfaceOfMatch)
-        print('spwAB:', spwAB, 'spwBA:', spwBA)
-
-        # Compute RPW(A,B) and RPW(B,A)
-        rpwAB = 1. - spwBA
-        rpwBA = 1. - spwAB
-
-        # Compute SPW(A,C) and SPW(B,C):
-        [spwAC, rpwAC] = ComputeSPWCommon(PlayerA, PrevMatchesCommA, CommonOpps, surface, dateOfMatch, surfaceOfMatch) 
-        [spwBC, rpwBC] = ComputeSPWCommon(PlayerB, PrevMatchesCommB, CommonOpps, surface, dateOfMatch, surfaceOfMatch)
-        print('spwAC:', spwAC, 'rpwAC:', rpwAC)
-        print('spwBC:', spwBC, 'rpwBC:', rpwBC)
-
-        # Compute PaS and PbS:
-        PaS = (1  - weighting) * spwAB + weighting * spwAC
-        PbS = (1  - weighting) * spwBA + weighting * spwBC
-
-        # Compute PaR and PbR:
-        PaR = (1  - weighting) * rpwAB + weighting * rpwAC
-        PbR = (1  - weighting) * rpwBA + weighting * rpwBC
-
-        # Compute P using the equation specified:
-        if (equation == 1):
-            Pa = PaS
-            Pb = PbS
-        elif (equation == 2):
-            Pa = PaS / (PaS + PbR)
-            Pb = PbS / (PbS + PaR)
+        if (len(CommonOpps) == 0):
+            # We have no data to use to compute P, thus do NOT compute it:
+            print('No historical data for these players')
+            return [0.5,0.5,False]
         else:
-            Pa = PaS * (1. - theta) - theta * (1. - PbR)
-            Pb = PbS * (1. - theta) - theta * (1. - PaR)
+            # Compute SPW(A,C) and SPW(B,C):
+            [spwAC, rpwAC] = ComputeSPWCommon(PlayerA, PrevMatchesCommA, CommonOpps, surface, dateOfMatch, surfaceOfMatch) 
+            [spwBC, rpwBC] = ComputeSPWCommon(PlayerB, PrevMatchesCommB, CommonOpps, surface, dateOfMatch, surfaceOfMatch)
+            print('spwAC:', spwAC, 'rpwAC:', rpwAC)
+            print('spwBC:', spwBC, 'rpwBC:', rpwBC)
 
-    elif (SPW and not SPC):
-        # Compute SPW(A,B) and SPW(B, A):
-        [spwAB, spwBA] = ComputeSPW(PlayerA, PlayerB, PrevMatches, surface, dateOfMatch, surfaceOfMatch)
-        print('spwAB:', spwAB, 'spwBA:', spwBA)
+            # Compute PaS and PbS:
+            print('Only using SPC to compute P')
+            PaS = spwAC
+            PbS = spwBC
 
-        # Compute RPW(A,B) and RPW(B,A)
-        rpwAB = 1. - spwBA
-        rpwBA = 1. - spwAB       
+            # Compute PaR and PbR:
+            PaR = rpwAC
+            PbR = rpwBC
 
-        # Compute PaS and PbS:
-        print('Only using SPW to compute P')
-        PaS = spwAB
-        PbS = spwBA
-
-        # Compute PaR and PbR:
-        PaR = rpwAB
-        PbR = rpwBA
-
-        # Compute P using the equation specified:
-        if (equation == 1):
-            Pa = PaS
-            Pb = PbS
-        elif (equation == 2):
-            Pa = PaS / (PaS + PbR)
-            Pb = PbS / (PbS + PaR)
-        else:
-            Pa = PaS * (1. - theta) - theta * (1. - PbR)
-            Pb = PbS * (1. - theta) - theta * (1. - PaR)
-
-    elif (SPC and not SPW):
-        # Compute SPW(A,C) and SPW(B,C):
-        [spwAC, rpwAC] = ComputeSPWCommon(PlayerA, PrevMatchesCommA, CommonOpps, surface, dateOfMatch, surfaceOfMatch) 
-        [spwBC, rpwBC] = ComputeSPWCommon(PlayerB, PrevMatchesCommB, CommonOpps, surface, dateOfMatch, surfaceOfMatch)
-        print('spwAC:', spwAC, 'rpwAC:', rpwAC)
-        print('spwBC:', spwBC, 'rpwBC:', rpwBC)
-
-        # Compute PaS and PbS:
-        print('Only using SPC to compute P')
-        PaS = spwAC
-        PbS = spwBC
-
-        # Compute PaR and PbR:
-        PaR = rpwAC
-        PbR = rpwBC
-
-        # Compute P using the equation specified:
-        if (equation == 1):
-            Pa = PaS
-            Pb = PbS
-        elif (equation == 2):
-            Pa = PaS / (PaS + PbR)
-            Pb = PbS / (PbS + PaR)
-        else:
-            Pa = PaS * (1. - theta) - theta * (1. - PbR)
-            Pb = PbS * (1. - theta) - theta * (1. - PaR)
-    
+            # Compute P using the equation specified:
+            if (equation == 1):
+                Pa = PaS
+                Pb = PbS
+            elif (equation == 2):
+                Pa = PaS / (PaS + PbR)
+                Pb = PbS / (PbS + PaR)
+            else:
+                Pa = PaS * (1. - theta) - theta * (1. - PbR)
+                Pb = PbS * (1. - theta) - theta * (1. - PaR)
+            
+            # Pass a warning message:
+            print('First match between these 2 players')
     else:
-        # No data on this match up, thus we cannot estimate a Pa and Pb value:
-        print('No historical data for these players')
-        return [0.5,0.5,False]
+        if (len(CommonOpps) == 0):
+            # No common opponents, but they have played before: (rare occurence)
+            # Compute SPW(A,B) and SPW(B, A):
+            [spwAB, spwBA] = ComputeSPW(PlayerA, PlayerB, PrevMatches, surface, dateOfMatch, surfaceOfMatch)
+            print('spwAB:', spwAB, 'spwBA:', spwBA)
 
+            # Compute RPW(A,B) and RPW(B,A)
+            rpwAB = 1. - spwBA
+            rpwBA = 1. - spwAB       
+
+            # Compute PaS and PbS:
+            print('Only using SPW to compute P')
+            PaS = spwAB
+            PbS = spwBA
+
+            # Compute PaR and PbR:
+            PaR = rpwAB
+            PbR = rpwBA
+
+            # Compute P using the equation specified:
+            if (equation == 1):
+                Pa = PaS
+                Pb = PbS
+            elif (equation == 2):
+                Pa = PaS / (PaS + PbR)
+                Pb = PbS / (PbS + PaR)
+            else:
+                Pa = PaS * (1. - theta) - theta * (1. - PbR)
+                Pb = PbS * (1. - theta) - theta * (1. - PaR)
+        else:
+            # Compute SPW(A,B) and SPW(B, A):
+            [spwAB, spwBA] = ComputeSPW(PlayerA, PlayerB, PrevMatches, surface, dateOfMatch, surfaceOfMatch)
+            print('spwAB:', spwAB, 'spwBA:', spwBA)
+
+            # Compute RPW(A,B) and RPW(B,A)
+            rpwAB = 1. - spwBA
+            rpwBA = 1. - spwAB
+
+            # Compute SPW(A,C) and SPW(B,C):
+            [spwAC, rpwAC] = ComputeSPWCommon(PlayerA, PrevMatchesCommA, CommonOpps, surface, dateOfMatch, surfaceOfMatch) 
+            [spwBC, rpwBC] = ComputeSPWCommon(PlayerB, PrevMatchesCommB, CommonOpps, surface, dateOfMatch, surfaceOfMatch)
+            print('spwAC:', spwAC, 'rpwAC:', rpwAC)
+            print('spwBC:', spwBC, 'rpwBC:', rpwBC)
+
+            # Compute PaS and PbS:
+            PaS = (1  - weighting) * spwAB + weighting * spwAC
+            PbS = (1  - weighting) * spwBA + weighting * spwBC
+
+            # Compute PaR and PbR:
+            PaR = (1  - weighting) * rpwAB + weighting * rpwAC
+            PbR = (1  - weighting) * rpwBA + weighting * rpwBC
+
+            # Compute P using the equation specified:
+            if (equation == 1):
+                Pa = PaS
+                Pb = PbS
+            elif (equation == 2):
+                Pa = PaS / (PaS + PbR)
+                Pb = PbS / (PbS + PaR)
+            else:
+                Pa = PaS * (1. - theta) - theta * (1. - PbR)
+                Pb = PbS * (1. - theta) - theta * (1. - PaR)        
+        
     print('Pa:', Pa, 'Pb:', Pb)
     return [Pa, Pb, True]
 
@@ -548,6 +576,25 @@ def ExtractSetScores(setScoresStirng):
             extractedSS.append([int(gamesA), int(gamesB)])
 
     return extractedSS
+
+def ReadInData(fileName):
+    # Get location of file:
+    THIS_FOLDER = os.path.abspath('CSVFiles')
+    fileName = os.path.join(THIS_FOLDER, fileName)
+
+    # Read in CSV file:
+    testData = []
+    with open(fileName) as csv_file:
+        csv_reader = csv.reader(csv_file, delimiter=',')
+        line_count = 0
+        for row in csv_reader:
+            if line_count == 0:
+                line_count += 1
+            else:
+                testData.append(row)
+                line_count += 1
+    
+    return testData
 
 def test(DB, matchesFileName):
     # Test the ROI as an objective
