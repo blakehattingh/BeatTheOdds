@@ -11,7 +11,7 @@ from BuildingDatabase import *
 from CalculatingP import *
 
 # Add required folders to the system path:
-currentPath = os.path.abspath(os.getcwd())
+currentPath = os.path.abspath(os.getcwd()) + '\\BeatTheOdds'
 
 # Markov Model Files:
 sys.path.insert(0, currentPath + '\\MarkovModel')
@@ -19,7 +19,7 @@ from FirstImplementation import *
 
 # Optimisation Model Files:
 sys.path.insert(0, currentPath + '\\OptimisationModel')
-from CVaRModel import RunCVaRModel
+#from CVaRModel import RunCVaRModel
 
 # Data Extraction Files:
 sys.path.insert(0, currentPath + '\\DataExtraction')
@@ -175,6 +175,7 @@ def EvalEquations(testDataFN, obj, equations, age, surface, weighting, theta = 0
     # Read in the data:
     testData = ReadInData(testDataFN)
     ageGap = timedelta(days=365.25*age)
+    matchesForTest = []
 
     # Create a dictionary to store the objective metric(s):
     objectiveValues = {}
@@ -734,7 +735,17 @@ def test(DB, matchesFileName):
 
 def main():
     DB = ReadInGridDB('ModelDistributions.csv')
-    test(DB, '2018_19MatchesWithOdds.csv')
+    #test(DB, '2018_19MatchesWithOdds.csv')\
+    matches = getSpecificMatches([178827])
+    #print(matches)
+    surface = [0.2, 0.5, 0.7]
+    weighting = [0.2, 0.5, 0.7]
+    for surfaceWeight in surface :
+        for weight in weighting :
+            print('surface = ' + str(surfaceWeight) ) 
+            print('weighting = ' + str(weight) )  
+            #print(EvalEquations(DB,matches,1,8,surfaceWeight,surfaceWeight))
+            EvalEquations(DB,matches,1,8,surfaceWeight,weight)
 
 if __name__ == "__main__":
     main()

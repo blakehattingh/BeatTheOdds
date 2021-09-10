@@ -12,10 +12,10 @@ def getSPWData(matchDetails, startOfDataCollection):
     p1vCO = getPlayerVsCO(startOfDataCollection,cursor,p1ID,p2ID,matchDetails[3])
     p2vCO = getPlayerVsCO(startOfDataCollection,cursor,p2ID,p1ID,matchDetails[3])
     COIds = getCOs(p1vCO,p1ID,p2ID)
-    print(len(p1vP2))
-    print(len(p1vCO))
-    print(len(p2vCO))
-    print(len(COIds))
+    #print(len(p1vP2))
+    #print(len(p1vCO))
+    #print(len(p2vCO))
+    #print(len(COIds))
     return p1vP2,p1vCO,p2vCO,COIds
 
 def getIds(matchDetails, cursor):
@@ -47,12 +47,12 @@ def getPlayerVsCO(startOfDataCollection,cursor,p1ID,p2ID, dateOfTestMatch):
     from tcb.player
     WHERE player_id in (SELECT loser_id from tcb.match as m Where 
 							 ((m.winner_id = {p1ID}) 
-							  AND NOT ((m.loser_id = {p2ID}) )))
+							  AND NOT ((m.loser_id = {p2ID}) ) AND m.has_stats = 'true' AND (m.date > '{startOfDataCollection}' AND m.date < '{dateOfTestMatch}')))
     union select player_id
     from tcb.player
     WHERE player_id in (SELECT winner_id from tcb.match as m Where 
 							 ((m.loser_id = {p1ID}) 
-							  AND NOT ((m.winner_id = {p2ID}) ))))
+							  AND NOT ((m.winner_id = {p2ID}) )AND m.has_stats = 'true' AND (m.date > '{startOfDataCollection}' AND m.date < '{dateOfTestMatch}'))))
 							  
     intersect 
 
@@ -60,12 +60,12 @@ def getPlayerVsCO(startOfDataCollection,cursor,p1ID,p2ID, dateOfTestMatch):
     from tcb.player
     WHERE player_id in (SELECT loser_id from tcb.match as m Where 
                                 ((m.winner_id = {p2ID} ) 
-                                AND NOT ( m.loser_id = {p1ID})))
+                                AND NOT ( m.loser_id = {p1ID})AND m.has_stats = 'true' AND (m.date > '{startOfDataCollection}' AND m.date < '{dateOfTestMatch}')))
             union select player_id
             from tcb.player
             where player_id in (SELECT winner_id from tcb.match as m Where 
                                 ((m.loser_id = {p2ID} ) 
-                                AND NOT ( m.winner_id = {p1ID})))))
+                                AND NOT ( m.winner_id = {p1ID})AND m.has_stats = 'true' AND (m.date > '{startOfDataCollection}' AND m.date < '{dateOfTestMatch}')))))
                                 
     union select * 
     from tcb.match k join tcb.match_stats s on 
@@ -74,12 +74,12 @@ def getPlayerVsCO(startOfDataCollection,cursor,p1ID,p2ID, dateOfTestMatch):
     from tcb.player
     WHERE player_id in (SELECT loser_id from tcb.match as m Where 
                                 ((m.winner_id = {p1ID}) 
-                                AND NOT ((m.loser_id = {p2ID}) )))
+                                AND NOT ((m.loser_id = {p2ID}) )AND m.has_stats = 'true' AND (m.date > '{startOfDataCollection}' AND m.date < '{dateOfTestMatch}')))
     union select player_id
     from tcb.player
     WHERE player_id in (SELECT winner_id from tcb.match as m Where 
                                 ((m.loser_id = {p1ID}) 
-                                AND NOT ((m.winner_id = {p2ID}) ))))
+                                AND NOT ((m.winner_id = {p2ID}) )AND m.has_stats = 'true' AND (m.date > '{startOfDataCollection}' AND m.date < '{dateOfTestMatch}'))))
                                 
     intersect 
 
@@ -87,12 +87,12 @@ def getPlayerVsCO(startOfDataCollection,cursor,p1ID,p2ID, dateOfTestMatch):
     from tcb.player
     WHERE player_id in (SELECT loser_id from tcb.match as m Where 
                                 ((m.winner_id = {p2ID} ) 
-                                AND NOT ( m.loser_id = {p1ID})))
+                                AND NOT ( m.loser_id = {p1ID})AND m.has_stats = 'true' AND (m.date > '{startOfDataCollection}' AND m.date < '{dateOfTestMatch}')))
             union select player_id
             from tcb.player
             where player_id in (SELECT winner_id from tcb.match as m Where 
                                 ((m.loser_id = {p2ID} ) 
-                                AND NOT ( m.winner_id = {p1ID})))))'''
+                                AND NOT ( m.winner_id = {p1ID})AND m.has_stats = 'true' AND (m.date > '{startOfDataCollection}' AND m.date < '{dateOfTestMatch}')))))'''
     cursor.execute(query)
     playerVsCO = cursor.fetchall()
     return playerVsCO
