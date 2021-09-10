@@ -123,16 +123,6 @@ def CreateZMatrix(betsConsidered, odds, probabilities):
             else:
                 Zk[k][bet] = 0.            
 
-    '''    Zk = {'2-0':np.zeros(32,dtype=float),'2-1':np.zeros(32,dtype=float),'0-2':np.zeros(32,dtype=float),
-    '1-2':  np.zeros(32, dtype = float)}
-    for k in outcomes:
-        count = 0
-        for bet in odds:
-            for i in range(len(odds[bet])):
-                if (k in paysOut[bet][i]):
-                    Zk[k][count] = odds[bet][i]
-                count += 1'''
-
     # Compute Odd Coefficients for Objective Function:
     oddCoef = {}
     for bet in bettingOptions:
