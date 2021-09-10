@@ -11,7 +11,7 @@ from BuildingDatabase import *
 from CalculatingP import *
 
 # Add required folders to the system path:
-currentPath = os.path.abspath(os.getcwd()) + '\\BeatTheOdds'
+currentPath = os.path.abspath(os.getcwd())
 
 # Markov Model Files:
 sys.path.insert(0, currentPath + '\\MarkovModel')
@@ -19,7 +19,7 @@ from FirstImplementation import *
 
 # Optimisation Model Files:
 sys.path.insert(0, currentPath + '\\OptimisationModel')
-#from CVaRModel import RunCVaRModel
+from CVaRModel import RunCVaRModel
 
 # Data Extraction Files:
 sys.path.insert(0, currentPath + '\\DataExtraction')
@@ -107,7 +107,13 @@ def InterpolateDists(Pa, Pb, DB, pBoundaryL = 0.4, pBoundaryH = 0.9, Spacing = 0
     
     # Ensure Pa and Pb are within bounds of the DB:
     if (Pa < pBoundaryL):
-        # Extrapolate to this point:
+        if (Pb < pBoundaryL):
+            # Extrapolate to this point:
+            
+            Za = DB[(pBoundaryL, pBoundaryL)] - (pBoundaryL - Pa) * (DB[(pBoundaryL+Spacing, pBoundaryL)] - DB[(pBoundaryL, pBoundaryL)]) / Spacing
+            
+            # Extrapolate to this on the b axis:
+            Zb = DB[(pBoundaryL, pBoundaryL)] - (pBoundaryL - Pb) * (DB[(pBoundaryL, pBoundaryL+Spacing)] - DB[(pBoundaryL, pBoundaryL)]) / Spacing
 
     if (Pb < pBoundaryL):
         Pb = 0.5
@@ -175,7 +181,6 @@ def EvalEquations(testDataFN, obj, equations, age, surface, weighting, theta = 0
     # Read in the data:
     testData = ReadInData(testDataFN)
     ageGap = timedelta(days=365.25*age)
-    matchesForTest = []
 
     # Create a dictionary to store the objective metric(s):
     objectiveValues = {}
@@ -274,7 +279,7 @@ def CalcPEquation(equation,surface,weighting,MatchData,PrevMatches,PrevMatchesCo
         else:
             # Pass a warning message:
             print('First match between these 2 players')
-            
+
             # Compute SPW(A,C) and SPW(B,C):
             [spwAC, rpwAC] = ComputeSPWCommon(PlayerA, PrevMatchesCommA, CommonOpps, surface, surfaceOfMatch) 
             [spwBC, rpwBC] = ComputeSPWCommon(PlayerB, PrevMatchesCommB, CommonOpps, surface, surfaceOfMatch)
@@ -735,17 +740,7 @@ def test(DB, matchesFileName):
 
 def main():
     DB = ReadInGridDB('ModelDistributions.csv')
-    #test(DB, '2018_19MatchesWithOdds.csv')\
-    matches = getSpecificMatches([178827])
-    #print(matches)
-    surface = [0.2, 0.5, 0.7]
-    weighting = [0.2, 0.5, 0.7]
-    for surfaceWeight in surface :
-        for weight in weighting :
-            print('surface = ' + str(surfaceWeight) ) 
-            print('weighting = ' + str(weight) )  
-            #print(EvalEquations(DB,matches,1,8,surfaceWeight,surfaceWeight))
-            EvalEquations(DB,matches,1,8,surfaceWeight,weight)
+    test(DB, '2018_19MatchesWithOdds.csv')
 
 if __name__ == "__main__":
     main()
