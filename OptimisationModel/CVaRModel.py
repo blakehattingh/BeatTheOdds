@@ -135,7 +135,7 @@ def CreateZMatrix(betsConsidered, odds, probabilities):
 
     return [Zk, oddCoef, bettingOptions]
 
-def RunCVaRModel(betsConsidered,probDist,RHS,betas,oddsMO,oddsMS,oddsNumSets=[],oddsSS=[],oddsNumGames=[]):
+def RunCVaRModel(betsConsidered,probDist,RHS,betas,oddsMO,oddsMS,oddsNumSets,oddsSS=[],oddsNumGames=[]):
     # Create odds dictionary:
     odds = {'Match Outcome': oddsMO, 'Match Score': oddsMS, 'Number of Sets': oddsNumSets,
     'Set Score': oddsSS, 'Number of Games': oddsNumGames}

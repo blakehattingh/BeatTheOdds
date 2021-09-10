@@ -182,26 +182,42 @@ def Newtowns(x0, dim, h, tol = 1e-06, maxit = 100):
 
     return xk
 
-def ObjectiveFunction(parameters, DB, testData, equation):
+def ObjectiveFunction(parameters, DB, testDataFN, obj, equation):
     # This function computes the objective function (overall ROI) for eqautions 1 & 2 and a set of given hyperparameters
-    return EvalEquations(DB, testData, equation, parameters[0], parameters[1], parameters[2])
+    return EvalEquations(DB, testDataFN, obj, [equation], parameters[0], parameters[1], parameters[2])
 
-def ObjectiveFunction3(DB,testData, equation, parameters):
-    return EvalEquations(DB, testData, equation, parameters[0], parameters[1], parameters[2], parameters[3])
+def ObjectiveFunction3(parameters, DB, testDataFN, obj, equation):
+    return EvalEquations(DB, testDataFN, obj, [equation], parameters[0], parameters[1], parameters[2], parameters[3])
 
-def CalibrateHyperparameters(DB, testData, equation, x0):
-    # Equation 1 or 2:
-    sol = minimize(ObjectiveFunction,x0,args=(DB,testData,equation),method='Nelder-Mead',bounds=[(4.,12.),(0.,1.),(0.,1.)])
+def CalibrateHyperparameters(DB, testDataFN, obj, equation, x0):
+    # This function calibrates an given equation using a given objective metric on a given set of training data.
+    # Inputs:
+    # - DB = The database of model distributions
+    # - testDataFN = the filename corresponding to the test data csv file
+    # - obj = the objective metric to use to calibrate hyperparameters ('Match Stats' or 'ROI')
+    # - equation = the equation we are tuning
+    # - x0 = the starting values for the hyperparameters we are trying to train
 
-    # Equation 3:
-    sol = minimize(ObjectiveFunction3,x0,args=(DB,testData,equation),method='Nelder-Mead',bounds=[(4.,12.),(0.,1.),(0.,1.),(0.,1.)])
+    # Returns:
+    # - A set of calibrated hyperparameters
+
+    if (equation <= 2):
+        # Equation 1 or 2:
+        sol = minimize(ObjectiveFunction,x0,args=(DB,testDataFN,obj,equation),method='Nelder-Mead',bounds=[(4.,12.),(0.,1.),
+        (0.,1.)])
+    else:
+        # Equation 3:
+        sol = minimize(ObjectiveFunction3,x0,args=(DB,testDataFN,obj,equation),method='Nelder-Mead',bounds=[(4.,12.),(0.,1.),
+        (0.,1.),(0.,1.)])
+    return sol
 
 def main():
     x0 = [6, 0.5, 0.5]
     DB = ReadInGridDB('ModelDistributions.csv')
-    testData = [3]
+    testDataFN = 'threeHundredCalMatches.csv'
+    obj = 'Match Stats'
     equation = 1
-    CalibrateHyperparameters(DB, testData, equation, x0)
+    solution = CalibrateHyperparameters(DB, testDataFN, 'Match Stats', equation, x0)
 
 if __name__ == "__main__":
     main()
