@@ -1,11 +1,12 @@
 # Import the required functions:
 from TennisMatchNetwork1Efficient import TennisMatchNetwork1Efficient
 from TennisMatchNetworkCE import TennisMatchNetworkCE
+from TennisMatchNetworkMostEfficient import TennisMatchNetworkMostEfficient
 import numpy as np
 from TennisSetNetworkEfficient import TennisSetNetworkEfficient
 from loopybeliefprop import beliefpropagation
 
-def MarkovModelFirstImplementation(P1S, P2S, FirstToSets, FirstToTBPoints, ConditionalEvents= {}, Iterations = 100, Tol = 0.001):
+def MarkovModelFirstImplementation(P1S, P2S, FirstToSets, ConditionalEvents= {}, Iterations = 100, Tol = 0.001):
     
     # Set up the Bayesian Network and run the blief propagation algorithm for each set played:
     # Set 1:
@@ -50,12 +51,12 @@ def MarkovModelFirstImplementation(P1S, P2S, FirstToSets, FirstToTBPoints, Condi
         
         # Set up the new network:
         print("Match:")
-        [nodes, dist, parents, outcomes, info] = TennisMatchNetworkCE(SetScoreDists, ConditionalEvents)
-        [MatchScoreDist,TotalNumGamesDist,AllSetScoresDist] = beliefpropagation(nodes, dist, parents, outcomes, info, 
-        Iterations, Tol, ['MatchScore','TotalNumGames','AllSetScores'])
+        [nodes, dist, parents, outcomes, info] = TennisMatchNetworkMostEfficient(SetScoreDists, ConditionalEvents)
+        [MatchScoreDist] = beliefpropagation(nodes, dist, parents, outcomes, info, 
+        Iterations, Tol, ['MatchScore'])
 
         # Return the leaf node distributions:
-        return MatchScoreDist, TotalNumGamesDist, AllSetScoresDist
+        return MatchScoreDist
                  
     elif (FirstToSets == 5):
         # Compute the probability distribution of the number of games played in the set:

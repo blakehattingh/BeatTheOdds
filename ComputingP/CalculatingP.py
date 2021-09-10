@@ -97,7 +97,7 @@ def ObjectiveMetricROI(outcome, Zk, bets):
                 ROI = ((returns - spent)/spent) * 100.
     return [ROI, spent, returns]
 
-def InterpolateDists(Pa, Pb, DB, Spacing = 0.02):
+def InterpolateDists(Pa, Pb, DB, pBoundaryL = 0.4, pBoundaryH = 0.9, Spacing = 0.02):
     # Takes in a set of P values and returns the interpolated distributions for them
     # Grid:
     # A ----E- B
@@ -106,9 +106,10 @@ def InterpolateDists(Pa, Pb, DB, Spacing = 0.02):
     # C ----F- D
     
     # Ensure Pa and Pb are within bounds of the DB:
-    if (Pa < 0.5):
-        Pa = 0.5
-    if (Pb < 0.5):
+    if (Pa < pBoundaryL):
+        # Extrapolate to this point:
+
+    if (Pb < pBoundaryL):
         Pb = 0.5
 
     # Compute the base point for the 4 points around this point (Point A):
@@ -153,11 +154,10 @@ def try_parsing_date(text):
             pass
     raise ValueError('no valid date format found')
 
-def EvalEquations(DB, testDataFN, obj, equations, age, surface, weighting, theta = 0.5, riskProfile = [], betas = []):
+def EvalEquations(testDataFN, obj, equations, age, surface, weighting, theta = 0.5, riskProfile = [], betas = []):
     # This function takes a test or training set of matches, an equation(s) to use and it evaluates the specified 
     # objective metric across the inputted data set.
     # Inputs:
-    # - DB = The model distributions database for (Pa, Pb) values
     # - testDataFN = A csv filename for the test/training set of matches
     # - obj = the objective metric to use (either 'Match Stats' or 'ROI')
     # - equations = a list of integer(s) corresponding to the equations to use
@@ -167,6 +167,10 @@ def EvalEquations(DB, testDataFN, obj, equations, age, surface, weighting, theta
 
     # Returns:
     # - The objective metric for the equations given on the data inputted
+    minP = 0.5
+
+    # Read in the model distributions:
+    DB = ReadInGridDB('ModelDistributions.csv')
 
     # Read in the data:
     testData = ReadInData(testDataFN)
@@ -186,7 +190,7 @@ def EvalEquations(DB, testDataFN, obj, equations, age, surface, weighting, theta
     for match in testData:
         # Extract the test match data:
         dateOfMatch = datetime.strptime(match[3], '%d/%m/%Y')
-        matchScore = [match[30],match[31]]
+        matchScore = [int(match[30]),int(match[31])]
         SetScores = ExtractSetScores(match[28])
         outcome = '{}-{}'.format(int(matchScore[0]),int(matchScore[1]))
         startOfDataCollection = dateOfMatch - ageGap
@@ -197,7 +201,9 @@ def EvalEquations(DB, testDataFN, obj, equations, age, surface, weighting, theta
         # Compute the P values using the equations specified:
         for eq in equations:
             # Compute the P values for the two players:
-            [Pa,Pb,predict] = CalcPEquation(eq, age, surface, weighting, match, p1vP2, p1vCO, p2vCO, COIds, theta)
+            [Pa,Pb,predict] = CalcPEquation(eq, surface, weighting, match, p1vP2, p1vCO, p2vCO, COIds, theta)
+            if (min(Pa,Pb) < minP):
+                minP = min(Pa, Pb)
 
             # Look to make predictions using these P values:
             if (predict):
@@ -230,14 +236,14 @@ def EvalEquations(DB, testDataFN, obj, equations, age, surface, weighting, theta
                     objectiveValues['Equation {}'.format(eq)]['Betted'] += spent
                     objectiveValues['Equation {}'.format(eq)]['Returns'] += returns
 
+    print(minP)
     return objectiveValues
 
-def CalcPEquation(equation,age,surface,weighting,MatchData,PrevMatches,PrevMatchesCommA,PrevMatchesCommB,CommonOpps,theta=0.5):
+def CalcPEquation(equation,surface,weighting,MatchData,PrevMatches,PrevMatchesCommA,PrevMatchesCommB,CommonOpps,theta=0.5):
     # This function takes in a match, extracts who is playing, when the match is/was played, and what surface it is/was played on
     # It then computes the P values for both players using method 1 (FOR NOW, can integrate it to use a specified method)
     # Inputs:
     # - equation = What equation we will use to compute P
-    # - age = Alpha hyperparameter
     # - weighting = A parameter corresponding to the weighting between spw(A,B) and spw(A,C)
     # - surface = A hyperparameter corresponding to the weighting on matches played on the same surface
     # - theta = The additional weighting parameter for equation 3
@@ -251,15 +257,9 @@ def CalcPEquation(equation,age,surface,weighting,MatchData,PrevMatches,PrevMatch
     # - Boolean relating to if we can predict or not with the P values
 
     # Extract required info:
-    dateOfMatch = MatchData[3]
     surfaceOfMatch = MatchData[4]
     PlayerA = MatchData[8]
     PlayerB = MatchData[18]
-    SetScores = MatchData[28]
-    AwonSets = MatchData[30]
-    BwonSets = MatchData[31]
-    AwonGames = MatchData[32]
-    BwonGames = MatchData[32]
 
     # See how many matches have been played between A and B:
     numMatches = len(PrevMatches)
@@ -271,9 +271,12 @@ def CalcPEquation(equation,age,surface,weighting,MatchData,PrevMatches,PrevMatch
             print('No historical data for these players')
             return [0.5,0.5,False]
         else:
+            # Pass a warning message:
+            print('First match between these 2 players')
+            
             # Compute SPW(A,C) and SPW(B,C):
-            [spwAC, rpwAC] = ComputeSPWCommon(PlayerA, PrevMatchesCommA, CommonOpps, surface, dateOfMatch, surfaceOfMatch) 
-            [spwBC, rpwBC] = ComputeSPWCommon(PlayerB, PrevMatchesCommB, CommonOpps, surface, dateOfMatch, surfaceOfMatch)
+            [spwAC, rpwAC] = ComputeSPWCommon(PlayerA, PrevMatchesCommA, CommonOpps, surface, surfaceOfMatch) 
+            [spwBC, rpwBC] = ComputeSPWCommon(PlayerB, PrevMatchesCommB, CommonOpps, surface, surfaceOfMatch)
             print('spwAC:', spwAC, 'rpwAC:', rpwAC)
             print('spwBC:', spwBC, 'rpwBC:', rpwBC)
 
@@ -296,14 +299,11 @@ def CalcPEquation(equation,age,surface,weighting,MatchData,PrevMatches,PrevMatch
             else:
                 Pa = PaS * (1. - theta) - theta * (1. - PbR)
                 Pb = PbS * (1. - theta) - theta * (1. - PaR)
-            
-            # Pass a warning message:
-            print('First match between these 2 players')
     else:
         if (len(CommonOpps) == 0):
             # No common opponents, but they have played before: (rare occurence)
             # Compute SPW(A,B) and SPW(B, A):
-            [spwAB, spwBA] = ComputeSPW(PlayerA, PlayerB, PrevMatches, surface, dateOfMatch, surfaceOfMatch)
+            [spwAB, spwBA] = ComputeSPW(PlayerA, PlayerB, PrevMatches, surface, surfaceOfMatch)
             print('spwAB:', spwAB, 'spwBA:', spwBA)
 
             # Compute RPW(A,B) and RPW(B,A)
@@ -331,7 +331,7 @@ def CalcPEquation(equation,age,surface,weighting,MatchData,PrevMatches,PrevMatch
                 Pb = PbS * (1. - theta) - theta * (1. - PaR)
         else:
             # Compute SPW(A,B) and SPW(B, A):
-            [spwAB, spwBA] = ComputeSPW(PlayerA, PlayerB, PrevMatches, surface, dateOfMatch, surfaceOfMatch)
+            [spwAB, spwBA] = ComputeSPW(PlayerA, PlayerB, PrevMatches, surface, surfaceOfMatch)
             print('spwAB:', spwAB, 'spwBA:', spwBA)
 
             # Compute RPW(A,B) and RPW(B,A)
@@ -339,8 +339,8 @@ def CalcPEquation(equation,age,surface,weighting,MatchData,PrevMatches,PrevMatch
             rpwBA = 1. - spwAB
 
             # Compute SPW(A,C) and SPW(B,C):
-            [spwAC, rpwAC] = ComputeSPWCommon(PlayerA, PrevMatchesCommA, CommonOpps, surface, dateOfMatch, surfaceOfMatch) 
-            [spwBC, rpwBC] = ComputeSPWCommon(PlayerB, PrevMatchesCommB, CommonOpps, surface, dateOfMatch, surfaceOfMatch)
+            [spwAC, rpwAC] = ComputeSPWCommon(PlayerA, PrevMatchesCommA, CommonOpps, surface, surfaceOfMatch) 
+            [spwBC, rpwBC] = ComputeSPWCommon(PlayerB, PrevMatchesCommB, CommonOpps, surface, surfaceOfMatch)
             print('spwAC:', spwAC, 'rpwAC:', rpwAC)
             print('spwBC:', spwBC, 'rpwBC:', rpwBC)
 
@@ -366,12 +366,11 @@ def CalcPEquation(equation,age,surface,weighting,MatchData,PrevMatches,PrevMatch
     print('Pa:', Pa, 'Pb:', Pb)
     return [Pa, Pb, True]
 
-def ComputeSPW(PlayerA, PlayerB, PrevMatches, surface, dateOfMatch, surfaceOfMatch):
+def ComputeSPW(PlayerA, PlayerB, PrevMatches, surface, surfaceOfMatch):
     # Inputs:
     # - surface = A hyperparameter corresponding to the weighting on matches played on the same surface
     # - PlayerA & PlayerB = IDs of both players of interest 
     # - PrevMatches = A list of tuples of all previous matches between player A and player B
-    # - dateOfMatch = The date of the match as a string in format '%Y-%m-%d'
     # - surfaceOfMatch = The surface that the match will be played on (as an abbrev, e.g. C = Clay)
 
     # Sum up the service points played for each player:
@@ -389,13 +388,8 @@ def ComputeSPW(PlayerA, PlayerB, PrevMatches, surface, dateOfMatch, surfaceOfMat
     surfaceMatchesCount = 0
 
     for match in range(len(PrevMatches)):
-        # Check when the match was played:
-        # MatchDate = PrevMatches[match][3]
-
         # Ensure the match has statistics:
-        if (PrevMatches[match][42 != None]):
-
-            # if ((Date - MatchDate).days > 0):
+        if (PrevMatches[match][42] != None):
             if (PrevMatches[match][4] == surfaceOfMatch):
                 surfaceMatchesCount += 1
                 if (PrevMatches[match][8] == PlayerA):
@@ -447,13 +441,12 @@ def ComputeSPW(PlayerA, PlayerB, PrevMatches, surface, dateOfMatch, surfaceOfMat
 
     return PlayerAServiceProp, PlayerBServiceProp
 
-def ComputeSPWCommon(PlayerA, PrevMatchesCommOpps, CommonOpps, surface, dateOfMatch, surfaceOfMatch):    
+def ComputeSPWCommon(PlayerA, PrevMatchesCommOpps, CommonOpps, surface, surfaceOfMatch):    
     # Inputs:
     # - PlayerA = ID of both player A
     # - PrevMatchesCommOpps = A list of tuples of all previous matches between player A the common opponents
     # - CommonOpps = A list of the IDs of all common opponents
     # - surface = A hyperparameter corresponding to the weighting on matches played on the same surface
-    # - dateOfMatch = The date of the match as a string in format '%Y-%m-%d'
     # - surfaceOfMatch = The surface that the match will be played on (as an abbrev, e.g. C = Clay)
 
     # Sum up the service points played for each player:
@@ -471,13 +464,8 @@ def ComputeSPWCommon(PlayerA, PrevMatchesCommOpps, CommonOpps, surface, dateOfMa
     nonSurfaceMatchesCount = np.zeros(len(CommonOpps), dtype = float)
 
     for match in range(len(PrevMatchesCommOpps)):
-        # Check when the match was played:
-        #MatchDate = PrevMatchesCommOpps[match][3]
-
         # Make sure the match has statistics:
         if (PrevMatchesCommOpps[match][42] != None):
-
-        #if ((Date - MatchDate).days > 0):
             if (surfaceOfMatch == PrevMatchesCommOpps[match][4]):
                 if (PrevMatchesCommOpps[match][8] == PlayerA):
                     # Find who the opponent was:

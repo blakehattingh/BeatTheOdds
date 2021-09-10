@@ -38,12 +38,10 @@ def BuildingDB(PStart, PEnd, Increment):
         for P2 in PValues:
             print('P-values: ', [P1],[P2])
             # Run the model:
-            [MatchDist,MatchScoreDist,TotalNumGamesDist,AllSetScoresDist]=FirstImplementation.MarkovModelFirstImplementation(P1,P2,3,7)
+            MatchScoreDist = MarkovModelFirstImplementation(P1,P2,3)
 
             # Create the dictionary of distributions for this run:
-            Distributions = {'Match Outcome': [round(Num, 5) for Num in MatchDist], 'Match Score': [round(Num, 5) for Num in
-            MatchScoreDist], 'Number of Games': [round(Num, 5) for Num in TotalNumGamesDist], 'Set Score': [round(Num, 5) for
-            Num in AllSetScoresDist]}
+            Distributions = {'Match Score': [round(Num, 5) for Num in MatchScoreDist]}
 
             # Store the distributions:
             DataBase[(round(P1,2), round(P2,2))] = Distributions
@@ -237,6 +235,9 @@ def ReadInGridDB(FileName):
     return DB
 
 def main():
+    # Build the DB of model distributions:
+    BuildingDB(40,90,2)
+    
     # Read in grid:
     DB = ReadInGridDB('ModelDistributions.csv')
 
