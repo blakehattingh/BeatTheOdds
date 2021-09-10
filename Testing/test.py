@@ -1,19 +1,19 @@
 from itertools import islice
 import os, sys
-relativePath = os.path.abspath('')
-sys.path.append(relativePath + '\\MarkovModel')
-sys.path.append(relativePath + '\\OptimisationModel')
-from RunMarkovModel import RunMarkovModel
-from TennisMatchNetwork1Efficient import TennisMatchNetwork1Efficient
-from TennisSetNetworkEfficient import TennisSetNetworkEfficient
-from AdditionalFunctions import RemainingOdds, TieBreakerProbability, ComputeTBProbabilities, OddsComputer, RemainingOdds
-from loopybeliefprop import beliefpropagation, choose
-from OMalleysEqns import TB, Matrices, Match3, Set
-from CVaRModel import CVaRModel
 import numpy as np
 import csv
 import matplotlib.pyplot as plt
 from datetime import datetime, timedelta
+import time
+
+
+# Add required folders to the system path:
+currentPath = os.path.abspath(os.getcwd())
+
+# Markov Model Files:
+sys.path.insert(0, currentPath + '\\BeatTheOdds\\MarkovModel')
+from FirstImplementation import *
+
 
 def nth_index(iterable, value, n):
     matches = (idx for idx, val in enumerate(iterable) if val == value)
@@ -53,11 +53,12 @@ def main():
     #[A, B] = Matrices()
     #print(Set(P1S, 1. - P2S, A, B))
 
-    x = [[2,3,9],[4,5,6]]
-    y =[]
-    y = y+x[0]
-    y = y+x[1]
-    print(y)
-
+    # run MM:
+    start = time.time()
+    MarkovModelFirstImplementation(0.62, 0.61, 3)
+    end = time.time()
+    print('time taken =')
+    print(end-start)
+    
 if __name__ == "__main__":
     main()

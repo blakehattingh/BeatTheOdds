@@ -11,18 +11,22 @@ from BuildingDatabase import *
 from CalculatingP import *
 
 # Add required folders to the system path:
-currentPath = os.path.abspath(os.getcwd()) + '\\BeatTheOdds'
+currentPath = os.path.abspath(os.getcwd())
 
 # Markov Model Files:
-sys.path.insert(0, currentPath + '\\MarkovModel')
+sys.path.insert(0, currentPath + '\\BeatTheOdds\\MarkovModel')
+#sys.path.insert(0, currentPath + '\MarkovModel')
 from FirstImplementation import *
 
+
 # Optimisation Model Files:
-sys.path.insert(0, currentPath + '\\OptimisationModel')
-#from CVaRModel import RunCVaRModel
+sys.path.insert(0, currentPath + '\\BeatTheOdds\\OptimisationModel')
+#sys.path.insert(0, currentPath + '\\OptimisationModel')
+from CVaRModel import RunCVaRModel
 
 # Data Extraction Files:
-sys.path.insert(0, currentPath + '\\DataExtraction')
+sys.path.insert(0, currentPath + '\\BeatTheOdds\\DataExtraction')
+#sys.path.insert(0, currentPath + '\\DataExtraction')
 from TestSetCollector import *
 from DataCollector import *
 
@@ -97,20 +101,31 @@ def ObjectiveMetricROI(outcome, Zk, bets):
                 ROI = ((returns - spent)/spent) * 100.
     return [ROI, spent, returns]
 
-def InterpolateDists(Pa, Pb, DB, Spacing = 0.02):
+def InterpolateDists(Pa, Pb, DB, pBoundaryL = 0.4, pBoundaryH = 0.9, Spacing = 0.02):
     # Takes in a set of P values and returns the interpolated distributions for them
     # Grid:
     # A ----E- B
     # |     x  |
     # |        |
     # C ----F- D
-    
+    '''
     # Ensure Pa and Pb are within bounds of the DB:
-    if (Pa < 0.5):
-        Pa = 0.5
-    if (Pb < 0.5):
-        Pb = 0.5
+    if (Pa < pBoundaryL):
+        if (Pb < pBoundaryL):
+            # Extrapolate to this point:
+            
+            Za = DB[(pBoundaryL, pBoundaryL)] - (pBoundaryL - Pa) * (DB[(pBoundaryL+Spacing, pBoundaryL)] - DB[(pBoundaryL, pBoundaryL)]) / Spacing
+            
+            # Extrapolate to this on the b axis:
+            Zb = DB[(pBoundaryL, pBoundaryL)] - (pBoundaryL - Pb) * (DB[(pBoundaryL, pBoundaryL+Spacing)] - DB[(pBoundaryL, pBoundaryL)]) / Spacing
 
+    if (Pb < pBoundaryL):
+        Pb = 0.5
+    '''
+    if(Pa<0.5):
+        Pa = 0.5
+    if(Pb<0.5):
+        Pb = 0.5
     # Compute the base point for the 4 points around this point (Point A):
     roundedA = round(Pa, 1)
     roundedB = round(Pb, 1)
@@ -153,11 +168,10 @@ def try_parsing_date(text):
             pass
     raise ValueError('no valid date format found')
 
-def EvalEquations(DB, testDataFN, obj, equations, age, surface, weighting, theta = 0.5, riskProfile = [], betas = []):
+def EvalEquations(DB,testDataFN, obj, equations, age, surface, weighting, theta = 0.5, riskProfile = [], betas = []):
     # This function takes a test or training set of matches, an equation(s) to use and it evaluates the specified 
     # objective metric across the inputted data set.
     # Inputs:
-    # - DB = The model distributions database for (Pa, Pb) values
     # - testDataFN = A csv filename for the test/training set of matches
     # - obj = the objective metric to use (either 'Match Stats' or 'ROI')
     # - equations = a list of integer(s) corresponding to the equations to use
@@ -167,11 +181,14 @@ def EvalEquations(DB, testDataFN, obj, equations, age, surface, weighting, theta
 
     # Returns:
     # - The objective metric for the equations given on the data inputted
+    minP = 0.5
+
+    # Read in the model distributions:
+    DB = ReadInGridDB('ModelDistributions.csv')
 
     # Read in the data:
     testData = ReadInData(testDataFN)
     ageGap = timedelta(days=365.25*age)
-    matchesForTest = []
 
     # Create a dictionary to store the objective metric(s):
     objectiveValues = {}
@@ -231,6 +248,7 @@ def EvalEquations(DB, testDataFN, obj, equations, age, surface, weighting, theta
                     objectiveValues['Equation {}'.format(eq)]['Betted'] += spent
                     objectiveValues['Equation {}'.format(eq)]['Returns'] += returns
 
+    print(minP)
     return objectiveValues
 
 def CalcPEquation(equation,surface,weighting,MatchData,PrevMatches,PrevMatchesCommA,PrevMatchesCommB,CommonOpps,theta=0.5):
@@ -266,6 +284,9 @@ def CalcPEquation(equation,surface,weighting,MatchData,PrevMatches,PrevMatchesCo
             #print('No historical data for these players')
             return [0.5,0.5,False]
         else:
+            # Pass a warning message:
+            #print('First match between these 2 players')
+
             # Compute SPW(A,C) and SPW(B,C):
             [spwAC, rpwAC] = ComputeSPWCommon(PlayerA, PrevMatchesCommA, CommonOpps, surface, surfaceOfMatch) 
             [spwBC, rpwBC] = ComputeSPWCommon(PlayerB, PrevMatchesCommB, CommonOpps, surface, surfaceOfMatch)
@@ -291,9 +312,6 @@ def CalcPEquation(equation,surface,weighting,MatchData,PrevMatches,PrevMatchesCo
             else:
                 Pa = PaS * (1. - theta) - theta * (1. - PbR)
                 Pb = PbS * (1. - theta) - theta * (1. - PaR)
-            
-            # Pass a warning message:
-            #print('First match between these 2 players')
     else:
         if (len(CommonOpps) == 0):
             # No common opponents, but they have played before: (rare occurence)
@@ -383,10 +401,8 @@ def ComputeSPW(PlayerA, PlayerB, PrevMatches, surface, surfaceOfMatch):
     surfaceMatchesCount = 0
 
     for match in range(len(PrevMatches)):
-
         # Ensure the match has statistics:
         if (PrevMatches[match][42] != None):
-
             if (PrevMatches[match][4] == surfaceOfMatch):
                 surfaceMatchesCount += 1
                 if (PrevMatches[match][8] == PlayerA):
@@ -461,7 +477,6 @@ def ComputeSPWCommon(PlayerA, PrevMatchesCommOpps, CommonOpps, surface, surfaceO
     nonSurfaceMatchesCount = np.zeros(len(CommonOpps), dtype = float)
 
     for match in range(len(PrevMatchesCommOpps)):
-
         # Make sure the match has statistics:
         if (PrevMatchesCommOpps[match][42] != None):
             if (surfaceOfMatch == PrevMatchesCommOpps[match][4]):

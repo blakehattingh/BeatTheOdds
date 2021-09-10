@@ -194,27 +194,51 @@ def ObjectiveFunction(parameters, DB, testDataFN, obj, equation):
 def ObjectiveFunction3(parameters, DB, testDataFN, obj, equation):
     return EvalEquations(DB, testDataFN, obj, [equation], parameters[0], parameters[1], parameters[2], parameters[3])
 
-def CalibrateHyperparameters(DB, testDataFN, obj, equation, x0):
-    # This function calibrates an given equation using a given objective metric on a given set of training data.
+def CalibrateHyperparameters(DB, testDataFN, obj, equation):
+    # This function calibrates an given equation using a given objective metric on a given set of training data from various different
+    # starting points.
     # Inputs:
     # - DB = The database of model distributions
     # - testDataFN = the filename corresponding to the test data csv file
     # - obj = the objective metric to use to calibrate hyperparameters ('Match Stats' or 'ROI')
     # - equation = the equation we are tuning
-    # - x0 = the starting values for the hyperparameters we are trying to train
 
     # Returns:
     # - A set of calibrated hyperparameters
 
-    if (equation <= 2):
-        # Equation 1 or 2:
-        sol = minimize(ObjectiveFunction,x0,args=(DB,testDataFN,obj,equation),method='Nelder-Mead',bounds=[(4.,12.),(0.,1.),
-        (0.,1.)])
-    else:
-        # Equation 3:
-        sol = minimize(ObjectiveFunction3,x0,args=(DB,testDataFN,obj,equation),method='Nelder-Mead',bounds=[(4.,12.),(0.,1.),
-        (0.,1.),(0.,1.)])
-    return sol
+    startingPoints = []
+    ageValues = [6, 9, 12]
+    surfaceValues = [0.25, 0.5, 0.75]
+    weightingValues = [0.25, 0.5, 0.75]
+    for valA in ageValues:
+        for valS in surfaceValues:
+            for valW in weightingValues:
+                startingPoints.append([valA,valS,valW])
+
+    # Track the best solution so far:
+    bestSol = startingPoints[0]
+    bestObj = 0
+
+    # Calibrate the hyperparameters for a range of different starting points:
+    for start in startingPoints:
+        if (equation <= 2):
+            # Equation 1 or 2:
+            optimizedResult = minimize(ObjectiveFunction,start,args=(DB,testDataFN,obj,equation),method='Nelder-Mead',bounds=[(4.,12.),(0.,1.),
+            (0.,1.)])
+        else:
+            # Equation 3:
+            optimizedResult = minimize(ObjectiveFunction3,start,args=(DB,testDataFN,obj,equation),method='Nelder-Mead',bounds=[(4.,12.),(0.,1.),
+            (0.,1.),(0.,1.)])
+        
+        # Check if the optimal solution is the best so far:
+        if (optimizedResult.fun < bestSol):
+            bestSol = optimizedResult.x
+            bestObj = optimizedResult.fun
+            print('New Best Solution Found')
+            print('Objective Value is {}'.format(bestObj))
+            print('New Solution is: Age = {}, Surface = {}, Weighting = {}'.format(bestSol[0],bestSol[1],bestSol[2]))
+
+    return bestSol
 
 def main():
     x0 = [6, 0.5, 0.5]
@@ -222,7 +246,8 @@ def main():
     testDataFN = 'threeHundredCalMatches.csv'
     obj = 'Match Stats'
     equation = 1
-    solution = CalibrateHyperparameters(DB, testDataFN, 'Match Stats', equation, x0)
+    solution = CalibrateHyperparameters(DB, testDataFN, 'Match Stats', equation)
+    print(solution)
 
 if __name__ == "__main__":
     main()
