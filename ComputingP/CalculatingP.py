@@ -185,7 +185,7 @@ def EvalEquations(DB, testDataFN, obj, equations, age, surface, weighting, theta
     # Using the equations specified, compute the objective metric specified for each match in test data:
     for match in testData:
         # Extract the test match data:
-        dateOfMatch = match[3]
+        dateOfMatch = datetime.strptime(match[3], '%d/%m/%Y')
         matchScore = [match[30],match[31]]
         SetScores = ExtractSetScores(match[28])
         outcome = '{}-{}'.format(int(matchScore[0]),int(matchScore[1]))

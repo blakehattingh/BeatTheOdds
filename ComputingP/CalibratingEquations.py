@@ -184,10 +184,10 @@ def Newtowns(x0, dim, h, tol = 1e-06, maxit = 100):
 
 def ObjectiveFunction(parameters, DB, testDataFN, obj, equation):
     # This function computes the objective function (overall ROI) for eqautions 1 & 2 and a set of given hyperparameters
-    return EvalEquations(DB, testDataFN, obj, equation, parameters[0], parameters[1], parameters[2])
+    return EvalEquations(DB, testDataFN, obj, [equation], parameters[0], parameters[1], parameters[2])
 
 def ObjectiveFunction3(parameters, DB, testDataFN, obj, equation):
-    return EvalEquations(DB, testDataFN, obj, equation, parameters[0], parameters[1], parameters[2], parameters[3])
+    return EvalEquations(DB, testDataFN, obj, [equation], parameters[0], parameters[1], parameters[2], parameters[3])
 
 def CalibrateHyperparameters(DB, testDataFN, obj, equation, x0):
     # This function calibrates an given equation using a given objective metric on a given set of training data.
@@ -214,7 +214,7 @@ def CalibrateHyperparameters(DB, testDataFN, obj, equation, x0):
 def main():
     x0 = [6, 0.5, 0.5]
     DB = ReadInGridDB('ModelDistributions.csv')
-    testDataFN = 'threeHundredCallMatches.csv'
+    testDataFN = 'threeHundredCalMatches.csv'
     obj = 'Match Stats'
     equation = 1
     solution = CalibrateHyperparameters(DB, testDataFN, 'Match Stats', equation, x0)
