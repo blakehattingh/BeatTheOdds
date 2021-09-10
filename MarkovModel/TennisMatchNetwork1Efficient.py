@@ -1,7 +1,6 @@
 # Import the required functions:
-from MarkovModel import loopybeliefprop, AdditionalFunctions
-#from loopybeliefprop import choose
-#from AdditionalFunctions import combine_recursion, nth_index
+from loopybeliefprop import choose
+from AdditionalFunctions import combine_recursion, nth_index
 import numpy as np
 
 def TennisMatchNetwork1Efficient(SetScoreDists, FirstToSets, ConditionalEvents = {}):
