@@ -51,9 +51,9 @@ def MarkovModelFirstImplementation(P1S, P2S, FirstToSets, ConditionalEvents= {},
         
         # Set up the new network:
         print("Match:")
-        [nodes, dist, parents, outcomes, info] = TennisMatchNetworkMostEfficient(SetScoreDists, ConditionalEvents)
-        [MatchScoreDist] = beliefpropagation(nodes, dist, parents, outcomes, info, 
-        Iterations, Tol, ['MatchScore'])
+        [nodes, dist, parents, outcomes, info] = TennisMatchNetwork1Efficient(SetScoreDists,3, ConditionalEvents)
+        [MatchScoreDist, MatchOutcomeDist, TotalNumGamesDist, AllSetScoresDist] = beliefpropagation(nodes, dist, parents, outcomes, info, 
+        Iterations, Tol, ['MatchScore', 'Match', 'TotalNumGames', 'AllSetScores'])
 
         # Return the leaf node distributions:
         return MatchScoreDist

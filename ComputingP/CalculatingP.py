@@ -248,7 +248,6 @@ def EvalEquations(DB,testDataFN, obj, equations, age, surface, weighting, theta 
                     objectiveValues['Equation {}'.format(eq)]['Betted'] += spent
                     objectiveValues['Equation {}'.format(eq)]['Returns'] += returns
 
-    print(minP)
     return objectiveValues
 
 def CalcPEquation(equation,surface,weighting,MatchData,PrevMatches,PrevMatchesCommA,PrevMatchesCommB,CommonOpps,theta=0.5):
@@ -310,8 +309,8 @@ def CalcPEquation(equation,surface,weighting,MatchData,PrevMatches,PrevMatchesCo
                 Pa = PaS / (PaS + PbR)
                 Pb = PbS / (PbS + PaR)
             else:
-                Pa = PaS * (1. - theta) - theta * (1. - PbR)
-                Pb = PbS * (1. - theta) - theta * (1. - PaR)
+                Pa = PaS * (1. - theta) + theta * (1. - PbR)
+                Pb = PbS * (1. - theta) + theta * (1. - PaR)
     else:
         if (len(CommonOpps) == 0):
             # No common opponents, but they have played before: (rare occurence)
@@ -340,8 +339,8 @@ def CalcPEquation(equation,surface,weighting,MatchData,PrevMatches,PrevMatchesCo
                 Pa = PaS / (PaS + PbR)
                 Pb = PbS / (PbS + PaR)
             else:
-                Pa = PaS * (1. - theta) - theta * (1. - PbR)
-                Pb = PbS * (1. - theta) - theta * (1. - PaR)
+                Pa = PaS * (1. - theta) + theta * (1. - PbR)
+                Pb = PbS * (1. - theta) + theta * (1. - PaR)
         else:
             # Compute SPW(A,B) and SPW(B, A):
             [spwAB, spwBA] = ComputeSPW(PlayerA, PlayerB, PrevMatches, surface, surfaceOfMatch)
@@ -373,8 +372,8 @@ def CalcPEquation(equation,surface,weighting,MatchData,PrevMatches,PrevMatchesCo
                 Pa = PaS / (PaS + PbR)
                 Pb = PbS / (PbS + PaR)
             else:
-                Pa = PaS * (1. - theta) - theta * (1. - PbR)
-                Pb = PbS * (1. - theta) - theta * (1. - PaR)        
+                Pa = PaS * (1. - theta) + theta * (1. - PbR)
+                Pb = PbS * (1. - theta) + theta * (1. - PaR)        
         
     #print('Pa:', Pa, 'Pb:', Pb)
     return [Pa, Pb, True]
