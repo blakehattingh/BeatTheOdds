@@ -7,7 +7,6 @@ from TennisSetNetworkEfficient import TennisSetNetworkEfficient
 from loopybeliefprop import beliefpropagation
 
 def MarkovModelFirstImplementation(P1S, P2S, FirstToSets, ConditionalEvents= {}, Iterations = 100, Tol = 0.001):
-    
     # Set up the Bayesian Network and run the blief propagation algorithm for each set played:
     # Set 1:
     print("Set 1:")
@@ -51,10 +50,11 @@ def MarkovModelFirstImplementation(P1S, P2S, FirstToSets, ConditionalEvents= {},
         
         # Set up the new network:
         print("Match:")
-        [nodes, dist, parents, outcomes, info] = TennisMatchNetwork1Efficient(SetScoreDists,3, ConditionalEvents)
-        [MatchScoreDist, MatchOutcomeDist, TotalNumGamesDist, AllSetScoresDist] = beliefpropagation(nodes, dist, parents, outcomes, info, 
-        Iterations, Tol, ['MatchScore', 'Match', 'TotalNumGames', 'AllSetScores'])
+        [nodes, dist, parents, outcomes, info] = TennisMatchNetworkMostEfficient(SetScoreDists, 3, ConditionalEvents)
+        [MatchScoreDist] = beliefpropagation(nodes, dist, parents, outcomes, info, 
+        Iterations, Tol, ['MatchScore'])
 
+        print(MatchScoreDist)
         # Return the leaf node distributions:
         return MatchScoreDist
                  
@@ -96,11 +96,11 @@ def MarkovModelFirstImplementation(P1S, P2S, FirstToSets, ConditionalEvents= {},
         
         # Set up the new network:
         print("Match:")
-        [nodes, dist, parents, outcomes, info] = TennisMatchNetwork1Efficient(SetScoreDists, 5)
-        [MatchDist,MatchScoreDist,TotalNumGamesDist,AllSetScoresDist] = beliefpropagation(nodes, dist, parents, outcomes, info, 
-        Iterations, Tol, ['Match','MatchScore','TotalNumGames','AllSetScores'])
+        [nodes, dist, parents, outcomes, info] = TennisMatchNetworkMostEfficient(SetScoreDists, 5)
+        MatchScoreDist = beliefpropagation(nodes, dist, parents, outcomes, info, 
+        Iterations, Tol, ['MatchScore'])
         
         # Return the leaf node distributions:
-        return MatchDist, MatchScoreDist, TotalNumGamesDist, AllSetScoresDist
+        return MatchScoreDist
     else:
         raise ValueError ("First to sets needs to be either 3 or 5")

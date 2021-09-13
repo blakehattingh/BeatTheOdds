@@ -2,7 +2,6 @@ from typing import List
 import numpy as np
 import pandas as pd
 import csv
-#import sklearn
 import os, sys
 
 # Add required folders to the system path:
@@ -10,18 +9,21 @@ currentPath = os.path.abspath(os.getcwd())
 
 # Markov Model Files:
 sys.path.insert(0, currentPath + '\\MarkovModel')
-#from FirstImplementation import *
+from FirstImplementation import *
 
-def BuildingDB(PStart, PEnd, Increment):
+def BuildingDB(PStartA, PEndA, PStartB, PEndB, Increment, AllDists, DBToAppendTo = {}):
     # This function runs our Markov Model for ALL possible P1 and P2 combinations
     # Inputs:
-    # - PStart: The lowest P values we want to consider
-    # - PEnd: The highest P values we want to consider
+    # - PStartA and B: The lowest P values we want to consider for Pa and Pb respectively
+    # - PEndA and B: The highest P values we want to consider for Pa and Pb respectively
     # - Increment: The increase in P values
+    # - AllDists: Is a boolean informing us if we are using all 4 distributions or just Match Score
+    # - DBToAppendTo: The database we want to keep building incrementally
     #   e.g. P1 = [0.6, 0.61, 0.62....0.90] has PStart = 0.6, PEnd = 0.9 and Increment = 0.01
 
     # Compute the number of p values to consider:
-    N = int(((PEnd - PStart) / Increment) + 1)
+    Na = int(((PEndA - PStartA) / Increment) + 1)
+    Nb = int(((PEndB - PStartB) / Increment) + 1)
 
     # Create a dictionary to store all distributions from each run of the model:
     # Dictionary Format:
@@ -29,25 +31,38 @@ def BuildingDB(PStart, PEnd, Increment):
     # - Values = Another Dictionary
     #   - Key = Distribution Name e.g. "Match Score"
     #   - Values = Distribution as an array
-    DataBase = {}
+    DataBase = DBToAppendTo
 
     # Create an array of P values:
-    PValues = np.linspace(PStart/100., PEnd/100., N)
+    PValuesA = np.linspace(PStartA/100., PEndA/100., Na)
+    PValuesB = np.linspace(PStartB/100., PEndB/100., Nb)
 
-    for P1 in PValues:
-        for P2 in PValues:
+    for P1 in PValuesA:
+        for P2 in PValuesB:
             print('P-values: ', [P1],[P2])
-            # Run the model:
-            MatchScoreDist = MarkovModelFirstImplementation(P1,P2,3)
 
-            # Create the dictionary of distributions for this run:
-            Distributions = {'Match Score': [round(Num, 5) for Num in MatchScoreDist]}
+            if (AllDists):                 
+                # Run the model:
+                [MatchOutcomeDist, MatchScoreDist, TotalNumGamesDist, AllSetScoresDist] = MarkovModelFirstImplementation(P1,P2,3)
+
+                # Create the dictionary of distributions for this run:
+                Distributions = {'Match Outcome': [round(Num, 6) for Num in MatchOutcomeDist], 'Match Score': 
+                [round(Num, 6) for Num in MatchScoreDist], 'Number of Games': [round(Num, 6) for Num in TotalNumGamesDist], 'Set Score':
+                [round(Num, 6) for Num in AllSetScoresDist]}
+            else:
+                # If P1 = P2, we know the distribution is simply [0.25, 0.25, 0.25, 0.25]
+                if (P1 == P2):
+                    Distributions = {'Match Score': [0.25, 0.25, 0.25, 0.25]}
+                else:
+                    # Run the model:
+                    MatchScoreDist = MarkovModelFirstImplementation(P1, P2, 3)
+                    Distributions = {'Match Score': [round(Num, 6) for Num in MatchScoreDist]}
 
             # Store the distributions:
             DataBase[(round(P1,2), round(P2,2))] = Distributions
 
     # Export the dictionary of distributions to a csv file:
-    with open('ModelDistributions2.csv', mode='w') as csv_file:
+    with open('CSVFiles\\ModelDistributions2.csv', mode='w') as csv_file:
         writer = csv.writer(csv_file)
         for key, value in DataBase.items():
             writer.writerow([key, value])
@@ -226,7 +241,8 @@ def ReadInGridDB(FileName):
 
     # Read in the model distributions database: 
     DB = {} 
-    x = pd.read_csv('C:\\Uni\\4thYearProject\\repo\\BeatTheOdds\\CSVFiles\\ModelDistributions.csv', header = None)
+    # x = pd.read_csv('C:\\Uni\\4thYearProject\\repo\\BeatTheOdds\\CSVFiles\\ModelDistributions.csv', header = None)
+    x = pd.read_csv(FileName, header = None)
     for row in range(len(x)):
         Pa = round(eval(x[0][row])[0],2)
         Pb = round(eval(x[0][row])[1],2)
@@ -235,15 +251,29 @@ def ReadInGridDB(FileName):
     return DB
 
 def main():
-    # Build the DB of model distributions:
-    BuildingDB(40,90,2)
-    
     # Read in grid:
-    DB = ReadInGridDB('ModelDistributions.csv')
+    DB = ReadInGridDB('ModelDistributions2.csv')
+
+    # Compare both DBs:
+    DB1 = ReadInGridDB('ModelDistributions.csv')
+    DB2 = ReadInGridDB('ModelDistributions2.csv')
+    
+    # Iterate through each distribution:
+    Diff = {}
+    for pair in DB2:
+        if (pair[0] >= 0.5):
+            if (pair[1] >= 0.5):
+                Diff[pair] = 0.
+                for p in range(len(DB2[pair]['Match Score'])):
+                    Diff[pair] += abs(DB2[pair]['Match Score'][p] - DB1[pair]['Match Score'][p])
+    # print(Diff)
+
+    # Build the DB of model distributions:
+    BuildingDB(58, 58, 40, 80, 2, False, DBToAppendTo = DB)
 
     # Compute the RMSEs:
-    RMSEs = ValidatingStepSize(DB, 0.02)
-    print(RMSEs)
+    # RMSEs = ValidatingStepSize(DB, 0.02)
+    # print(RMSEs)
 
 if __name__ == "__main__":
     main()
