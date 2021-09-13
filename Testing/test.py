@@ -4,13 +4,14 @@ import numpy as np
 import csv
 import matplotlib.pyplot as plt
 from datetime import datetime, timedelta
+import time
 
 
 # Add required folders to the system path:
 currentPath = os.path.abspath(os.getcwd())
 
 # Markov Model Files:
-sys.path.insert(0, currentPath + '\\MarkovModel')
+sys.path.insert(0, currentPath + '\\BeatTheOdds\\MarkovModel')
 from FirstImplementation import *
 
 
@@ -53,7 +54,11 @@ def main():
     #print(Set(P1S, 1. - P2S, A, B))
 
     # run MM:
-    MarkovModelFirstImplementation(0.62, 0.61, 5)
+    start = time.time()
+    MarkovModelFirstImplementation(0.62, 0.61, 3)
+    end = time.time()
+    print('time taken =')
+    print(end-start)
     
 if __name__ == "__main__":
     main()

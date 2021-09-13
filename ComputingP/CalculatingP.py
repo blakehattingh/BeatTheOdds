@@ -14,15 +14,19 @@ from CalculatingP import *
 currentPath = os.path.abspath(os.getcwd())
 
 # Markov Model Files:
-sys.path.insert(0, currentPath + '\\MarkovModel')
+sys.path.insert(0, currentPath + '\\BeatTheOdds\\MarkovModel')
+#sys.path.insert(0, currentPath + '\MarkovModel')
 from FirstImplementation import *
 
+
 # Optimisation Model Files:
-sys.path.insert(0, currentPath + '\\OptimisationModel')
+sys.path.insert(0, currentPath + '\\BeatTheOdds\\OptimisationModel')
+#sys.path.insert(0, currentPath + '\\OptimisationModel')
 from CVaRModel import RunCVaRModel
 
 # Data Extraction Files:
-sys.path.insert(0, currentPath + '\\DataExtraction')
+sys.path.insert(0, currentPath + '\\BeatTheOdds\\DataExtraction')
+#sys.path.insert(0, currentPath + '\\DataExtraction')
 from TestSetCollector import *
 from DataCollector import *
 
@@ -288,8 +292,6 @@ def EvalEquations(DB, testDataFN, obj, equations, age, surface, weighting, theta
         for eq in equations:
             # Compute the P values for the two players:
             [Pa,Pb,predict] = CalcPEquation(eq, surface, weighting, match, p1vP2, p1vCO, p2vCO, COIds, theta)
-            if (min(Pa,Pb) < minP):
-                minP = min(Pa, Pb)
 
             # Look to make predictions using these P values:
             if (predict):
@@ -343,8 +345,9 @@ def CalcPEquation(equation,surface,weighting,MatchData,PrevMatches,PrevMatchesCo
 
     # Extract required info:
     surfaceOfMatch = MatchData[4]
-    PlayerA = MatchData[8]
-    PlayerB = MatchData[18]
+    PlayerA = int(MatchData[8])
+    PlayerB = int(MatchData[18])
+   
 
     # See how many matches have been played between A and B:
     numMatches = len(PrevMatches)
@@ -353,20 +356,20 @@ def CalcPEquation(equation,surface,weighting,MatchData,PrevMatches,PrevMatchesCo
     if (numMatches == 0):
         if (len(CommonOpps) == 0):
             # We have no data to use to compute P, thus do NOT compute it:
-            print('No historical data for these players')
+            #print('No historical data for these players')
             return [0.5,0.5,False]
         else:
             # Pass a warning message:
-            print('First match between these 2 players')
+            #print('First match between these 2 players')
 
             # Compute SPW(A,C) and SPW(B,C):
             [spwAC, rpwAC] = ComputeSPWCommon(PlayerA, PrevMatchesCommA, CommonOpps, surface, surfaceOfMatch) 
             [spwBC, rpwBC] = ComputeSPWCommon(PlayerB, PrevMatchesCommB, CommonOpps, surface, surfaceOfMatch)
-            print('spwAC:', spwAC, 'rpwAC:', rpwAC)
-            print('spwBC:', spwBC, 'rpwBC:', rpwBC)
+            #print('spwAC:', spwAC, 'rpwAC:', rpwAC)
+            #print('spwBC:', spwBC, 'rpwBC:', rpwBC)
 
             # Compute PaS and PbS:
-            print('Only using SPC to compute P')
+            #print('Only using SPC to compute P')
             PaS = spwAC
             PbS = spwBC
 
@@ -389,14 +392,14 @@ def CalcPEquation(equation,surface,weighting,MatchData,PrevMatches,PrevMatchesCo
             # No common opponents, but they have played before: (rare occurence)
             # Compute SPW(A,B) and SPW(B, A):
             [spwAB, spwBA] = ComputeSPW(PlayerA, PlayerB, PrevMatches, surface, surfaceOfMatch)
-            print('spwAB:', spwAB, 'spwBA:', spwBA)
+            #print('spwAB:', spwAB, 'spwBA:', spwBA)
 
             # Compute RPW(A,B) and RPW(B,A)
             rpwAB = 1. - spwBA
             rpwBA = 1. - spwAB       
 
             # Compute PaS and PbS:
-            print('Only using SPW to compute P')
+            #print('Only using SPW to compute P')
             PaS = spwAB
             PbS = spwBA
 
@@ -417,7 +420,7 @@ def CalcPEquation(equation,surface,weighting,MatchData,PrevMatches,PrevMatchesCo
         else:
             # Compute SPW(A,B) and SPW(B, A):
             [spwAB, spwBA] = ComputeSPW(PlayerA, PlayerB, PrevMatches, surface, surfaceOfMatch)
-            print('spwAB:', spwAB, 'spwBA:', spwBA)
+            #print('spwAB:', spwAB, 'spwBA:', spwBA)
 
             # Compute RPW(A,B) and RPW(B,A)
             rpwAB = 1. - spwBA
@@ -426,8 +429,8 @@ def CalcPEquation(equation,surface,weighting,MatchData,PrevMatches,PrevMatchesCo
             # Compute SPW(A,C) and SPW(B,C):
             [spwAC, rpwAC] = ComputeSPWCommon(PlayerA, PrevMatchesCommA, CommonOpps, surface, surfaceOfMatch) 
             [spwBC, rpwBC] = ComputeSPWCommon(PlayerB, PrevMatchesCommB, CommonOpps, surface, surfaceOfMatch)
-            print('spwAC:', spwAC, 'rpwAC:', rpwAC)
-            print('spwBC:', spwBC, 'rpwBC:', rpwBC)
+            #print('spwAC:', spwAC, 'rpwAC:', rpwAC)
+            #print('spwBC:', spwBC, 'rpwBC:', rpwBC)
 
             # Compute PaS and PbS:
             PaS = (1  - weighting) * spwAB + weighting * spwAC
@@ -448,7 +451,7 @@ def CalcPEquation(equation,surface,weighting,MatchData,PrevMatches,PrevMatchesCo
                 Pa = PaS * (1. - theta) + theta * (1. - PbR)
                 Pb = PbS * (1. - theta) + theta * (1. - PaR)        
         
-    print('Pa:', Pa, 'Pb:', Pb)
+    #print('Pa:', Pa, 'Pb:', Pb)
     return [Pa, Pb, True]
 
 def ComputeSPW(PlayerA, PlayerB, PrevMatches, surface, surfaceOfMatch):
@@ -500,7 +503,7 @@ def ComputeSPW(PlayerA, PlayerB, PrevMatches, surface, surfaceOfMatch):
                     PlayerBServePointsNS += PrevMatches[match][42]
                     PlayerBServePointsWonNS += (PrevMatches[match][44] + PrevMatches[match][45])
     
-    print('Number of Previous Matches: ', len(PrevMatches))
+    #print('Number of Previous Matches: ', len(PrevMatches))
     # Check if any matches were analysed:
     if (surfaceMatchesCount > 0):
         # Compute the proportion of service points won on the surface:
@@ -593,7 +596,7 @@ def ComputeSPWCommon(PlayerA, PrevMatchesCommOpps, CommonOpps, surface, surfaceO
     RPWCommonOppPropsNS = np.zeros(len(CommonOpps), dtype = float)
     SPWCommonOppProps = np.zeros(len(CommonOpps), dtype = float)
     RPWCommonOppProps = np.zeros(len(CommonOpps), dtype = float)
-    print('Number of Previous Common Matches: ', len(PrevMatchesCommOpps))
+    #print('Number of Previous Common Matches: ', len(PrevMatchesCommOpps))
 
     for Opp in range(len(CommonOpps)):
         # Check if any matches were analysed for this common opponent:
@@ -652,9 +655,9 @@ def ExtractSetScores(setScoresStirng):
 
 def ReadInData(fileName):
     # Get location of file:
-    THIS_FOLDER = os.path.abspath('CSVFiles')
-    fileName = os.path.join(THIS_FOLDER, fileName)
-
+    #THIS_FOLDER = os.path.abspath('CSVFiles')
+    #fileName = os.path.join(THIS_FOLDER, fileName)
+    fileName = 'C:\\Uni\\4thYearProject\\repo\\BeatTheOdds\\CSVFiles\\threeHundredCalMatches.csv'
     # Read in CSV file:
     testData = []
     with open(fileName) as csv_file:

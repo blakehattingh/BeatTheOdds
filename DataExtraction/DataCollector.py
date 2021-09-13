@@ -34,7 +34,7 @@ def getIds(matchDetails, cursor):
 def getP1vP2(startOfDataCollection,cursor,p1ID,p2ID, dateOfTestMatch):
     
     query = f"select * from tcb.match m join tcb.match_stats s on \
-        m.match_id = s.match_id where (m.date > '{startOfDataCollection}' AND m.date < '{dateOfTestMatch}') AND ((m.winner_id = {p1ID} OR m.winner_id = {p2ID}) AND (m.loser_id = {p1ID} OR m.loser_id = {p2ID}))"
+        m.match_id = s.match_id where (m.date > '{startOfDataCollection}' AND m.date < '{dateOfTestMatch}') AND ((m.winner_id = {p1ID} OR m.winner_id = {p2ID}) AND (m.loser_id = {p1ID} OR m.loser_id = {p2ID})) AND m.outcome is NULL"
     cursor.execute(query)
     p1vP2Matches = cursor.fetchall()
     return p1vP2Matches
@@ -43,16 +43,16 @@ def getPlayerVsCO(startOfDataCollection,cursor,p1ID,p2ID, dateOfTestMatch):
     query = f'''select *
     from tcb.match k join tcb.match_stats s on 
     k.match_id = s.match_id
-    where (k.date > '{startOfDataCollection}' AND k.date < '{dateOfTestMatch}') AND winner_id = {p1ID} AND loser_id in ((select player_id
-    from tcb.player
+    where (k.date > '{startOfDataCollection}' AND k.date < '{dateOfTestMatch}') AND k.outcome is NULL AND winner_id = {p1ID} AND loser_id in ((select player_id
+    from tcb.player 
     WHERE player_id in (SELECT loser_id from tcb.match as m Where 
 							 ((m.winner_id = {p1ID}) 
-							  AND NOT ((m.loser_id = {p2ID}) ) AND m.has_stats = 'true' AND (m.date > '{startOfDataCollection}' AND m.date < '{dateOfTestMatch}')))
+							  AND NOT ((m.loser_id = {p2ID}) ) AND m.has_stats = 'true' AND m.outcome is NULL AND (m.date > '{startOfDataCollection}' AND m.date < '{dateOfTestMatch}')))
     union select player_id
     from tcb.player
     WHERE player_id in (SELECT winner_id from tcb.match as m Where 
 							 ((m.loser_id = {p1ID}) 
-							  AND NOT ((m.winner_id = {p2ID}) )AND m.has_stats = 'true' AND (m.date > '{startOfDataCollection}' AND m.date < '{dateOfTestMatch}'))))
+							  AND NOT ((m.winner_id = {p2ID}) )AND m.has_stats = 'true' AND m.outcome is NULL AND (m.date > '{startOfDataCollection}' AND m.date < '{dateOfTestMatch}'))))
 							  
     intersect 
 
@@ -60,26 +60,26 @@ def getPlayerVsCO(startOfDataCollection,cursor,p1ID,p2ID, dateOfTestMatch):
     from tcb.player
     WHERE player_id in (SELECT loser_id from tcb.match as m Where 
                                 ((m.winner_id = {p2ID} ) 
-                                AND NOT ( m.loser_id = {p1ID})AND m.has_stats = 'true' AND (m.date > '{startOfDataCollection}' AND m.date < '{dateOfTestMatch}')))
+                                AND NOT ( m.loser_id = {p1ID})AND m.has_stats = 'true' AND m.outcome is NULL AND (m.date > '{startOfDataCollection}' AND m.date < '{dateOfTestMatch}')))
             union select player_id
             from tcb.player
             where player_id in (SELECT winner_id from tcb.match as m Where 
                                 ((m.loser_id = {p2ID} ) 
-                                AND NOT ( m.winner_id = {p1ID})AND m.has_stats = 'true' AND (m.date > '{startOfDataCollection}' AND m.date < '{dateOfTestMatch}')))))
+                                AND NOT ( m.winner_id = {p1ID})AND m.has_stats = 'true' AND m.outcome is NULL AND (m.date > '{startOfDataCollection}' AND m.date < '{dateOfTestMatch}')))))
                                 
     union select * 
     from tcb.match k join tcb.match_stats s on 
     k.match_id = s.match_id
-    where (k.date > '{startOfDataCollection}' AND k.date < '{dateOfTestMatch}') AND loser_id = {p1ID} AND winner_id in ((select player_id
+    where (k.date > '{startOfDataCollection}' AND k.date < '{dateOfTestMatch}') AND k.outcome is NULL AND loser_id = {p1ID} AND winner_id in ((select player_id
     from tcb.player
     WHERE player_id in (SELECT loser_id from tcb.match as m Where 
                                 ((m.winner_id = {p1ID}) 
-                                AND NOT ((m.loser_id = {p2ID}) )AND m.has_stats = 'true' AND (m.date > '{startOfDataCollection}' AND m.date < '{dateOfTestMatch}')))
+                                AND NOT ((m.loser_id = {p2ID}) )AND m.has_stats = 'true' AND m.outcome is NULL AND (m.date > '{startOfDataCollection}' AND m.date < '{dateOfTestMatch}')))
     union select player_id
     from tcb.player
     WHERE player_id in (SELECT winner_id from tcb.match as m Where 
                                 ((m.loser_id = {p1ID}) 
-                                AND NOT ((m.winner_id = {p2ID}) )AND m.has_stats = 'true' AND (m.date > '{startOfDataCollection}' AND m.date < '{dateOfTestMatch}'))))
+                                AND NOT ((m.winner_id = {p2ID}) )AND m.has_stats = 'true' AND m.outcome is NULL AND (m.date > '{startOfDataCollection}' AND m.date < '{dateOfTestMatch}'))))
                                 
     intersect 
 
@@ -87,12 +87,12 @@ def getPlayerVsCO(startOfDataCollection,cursor,p1ID,p2ID, dateOfTestMatch):
     from tcb.player
     WHERE player_id in (SELECT loser_id from tcb.match as m Where 
                                 ((m.winner_id = {p2ID} ) 
-                                AND NOT ( m.loser_id = {p1ID})AND m.has_stats = 'true' AND (m.date > '{startOfDataCollection}' AND m.date < '{dateOfTestMatch}')))
+                                AND NOT ( m.loser_id = {p1ID})AND m.has_stats = 'true' AND m.outcome is NULL AND (m.date > '{startOfDataCollection}' AND m.date < '{dateOfTestMatch}')))
             union select player_id
             from tcb.player
             where player_id in (SELECT winner_id from tcb.match as m Where 
                                 ((m.loser_id = {p2ID} ) 
-                                AND NOT ( m.winner_id = {p1ID})AND m.has_stats = 'true' AND (m.date > '{startOfDataCollection}' AND m.date < '{dateOfTestMatch}')))))'''
+                                AND NOT ( m.winner_id = {p1ID})AND m.has_stats = 'true' AND m.outcome is NULL AND (m.date > '{startOfDataCollection}' AND m.date < '{dateOfTestMatch}')))))'''
     cursor.execute(query)
     playerVsCO = cursor.fetchall()
     return playerVsCO

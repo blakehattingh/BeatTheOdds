@@ -184,7 +184,12 @@ def Newtowns(x0, dim, h, tol = 1e-06, maxit = 100):
 
 def ObjectiveFunction(parameters, DB, testDataFN, obj, equation):
     # This function computes the objective function (overall ROI) for eqautions 1 & 2 and a set of given hyperparameters
-    return EvalEquations(DB, testDataFN, obj, [equation], parameters[0], parameters[1], parameters[2])
+    objMetric = EvalEquations(DB, testDataFN, obj, [equation], parameters[0], parameters[1], parameters[2])
+    value = 3*objMetric['Equation 1']['Match Outcome']+objMetric['Equation 1']['Set Score']+5*objMetric['Equation 1']['Match Score']
+    print("parameters : ")
+    print( parameters)
+    print(value)
+    return -1*value
 
 def ObjectiveFunction3(parameters, DB, testDataFN, obj, equation):
     return EvalEquations(DB, testDataFN, obj, [equation], parameters[0], parameters[1], parameters[2], parameters[3])
