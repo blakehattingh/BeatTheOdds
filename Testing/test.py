@@ -53,7 +53,7 @@ def main():
     #print(Set(P1S, 1. - P2S, A, B))
 
     # run MM:
-    MarkovModelFirstImplementation(0.62, 0.61, 3)
+    MarkovModelFirstImplementation(0.62, 0.61, 5)
     
 if __name__ == "__main__":
     main()

@@ -1,14 +1,3 @@
-def main():
-    # Parameters:
-    P1S = 0.6
-    P2S = 0.7
-    Q = 1 - P2S 
-    [A, B] = Matrices()
-
-    # Compute the match probability distribution:
-    MatchDist3 = Match3(P1S, Q, A, B)
-    print(MatchDist3)
-
 def Game(P):
     # Single Service Game:
     Game = pow(P,4) * (15 - 4*P - ((10 * pow(P,2)) / (1 - 2 * P * (1 - P))))
@@ -52,6 +41,36 @@ def Matrices():
     [24,4,1,2,2,0],[4,5,0,1,3,0],[5,1,4,5,0,0],[40,2,3,4,1,0],[60,3,2,3,2,0],[20,4,1,2,3,0],[1,5,0,1,4,0],[1,0,5,5,0,1],
     [25,1,4,4,1,1],[100,2,3,3,2,1],[100,3,2,2,3,1],[25,4,1,1,4,1],[1,5,0,0,5,1]]
     return A, B
-    
+
+def main():
+    # Parameters:
+    P1S = 0.80
+    P2S = 0.52
+    [A, B] = Matrices()
+
+    # Compute the Match Score 2-0:
+    oMallSetA = Set(P1S, (1.-P2S), A, B)
+    oMallSetB = Set(P2S, (1.-P1S), A, B)
+    avSetA = (oMallSetA + (1. - oMallSetB)) / 2
+    avSetB = (oMallSetB + (1. - oMallSetA)) / 2
+
+    TwoNil = pow(avSetA,2)
+    print(TwoNil)
+
+    # Compute the Match Score 2-1:
+    TwoOne = 2 * (pow(avSetA,2) - pow(avSetA,3))
+    print(TwoOne)
+
+    # Compute the Match Score 0-2:
+    NilTwo = pow(avSetB,2)
+    print(NilTwo)
+
+    # Compute the Match Score 1-2:
+    OneTwo = 2 * (pow(avSetB,2) - pow(avSetB,3))
+    print(OneTwo)
+
+    # Sum up all probabilities:
+    print(TwoNil + TwoOne + NilTwo + OneTwo)
+
 if __name__ == "__main__":
     main()

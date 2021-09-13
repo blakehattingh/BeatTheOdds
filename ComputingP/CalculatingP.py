@@ -97,7 +97,7 @@ def ObjectiveMetricROI(outcome, Zk, bets):
                 ROI = ((returns - spent)/spent) * 100.
     return [ROI, spent, returns]
 
-def InterpolateDists(Pa, Pb, DB, pBoundaryL = 0.4, pBoundaryH = 0.9, Spacing = 0.02):
+def InterpolateDists(Pa, Pb, DB, pBoundaryL = 0.4, pBoundaryH = 0.8, Spacing = 0.02):
     # Takes in a set of P values and returns the interpolated distributions for them
     # Grid:
     # A ----E- B
@@ -108,15 +108,95 @@ def InterpolateDists(Pa, Pb, DB, pBoundaryL = 0.4, pBoundaryH = 0.9, Spacing = 0
     # Ensure Pa and Pb are within bounds of the DB:
     if (Pa < pBoundaryL):
         if (Pb < pBoundaryL):
-            # Extrapolate to this point:
-            
-            Za = DB[(pBoundaryL, pBoundaryL)] - (pBoundaryL - Pa) * (DB[(pBoundaryL+Spacing, pBoundaryL)] - DB[(pBoundaryL, pBoundaryL)]) / Spacing
-            
-            # Extrapolate to this on the b axis:
-            Zb = DB[(pBoundaryL, pBoundaryL)] - (pBoundaryL - Pb) * (DB[(pBoundaryL, pBoundaryL+Spacing)] - DB[(pBoundaryL, pBoundaryL)]) / Spacing
+            ZDists = {}
+            for dist in DB[(pBoundaryL,pBoundaryL)]:
+                # Convert distributions to arrays:
+                pCorner = np.array(DB[(pBoundaryL,pBoundaryL)][dist])
+                PaNext = np.array(DB[(pBoundaryL+Spacing,pBoundaryL)][dist])
+                PbNext = np.array(DB[(pBoundaryL,pBoundaryL+Spacing)][dist])
 
-    if (Pb < pBoundaryL):
-        Pb = 0.5
+                # Extrapolate to this point:
+                ZDists[dist] = np.subtract(pCorner, ((pBoundaryL - Pa) * np.subtract(PaNext, pCorner) / Spacing))
+                ZDists[dist] = np.subtract(ZDists[dist], ((pBoundaryL - Pb) * np.subtract(PbNext, pCorner) / Spacing))
+                
+                # Convert it back to a list:
+                ZDists[dist].tolist()
+
+            return ZDists
+        else:
+            ZDists = {}
+            for dist in DB[(pBoundaryL,pBoundaryL)]:
+                # Convert distributions to arrays:
+                pSide = np.array(DB[(pBoundaryL,Pb)][dist])
+                pSideNext = np.array(DB[(pBoundaryL+Spacing,Pb)][dist])
+
+                # Extrapolate to this point:
+                ZDists[dist] = np.subtract(pSide, ((pBoundaryL - Pa) * np.subtract(pSideNext, pSide) / Spacing))
+                
+                # Convert it back to a list:
+                ZDists[dist].tolist()
+
+            return ZDists
+    else:
+        if (Pb < pBoundaryL):
+            ZDists = {}
+            for dist in DB[(pBoundaryL,pBoundaryL)]:
+                # Convert distributions to arrays:
+                pSide = np.array(DB[(Pa,pBoundaryL)][dist])
+                pSideNext = np.array(DB[(Pa,pBoundaryL+Spacing)][dist])
+
+                # Extrapolate to this point:
+                ZDists[dist] = np.subtract(pSide, ((pBoundaryL - Pb) * np.subtract(pSideNext, pSide) / Spacing))
+                
+                # Convert it back to a list:
+                ZDists[dist].tolist()
+            return ZDists
+
+    if (Pa > pBoundaryH):
+        if (Pb > pBoundaryH):
+            ZDists = {}
+            for dist in DB[(pBoundaryH,pBoundaryH)]:
+                # Convert distributions to arrays:
+                pCorner = np.array(DB[(pBoundaryH,pBoundaryH)][dist])
+                PaBefore = np.array(DB[(pBoundaryH-Spacing,pBoundaryH)][dist])
+                PbBefore = np.array(DB[(pBoundaryH,pBoundaryH-Spacing)][dist])
+
+                # Extrapolate to this point:
+                ZDists[dist] = np.add(pCorner, ((Pa - pBoundaryH) * np.subtract(pCorner, PaBefore) / Spacing))
+                ZDists[dist] = np.add(ZDists[dist], ((Pb - pBoundaryH) * np.subtract(pCorner, PbBefore) / Spacing))
+                
+                # Convert it back to a list:
+                ZDists[dist].tolist()
+
+            return ZDists
+        else:
+            ZDists = {}
+            for dist in DB[(pBoundaryH,pBoundaryH)]:
+                # Convert distributions to arrays:
+                pSide = np.array(DB[(pBoundaryH,Pb)][dist])
+                pSideBefore = np.array(DB[(pBoundaryH-Spacing,Pb)][dist])
+
+                # Extrapolate to this point:
+                ZDists[dist] = np.add(pSide, ((Pa - pBoundaryH) * np.subtract(pSide, pSideBefore) / Spacing))
+                
+                # Convert it back to a list:
+                ZDists[dist].tolist()
+
+            return ZDists
+    else:
+        if (Pb < pBoundaryL):
+            ZDists = {}
+            for dist in DB[(pBoundaryH,pBoundaryH)]:
+                # Convert distributions to arrays:
+                pSide = np.array(DB[(Pa,pBoundaryH)][dist])
+                pSideBefore = np.array(DB[(Pa,pBoundaryH-Spacing)][dist])
+
+                # Extrapolate to this point:
+                ZDists[dist] = np.add(pSide, ((Pb - pBoundaryH) * np.subtract(pSide, pSideBefore) / Spacing))
+                
+                # Convert it back to a list:
+                ZDists[dist].tolist()
+            return ZDists
 
     # Compute the base point for the 4 points around this point (Point A):
     roundedA = round(Pa, 1)
@@ -160,7 +240,7 @@ def try_parsing_date(text):
             pass
     raise ValueError('no valid date format found')
 
-def EvalEquations(testDataFN, obj, equations, age, surface, weighting, theta = 0.5, riskProfile = [], betas = []):
+def EvalEquations(DB, testDataFN, obj, equations, age, surface, weighting, theta = 0.5, riskProfile = [], betas = []):
     # This function takes a test or training set of matches, an equation(s) to use and it evaluates the specified 
     # objective metric across the inputted data set.
     # Inputs:
@@ -242,7 +322,6 @@ def EvalEquations(testDataFN, obj, equations, age, surface, weighting, theta = 0
                     objectiveValues['Equation {}'.format(eq)]['Betted'] += spent
                     objectiveValues['Equation {}'.format(eq)]['Returns'] += returns
 
-    print(minP)
     return objectiveValues
 
 def CalcPEquation(equation,surface,weighting,MatchData,PrevMatches,PrevMatchesCommA,PrevMatchesCommB,CommonOpps,theta=0.5):
@@ -303,8 +382,8 @@ def CalcPEquation(equation,surface,weighting,MatchData,PrevMatches,PrevMatchesCo
                 Pa = PaS / (PaS + PbR)
                 Pb = PbS / (PbS + PaR)
             else:
-                Pa = PaS * (1. - theta) - theta * (1. - PbR)
-                Pb = PbS * (1. - theta) - theta * (1. - PaR)
+                Pa = PaS * (1. - theta) + theta * (1. - PbR)
+                Pb = PbS * (1. - theta) + theta * (1. - PaR)
     else:
         if (len(CommonOpps) == 0):
             # No common opponents, but they have played before: (rare occurence)
@@ -333,8 +412,8 @@ def CalcPEquation(equation,surface,weighting,MatchData,PrevMatches,PrevMatchesCo
                 Pa = PaS / (PaS + PbR)
                 Pb = PbS / (PbS + PaR)
             else:
-                Pa = PaS * (1. - theta) - theta * (1. - PbR)
-                Pb = PbS * (1. - theta) - theta * (1. - PaR)
+                Pa = PaS * (1. - theta) + theta * (1. - PbR)
+                Pb = PbS * (1. - theta) + theta * (1. - PaR)
         else:
             # Compute SPW(A,B) and SPW(B, A):
             [spwAB, spwBA] = ComputeSPW(PlayerA, PlayerB, PrevMatches, surface, surfaceOfMatch)
@@ -366,8 +445,8 @@ def CalcPEquation(equation,surface,weighting,MatchData,PrevMatches,PrevMatchesCo
                 Pa = PaS / (PaS + PbR)
                 Pb = PbS / (PbS + PaR)
             else:
-                Pa = PaS * (1. - theta) - theta * (1. - PbR)
-                Pb = PbS * (1. - theta) - theta * (1. - PaR)        
+                Pa = PaS * (1. - theta) + theta * (1. - PbR)
+                Pb = PbS * (1. - theta) + theta * (1. - PaR)        
         
     print('Pa:', Pa, 'Pb:', Pb)
     return [Pa, Pb, True]
@@ -740,6 +819,7 @@ def test(DB, matchesFileName):
 
 def main():
     DB = ReadInGridDB('ModelDistributions.csv')
+    x = InterpolateDists(0.56, 0.52, DB, 0.5, 0.9)
     test(DB, '2018_19MatchesWithOdds.csv')
 
 if __name__ == "__main__":

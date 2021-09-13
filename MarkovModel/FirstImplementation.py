@@ -3,16 +3,15 @@ from TennisMatchNetwork1Efficient import TennisMatchNetwork1Efficient
 from TennisMatchNetworkCE import TennisMatchNetworkCE
 from TennisMatchNetworkMostEfficient import TennisMatchNetworkMostEfficient
 import numpy as np
-#from TennisSetNetworkEfficient import TennisSetNetworkEfficient
-#from loopybeliefprop import beliefpropagation
+from TennisSetNetworkEfficient import TennisSetNetworkEfficient
+from loopybeliefprop import beliefpropagation
 
 def MarkovModelFirstImplementation(P1S, P2S, FirstToSets, ConditionalEvents= {}, Iterations = 100, Tol = 0.001):
-    
     # Set up the Bayesian Network and run the blief propagation algorithm for each set played:
     # Set 1:
     print("Set 1:")
-    [nodes, dist, parents, outcomes, info] = TennisSetNetworkEfficient.TennisSetNetworkEfficient(P1S, P2S)
-    [SetScoreDist1] = loopybeliefprop.beliefpropagation(nodes,dist,parents,outcomes,info,Iterations,Tol,['SetScore'])
+    [nodes, dist, parents, outcomes, info] = TennisSetNetworkEfficient(P1S, P2S)
+    [SetScoreDist1] = beliefpropagation(nodes,dist,parents,outcomes,info,Iterations,Tol,['SetScore'])
 
     # Compute the probability distribution of the number of games played in the set:
     NumGamesDist1 = np.zeros(7, dtype = float)
@@ -24,8 +23,8 @@ def MarkovModelFirstImplementation(P1S, P2S, FirstToSets, ConditionalEvents= {},
 
     # Set 2:
     print("Set 2:")
-    [nodes, dist, parents, outcomes, info] = TennisSetNetworkEfficient.TennisSetNetworkEfficient(P1S, P2S, InitServerDist)
-    [SetScoreDist2] = loopybeliefprop.beliefpropagation(nodes,dist,parents,outcomes,info,Iterations,Tol,['SetScore'])
+    [nodes, dist, parents, outcomes, info] = TennisSetNetworkEfficient(P1S, P2S, InitServerDist)
+    [SetScoreDist2] = beliefpropagation(nodes,dist,parents,outcomes,info,Iterations,Tol,['SetScore'])
 
     # Compute the probability distribution of the number of games played in the set:
     NumGamesDist2 = np.zeros(7, dtype = float)
@@ -38,8 +37,8 @@ def MarkovModelFirstImplementation(P1S, P2S, FirstToSets, ConditionalEvents= {},
     
     # Set 3:
     print("Set 3:")
-    [nodes, dist, parents, outcomes, info] = TennisSetNetworkEfficient.TennisSetNetworkEfficient(P1S, P2S, InitServerDist)
-    [SetScoreDist3] = loopybeliefprop.beliefpropagation(nodes,dist,parents,outcomes,info,Iterations,Tol,['SetScore'])
+    [nodes, dist, parents, outcomes, info] = TennisSetNetworkEfficient(P1S, P2S, InitServerDist)
+    [SetScoreDist3] = beliefpropagation(nodes,dist,parents,outcomes,info,Iterations,Tol,['SetScore'])
 
     if (FirstToSets == 3):
         # Create a new bayesian network:
@@ -51,10 +50,11 @@ def MarkovModelFirstImplementation(P1S, P2S, FirstToSets, ConditionalEvents= {},
         
         # Set up the new network:
         print("Match:")
-        [nodes, dist, parents, outcomes, info] = TennisMatchNetworkMostEfficient(SetScoreDists, ConditionalEvents)
+        [nodes, dist, parents, outcomes, info] = TennisMatchNetworkMostEfficient(SetScoreDists, 3, ConditionalEvents)
         [MatchScoreDist] = beliefpropagation(nodes, dist, parents, outcomes, info, 
         Iterations, Tol, ['MatchScore'])
 
+        print(MatchScoreDist)
         # Return the leaf node distributions:
         return MatchScoreDist
                  
@@ -70,8 +70,8 @@ def MarkovModelFirstImplementation(P1S, P2S, FirstToSets, ConditionalEvents= {},
 
         # Set 4:
         print("Set 4:")
-        [nodes, dist, parents, outcomes, info] = TennisSetNetworkEfficient.TennisSetNetworkEfficient(P1S, P2S, InitServerDist)
-        [SetScoreDist4] = loopybeliefprop.beliefpropagation(nodes, dist, parents, outcomes, info, Iterations, Tol,['SetScore'])
+        [nodes, dist, parents, outcomes, info] = TennisSetNetworkEfficient(P1S, P2S, InitServerDist)
+        [SetScoreDist4] = beliefpropagation(nodes, dist, parents, outcomes, info, Iterations, Tol,['SetScore'])
 
         # Compute the probability distribution of the number of games played in the set:
         NumGamesDist4 = np.zeros(7, dtype = float)
@@ -84,8 +84,8 @@ def MarkovModelFirstImplementation(P1S, P2S, FirstToSets, ConditionalEvents= {},
 
         # Set 5:
         print("Set 5:")
-        [nodes, dist, parents, outcomes, info] = TennisSetNetworkEfficient.TennisSetNetworkEfficient(P1S, P2S, InitServerDist)
-        [SetScoreDist5] = loopybeliefprop.beliefpropagation(nodes, dist, parents, outcomes, info, Iterations, Tol,['SetScore'])
+        [nodes, dist, parents, outcomes, info] = TennisSetNetworkEfficient(P1S, P2S, InitServerDist)
+        [SetScoreDist5] = beliefpropagation(nodes, dist, parents, outcomes, info, Iterations, Tol,['SetScore'])
         
         # Create a new bayesian network:
         # - The parent nodes as the leaf nodes from above
@@ -96,11 +96,11 @@ def MarkovModelFirstImplementation(P1S, P2S, FirstToSets, ConditionalEvents= {},
         
         # Set up the new network:
         print("Match:")
-        [nodes, dist, parents, outcomes, info] = TennisMatchNetwork1Efficient.TennisMatchNetwork1Efficient(SetScoreDists, 5)
-        [MatchDist,MatchScoreDist,TotalNumGamesDist,AllSetScoresDist] = loopybeliefprop.beliefpropagation(nodes, dist, parents, outcomes, info, 
-        Iterations, Tol, ['Match','MatchScore','TotalNumGames','AllSetScores'])
+        [nodes, dist, parents, outcomes, info] = TennisMatchNetworkMostEfficient(SetScoreDists, 5)
+        MatchScoreDist = beliefpropagation(nodes, dist, parents, outcomes, info, 
+        Iterations, Tol, ['MatchScore'])
         
         # Return the leaf node distributions:
-        return MatchDist, MatchScoreDist, TotalNumGamesDist, AllSetScoresDist
+        return MatchScoreDist
     else:
         raise ValueError ("First to sets needs to be either 3 or 5")

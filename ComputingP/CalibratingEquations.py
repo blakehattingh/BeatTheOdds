@@ -241,7 +241,7 @@ def main():
     testDataFN = 'threeHundredCalMatches.csv'
     obj = 'Match Stats'
     equation = 1
-    solution = CalibrateHyperparameters(testDataFN, 'Match Stats', equation, x0)
+    solution = CalibrateHyperparameters(DB, testDataFN, 'Match Stats', equation)
 
 if __name__ == "__main__":
     main()
