@@ -270,7 +270,7 @@ def main():
 
     # Build the DB of model distributions:
     #params: PaStart, PaEnd, PbStart, PbEnd, stepSize, AllDists?, DB
-    BuildingDB(58, 58, 40, 80, 2, False, DBToAppendTo = DB)
+    BuildingDB(60, 60, 40, 80, 2, False, DBToAppendTo = DB)
 
     # Compute the RMSEs:
     # RMSEs = ValidatingStepSize(DB, 0.02)
