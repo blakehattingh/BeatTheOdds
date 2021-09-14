@@ -240,13 +240,47 @@ def CalibrateHyperparameters(DB, testDataFN, obj, equation):
 
     return bestSol
 
+def TestEquations(DB, testDataFN, calibratedParms, obj):
+    # This function takes in a set of calibrated parameters for a given equation and computes a specified objective 
+    # metric for each set on the given data set.
+    # Inputs:
+    # - DB: Dictionary of model distributions
+    # - testDataFN: The filename of the testdata in CSVFiles
+    # - calibratedParms: A list of sets of calibrated parameters to use, it also includes the equation number
+    # - obj: The objective metric we will be using (either 'Match Stats' or 'ROI')
+
+    # Create a dictionary to store the objective value for each set of parameters:
+    objValues = {}
+
+    # Iterate through each set of parameters:
+    for set in calibratedParms:
+        # Extract the equation number:
+        equation = set[0]
+
+        # Compute the objective metric for this set:
+        if (equation == 3):
+            objValues[((round(set[1],4),round(set[2],4),round(set[3],4),round(set[4],4)))] = EvalEquations(DB, 
+            testDataFN, obj, [equation], set[1], set[2], set[3], set[4])
+        else:
+            objValues[((round(set[1],4),round(set[2],4),round(set[3],4)))] = EvalEquations(DB, testDataFN, obj, 
+            [equation], set[1], set[2], set[3])
+
+    return objValues
+
 def main():
-    x0 = [6, 0.5, 0.5]
+    # Read in DB:
     DB = ReadInGridDB('ModelDistributions.csv')
+
+    # File names:
     testDataFN = 'threeHundredCalMatches.csv'
+
+    # Calibrate equations using Match Stats:
     obj = 'Match Stats'
     equation = 1
     solution = CalibrateHyperparameters(DB, testDataFN, 'Match Stats', equation)
+
+    # Test the calibrated equations:
+    
 
 if __name__ == "__main__":
     main()

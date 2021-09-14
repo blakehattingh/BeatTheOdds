@@ -10,6 +10,7 @@ currentPath = os.path.abspath(os.getcwd())
 # Markov Model Files:
 sys.path.insert(0, currentPath + '\\MarkovModel')
 from FirstImplementation import *
+from OMalleysEqns import *
 
 def BuildingDB(PStartA, PEndA, PStartB, PEndB, Increment, AllDists, DBToAppendTo = {}):
     # This function runs our Markov Model for ALL possible P1 and P2 combinations
@@ -51,7 +52,7 @@ def BuildingDB(PStartA, PEndA, PStartB, PEndB, Increment, AllDists, DBToAppendTo
                 [round(Num, 6) for Num in AllSetScoresDist]}
             else:
                 # If P1 = P2, we know the distribution is simply [0.25, 0.25, 0.25, 0.25]
-                if (P1 == P2):
+                if (round(P1,3) == round(P2,3)):
                     Distributions = {'Match Score': [0.25, 0.25, 0.25, 0.25]}
                 else:
                     # Run the model:
@@ -65,6 +66,58 @@ def BuildingDB(PStartA, PEndA, PStartB, PEndB, Increment, AllDists, DBToAppendTo
     with open('CSVFiles\\ModelDistributions2.csv', mode='w') as csv_file:
         writer = csv.writer(csv_file)
         for key, value in DataBase.items():
+            writer.writerow([key, value])
+
+def BuildingDB5SetsUsingOMalleys(PStartA, PEndA, PStartB, PEndB, Increment):
+    # This function uses O'Malley's Equations to comptue the Match Score distribution for 5 set matches for all
+    #  possible P1 and P2 combinations
+    # Inputs:
+    # - PStartA and B: The lowest P values we want to consider for Pa and Pb respectively
+    # - PEndA and B: The highest P values we want to consider for Pa and Pb respectively
+    # - Increment: The increase in P values
+
+    # Compute the number of p values to consider:
+    Na = int(((PEndA - PStartA) / Increment) + 1)
+    Nb = int(((PEndB - PStartB) / Increment) + 1)
+
+    # Create an array of P values:
+    PValuesA = np.linspace(PStartA/100., PEndA/100., Na)
+    PValuesB = np.linspace(PStartB/100., PEndB/100., Nb)
+
+    # Fill up the Database:
+    dataBase = {}
+    for Pa in PValuesA:
+        for Pb in PValuesB:
+            # Compute the Match Score distribution:
+            [A, B] = Matrices()
+            oMallSetA = Set(P1S, (1.-P2S), A, B)
+            oMallSetB = Set(P2S, (1.-P1S), A, B)
+            avSetA = (oMallSetA + (1. - oMallSetB)) / 2
+            avSetB = (oMallSetB + (1. - oMallSetA)) / 2
+
+            # 3-0:
+            ThreeNil = pow(avSetA, 3)
+            NilThree = pow(avSetB, 3)
+
+            # 3-1:
+            ThreeOne = 3 * pow(avSetA) * (1. - avSetA)
+            OneThree = 3 * pow(avSetB, 3) * (1. - avSetB)
+
+            # 3-2:
+            ThreeTwo = 6 * pow(avSetA, 3) * pow((1. - avSetA), 2)
+            TwoThree = 6 * pow(avSetB, 3) * pow((1. - avSetB), 2)
+
+            # Create the distribution and round it:
+            MatchScoreDist = [ThreeNil, ThreeOne, ThreeTwo, NilThree, OneThree, TwoThree]
+            Distributions = {'Match Score': [round(Num, 6) for Num in MatchScoreDist]}
+            
+            # Add it to the database:
+            dataBase[(round(Pa,2),round(Pb,2))] = Distributions
+
+    # Export the dictionary of distributions to a csv file:
+    with open('CSVFiles\\ModelDistributions5Sets.csv', mode='w') as csv_file:
+        writer = csv.writer(csv_file)
+        for key, value in dataBase.items():
             writer.writerow([key, value])
 
 def ValidatingStepSize(DB,StepSize):
@@ -269,7 +322,7 @@ def main():
     # print(Diff)
 
     # Build the DB of model distributions:
-    BuildingDB(58, 58, 40, 80, 2, False, DBToAppendTo = DB)
+    BuildingDB(60, 60, 40, 80, 2, False, DBToAppendTo = DB)
 
     # Compute the RMSEs:
     # RMSEs = ValidatingStepSize(DB, 0.02)
