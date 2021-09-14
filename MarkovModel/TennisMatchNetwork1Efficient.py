@@ -260,10 +260,10 @@ def TennisMatchNetwork1Efficient(SetScoreDists, FirstToSets, ConditionalEvents =
     for i in nodes:
         if (i in ConditionalEvents.keys()):
             # Fix certian nodes identfied by user:
-            info[i] = loopybeliefprop.choose(outcomes[i], ConditionalEvents[i])
+            info[i] = choose(outcomes[i], ConditionalEvents[i])
         else:
             # Otherwise leave them unfixed:
-            info[i] = loopybeliefprop.choose(outcomes[i], [])
+            info[i] = choose(outcomes[i], [])
     return(nodes, dist, parents, outcomes, info)
 
 
