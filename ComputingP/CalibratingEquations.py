@@ -359,8 +359,6 @@ def TestEquations(DB, testDataFN, calibratedParms, obj):
 def main():
     # Read in DB:
     DB = ReadInGridDB('ModelDistributions.csv')
-
-    # File names:
     testDataFN = 'threeHundredCalMatches.csv'
     fileName = 'C:\\Uni\\4thYearProject\\repo\\BeatTheOdds\\CSVFiles\\CalibratedParametersAllEquations.csv'
     fileName2 = 'C:\\Uni\\4thYearProject\\repo\\BeatTheOdds\\CSVFiles\\CalibratedPlottingDataEq3.csv'
