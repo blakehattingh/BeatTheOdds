@@ -711,7 +711,8 @@ def ReadInData(fileName):
     # Get location of file:
     #THIS_FOLDER = os.path.abspath('CSVFiles')
     #fileName = os.path.join(THIS_FOLDER, fileName)
-    fileName = 'C:\\Uni\\4thYearProject\\repo\\BeatTheOdds\\CSVFiles\\threeHundredCalMatches.csv'
+    folder = 'C:\\Uni\\4thYearProject\\repo\\BeatTheOdds\\CSVFiles\\'
+    fileName = os.path.join(folder, fileName)
     # Read in CSV file:
     testData = []
     with open(fileName) as csv_file:

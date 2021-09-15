@@ -361,7 +361,7 @@ def storePlottingDataCalibration(fileName, eqNum):
             writer_obj.writerow(param4)
         csv_file.close()
 
-def getStartParamsFromCSV(fileName):
+def getCalibratedParamsFromCSV(fileName, eqNum = 2):
     # Read in CSV file:
     StartingParams = []
     with open(fileName) as csv_file:
@@ -371,9 +371,13 @@ def getStartParamsFromCSV(fileName):
             if line_count == 0:
                 line_count += 1
             else:
-                if(row[0] == '2'):
-                    params = [float(row[2]),float(row[3]),float(row[4])]
-                    StartingParams.append(params)
+                if(row[0] == str(eqNum)):
+                    if(eqNum == 3):
+                        params = [float(row[2]),float(row[3]),float(row[4]),float(row[5])]
+                        StartingParams.append(params)
+                    else:
+                        params = [float(row[2]),float(row[3]),float(row[4])]
+                        StartingParams.append(params)
                 line_count += 1
         
     return StartingParams
@@ -407,12 +411,12 @@ def TestEquations(testDataFN, calibratedParms, obj, equation, riskProfile = [], 
             parameters = [set[0],set[1],set[2],set[3]]
 
             # Compute the objective value:
-            objValues[((round(set[1],4),round(set[2],4),round(set[3],4),round(set[4],4)))] = ObjectiveFunction(parameters, 
+            objValues[((round(set[0],3),round(set[1],3),round(set[2],3),round(set[3],3)))] = ObjectiveFunction(parameters, 
             testDataFN, obj, equation, riskProfile, betas)
         else:
             # Extract the parameters:
             parameters = [set[0],set[1],set[2]]
-            objValues[((round(set[1],4),round(set[2],4),round(set[3],4)))] = ObjectiveFunction(parameters, 
+            objValues[((round(set[0],3),round(set[1],3),round(set[2],3)))] = ObjectiveFunction(parameters, 
             testDataFN, obj, equation, riskProfile, betas)
 
     return objValues
@@ -471,6 +475,7 @@ def main():
             storePlottingDataTesting(fileName3, objectiveValues, eq)
 
     # Test the calibrated equations:
+    print(objectiveValues)
 
 
 if __name__ == "__main__":
