@@ -8,7 +8,7 @@ import os, sys
 currentPath = os.path.abspath(os.getcwd())
 
 # Markov Model Files:
-sys.path.insert(0, currentPath + '\\MarkovModel')
+sys.path.insert(0, currentPath + '\\BeatTheOdds\\MarkovModel')
 from FirstImplementation import *
 from OMalleysEqns import *
 
@@ -63,7 +63,9 @@ def BuildingDB(PStartA, PEndA, PStartB, PEndB, Increment, AllDists, DBToAppendTo
             DataBase[(round(P1,2), round(P2,2))] = Distributions
 
     # Export the dictionary of distributions to a csv file:
-    with open('CSVFiles\\ModelDistributions2.csv', mode='w') as csv_file:
+    #writeToFile = 'CSVFiles\\ModelDistributions2.csv'
+    writeToFile = 'C:\\Uni\\4thYearProject\\repo\\BeatTheOdds\\CSVFiles\\ModelDistributions2.csv'
+    with open(writeToFile, mode='w') as csv_file:
         writer = csv.writer(csv_file)
         for key, value in DataBase.items():
             writer.writerow([key, value])
@@ -289,12 +291,12 @@ def ComputeWeighting(Pa, Pb, Spacing = 0.02):
 
 def ReadInGridDB(FileName):
     # Get location of file:
-    THIS_FOLDER = os.path.abspath('CSVFiles')
+    #THIS_FOLDER = os.path.abspath('CSVFiles')
+    THIS_FOLDER = 'C:\\Uni\\4thYearProject\\repo\\BeatTheOdds\\CSVFiles\\'
     FileName = os.path.join(THIS_FOLDER, FileName)
 
     # Read in the model distributions database: 
     DB = {} 
-    # x = pd.read_csv('C:\\Uni\\4thYearProject\\repo\\BeatTheOdds\\CSVFiles\\ModelDistributions.csv', header = None)
     x = pd.read_csv(FileName, header = None)
     for row in range(len(x)):
         Pa = round(eval(x[0][row])[0],2)
@@ -308,7 +310,7 @@ def main():
     DB = ReadInGridDB('ModelDistributions2.csv')
 
     # Compare both DBs:
-    DB1 = ReadInGridDB('ModelDistributions.csv')
+    ''' DB1 = ReadInGridDB('ModelDistributions.csv')
     DB2 = ReadInGridDB('ModelDistributions2.csv')
     
     # Iterate through each distribution:
@@ -319,11 +321,12 @@ def main():
                 Diff[pair] = 0.
                 for p in range(len(DB2[pair]['Match Score'])):
                     Diff[pair] += abs(DB2[pair]['Match Score'][p] - DB1[pair]['Match Score'][p])
-    # print(Diff)
+    # print(Diff)'''
 
     # Build the DB of model distributions:
     #params: PaStart, PaEnd, PbStart, PbEnd, stepSize, AllDists?, DB
-    BuildingDB(60, 60, 40, 80, 2, False, DBToAppendTo = DB)
+    #62, 76, 40, 80
+    BuildingDB(62, 76, 40, 80, 2, False, DBToAppendTo = DB)
 
     # Compute the RMSEs:
     # RMSEs = ValidatingStepSize(DB, 0.02)

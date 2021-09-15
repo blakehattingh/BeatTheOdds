@@ -190,9 +190,9 @@ def Newtowns(x0, dim, h, tol = 1e-06, maxit = 100):
 
     return xk
 
-def ObjectiveFunction(parameters, DB, testDataFN, obj, equation):
+def ObjectiveFunction(parameters, testDataFN, obj, equation):
     # This function computes the objective function (overall ROI) for eqautions 1 & 2 and a set of given hyperparameters
-    objMetric = EvalEquations(DB, testDataFN, obj, [equation], parameters[0], parameters[1], parameters[2])
+    objMetric = EvalEquations( testDataFN, obj, [equation], parameters[0], parameters[1], parameters[2])
     value = (1*objMetric['Equation {}'.format(equation)]['Match Outcome']+3*objMetric['Equation {}'.format(equation)]
     ['Match Score'])/objMetric['Equation {}'.format(equation)]['Matches Predicted']#+objMetric['Equation 1']['Set Score']
     print("parameters : ")
@@ -200,8 +200,8 @@ def ObjectiveFunction(parameters, DB, testDataFN, obj, equation):
     print(value)
     return -1*value
 
-def ObjectiveFunction3(parameters, DB, testDataFN, obj, equation):
-    objMetric = EvalEquations(DB, testDataFN, obj, [equation], parameters[0], parameters[1], parameters[2], parameters[3])
+def ObjectiveFunction3(parameters, testDataFN, obj, equation):
+    objMetric = EvalEquations(testDataFN, obj, [equation], parameters[0], parameters[1], parameters[2], parameters[3])
     value = (1*objMetric['Equation {}'.format(equation)]['Match Outcome']+3*objMetric['Equation {}'.format(equation)]
     ['Match Score'])/objMetric['Equation {}'.format(equation)]['Matches Predicted']#+objMetric['Equation 1']['Set Score']
     print("parameters : ")
@@ -217,7 +217,7 @@ def ObjectiveFunction3(parameters, DB, testDataFN, obj, equation):
         LISTOFBESTOBJS.append(BESTCURRENTSOL)
     return -1*value
 
-def CalibrateHyperparameters(DB, testDataFN, obj, equation, eq3StartingPoints = []):
+def CalibrateHyperparameters(testDataFN, obj, equation, eq3StartingPoints = []):
     # This function calibrates an given equation using a given objective metric on a given set of training data from various different
     # starting points.
     # Inputs:
@@ -248,7 +248,7 @@ def CalibrateHyperparameters(DB, testDataFN, obj, equation, eq3StartingPoints = 
     if (equation <= 2):
         for start in startingPoints:
             # Equation 1 or 2:
-            optimizedResult = minimize(ObjectiveFunction,start,args=(DB,testDataFN,obj,equation),method='Nelder-Mead',bounds=[(4.,15.),(0.,1.),
+            optimizedResult = minimize(ObjectiveFunction,start,args=(testDataFN,obj,equation),method='Nelder-Mead',bounds=[(4.,15.),(0.,1.),
             (0.,1.)])
             allSolsObjs.append((optimizedResult.x,optimizedResult.fun))
             # Check if the optimal solution is the best so far:
@@ -264,7 +264,7 @@ def CalibrateHyperparameters(DB, testDataFN, obj, equation, eq3StartingPoints = 
                 startingParams = start[0:3]
                 startingParams.append(valT)
                 # Equation 3:
-                optimizedResult = minimize(ObjectiveFunction3,startingParams,args=(DB,testDataFN,obj,equation),method='Nelder-Mead',bounds=[(4.,15.),(0.,1.),
+                optimizedResult = minimize(ObjectiveFunction3,startingParams,args=(testDataFN,obj,equation),method='Nelder-Mead',bounds=[(4.,15.),(0.,1.),
                 (0.,1.),(0.,1.)])
                 allSolsObjs.append((optimizedResult.x,optimizedResult.fun))
                 # Check if the optimal solution is the best so far:
@@ -312,7 +312,7 @@ def storePlottingData(fileName, eqNum):
             writer_obj.writerow(param4)
         csv_file.close()
 
-def getStartParamsFromCSV(fileName):
+def getCalibratedParamsFromCSV(fileName, eqNum = 2):
     # Read in CSV file:
     StartingParams = []
     with open(fileName) as csv_file:
@@ -322,14 +322,18 @@ def getStartParamsFromCSV(fileName):
             if line_count == 0:
                 line_count += 1
             else:
-                if(row[0] == '2'):
-                    params = [float(row[2]),float(row[3]),float(row[4])]
-                    StartingParams.append(params)
+                if(row[0] == str(eqNum)):
+                    if(eqNum == 3):
+                        params = [float(row[2]),float(row[3]),float(row[4]),float(row[5])]
+                        StartingParams.append(params)
+                    else:
+                        params = [float(row[2]),float(row[3]),float(row[4])]
+                        StartingParams.append(params)
                 line_count += 1
         
     return StartingParams
 
-def TestEquations(DB, testDataFN, calibratedParms, obj):
+def TestEquations(testDataFN, calibratedParms, obj, equation):
     # This function takes in a set of calibrated parameters for a given equation and computes a specified objective 
     # metric for each set on the given data set.
     # Inputs:
@@ -343,23 +347,20 @@ def TestEquations(DB, testDataFN, calibratedParms, obj):
 
     # Iterate through each set of parameters:
     for set in calibratedParms:
-        # Extract the equation number:
-        equation = set[0]
 
         # Compute the objective metric for this set:
         if (equation == 3):
-            objValues[((round(set[1],4),round(set[2],4),round(set[3],4),round(set[4],4)))] = EvalEquations(DB, 
-            testDataFN, obj, [equation], set[1], set[2], set[3], set[4])
+            objValues[((round(set[0],4),round(set[1],4),round(set[2],4),round(set[3],4)))] = EvalEquations(
+            testDataFN, obj, [equation], set[0], set[1], set[2], set[3])
         else:
-            objValues[((round(set[1],4),round(set[2],4),round(set[3],4)))] = EvalEquations(DB, testDataFN, obj, 
-            [equation], set[1], set[2], set[3])
+            objValues[((round(set[0],4),round(set[1],4),round(set[2],4)))] = EvalEquations(testDataFN, obj, 
+            [equation], set[0], set[1], set[2])
 
     return objValues
 
 def main():
     # Read in DB:
-    DB = ReadInGridDB('ModelDistributions.csv')
-    testDataFN = 'threeHundredCalMatches.csv'
+    testDataFN = 'hundredCalMatches.csv'
     fileName = 'C:\\Uni\\4thYearProject\\repo\\BeatTheOdds\\CSVFiles\\CalibratedParametersAllEquations.csv'
     fileName2 = 'C:\\Uni\\4thYearProject\\repo\\BeatTheOdds\\CSVFiles\\CalibratedPlottingDataEq3.csv'
     # Get location of file:
@@ -368,16 +369,17 @@ def main():
 
     # Calibrate equations using Match Stats:
     obj = 'Match Stats'
-    equation = 3
-    startingPintsEq3 = getStartParamsFromCSV(fileName)
-    [bestSol,allSolsObjs] = CalibrateHyperparameters(DB, testDataFN, 'Match Stats', equation, startingPintsEq3)
-    bestSolObjs = sorted(allSolsObjs,key = lambda x: x[1])[:6]
-    buildCalibratedParamsDB(fileName, bestSolObjs, equation)
-    storePlottingData(fileName2, equation)
-    print(bestSol)
-    print(allSolsObjs)
-
+    equation = 1
+    calibratedParams = getCalibratedParamsFromCSV(fileName, equation)
+    #[bestSol,allSolsObjs] = CalibrateHyperparameters(DB, testDataFN, 'Match Stats', equation, startingPintsEq3)
+    #bestSolObjs = sorted(allSolsObjs,key = lambda x: x[1])[:6]
+    #buildCalibratedParamsDB(fileName, bestSolObjs, equation)
+    #storePlottingData(fileName2, equation)
+    #print(bestSol)
+    #print(allSolsObjs)
+    objectiveValues = TestEquations(testDataFN, calibratedParams, obj, equation)
     # Test the calibrated equations:
+    print(objectiveValues)
 
 
 if __name__ == "__main__":

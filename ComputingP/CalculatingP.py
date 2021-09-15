@@ -101,7 +101,7 @@ def ObjectiveMetricROI(outcome, Zk, bets):
                 ROI = ((returns - spent)/spent) * 100.
     return [ROI, spent, returns]
 
-def InterpolateDists(Pa, Pb, DB, pBoundaryL = 0.4, pBoundaryH = 0.8, Spacing = 0.02):
+def InterpolateDists(Pa, Pb, DB, pBoundaryL = 0.5, pBoundaryH = 0.9, Spacing = 0.02):
     # Takes in a set of P values and returns the interpolated distributions for them
     # Grid:
     # A ----E- B
@@ -244,7 +244,7 @@ def try_parsing_date(text):
             pass
     raise ValueError('no valid date format found')
 
-def EvalEquations(DB, testDataFN, obj, equations, age, surface, weighting, theta = 0.5, riskProfile = [], betas = []):
+def EvalEquations( testDataFN, obj, equations, age, surface, weighting, theta = 0.5, riskProfile = [], betas = []):
     # This function takes a test or training set of matches, an equation(s) to use and it evaluates the specified 
     # objective metric across the inputted data set.
     # Inputs:
@@ -657,7 +657,8 @@ def ReadInData(fileName):
     # Get location of file:
     #THIS_FOLDER = os.path.abspath('CSVFiles')
     #fileName = os.path.join(THIS_FOLDER, fileName)
-    fileName = 'C:\\Uni\\4thYearProject\\repo\\BeatTheOdds\\CSVFiles\\threeHundredCalMatches.csv'
+    folder = 'C:\\Uni\\4thYearProject\\repo\\BeatTheOdds\\CSVFiles\\'
+    fileName = os.path.join(folder, fileName)
     # Read in CSV file:
     testData = []
     with open(fileName) as csv_file:
