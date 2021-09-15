@@ -90,8 +90,8 @@ def BuildingDB5SetsUsingOMalleys(PStartA, PEndA, PStartB, PEndB, Increment):
         for Pb in PValuesB:
             # Compute the Match Score distribution:
             [A, B] = Matrices()
-            oMallSetA = Set(P1S, (1.-P2S), A, B)
-            oMallSetB = Set(P2S, (1.-P1S), A, B)
+            oMallSetA = Set(Pa, (1.-Pb), A, B)
+            oMallSetB = Set(Pb, (1.-Pb), A, B)
             avSetA = (oMallSetA + (1. - oMallSetB)) / 2
             avSetB = (oMallSetB + (1. - oMallSetA)) / 2
 
@@ -100,7 +100,7 @@ def BuildingDB5SetsUsingOMalleys(PStartA, PEndA, PStartB, PEndB, Increment):
             NilThree = pow(avSetB, 3)
 
             # 3-1:
-            ThreeOne = 3 * pow(avSetA) * (1. - avSetA)
+            ThreeOne = 3 * pow(avSetA, 3) * (1. - avSetA)
             OneThree = 3 * pow(avSetB, 3) * (1. - avSetB)
 
             # 3-2:
@@ -186,63 +186,83 @@ def ValidatingStepSize(DB,StepSize):
 
     return RMSEs
 
-def BiLinearInterp(PCombo1, PCombo2, PCombo3, PCombo4):
+def BiLinearInterp(PCombo1, PCombo2, PCombo3, PCombo4, allDists = True):
     # Takes in 4 corner points with corresponding distributions and computes their average
     # Assumes an equally weighted averaged is required
 
-    # Match Outcome Distribution:
-    AvMatchOutcomeDist = ComputeAverageArray([PCombo1['Match Outcome'],PCombo2['Match Outcome'],PCombo3['Match Outcome'],
-    PCombo4['Match Outcome']])
+    if (allDists):
+        # Match Outcome Distribution:
+        AvMatchOutcomeDist = ComputeAverageArray([PCombo1['Match Outcome'],PCombo2['Match Outcome'],PCombo3['Match Outcome'],
+        PCombo4['Match Outcome']])
 
-    # Match Score Distribution:
-    AvMatchScoreDist = ComputeAverageArray([PCombo1['Match Score'],PCombo2['Match Score'],PCombo3['Match Score'],
-    PCombo4['Match Score']])
+        # Match Score Distribution:
+        AvMatchScoreDist = ComputeAverageArray([PCombo1['Match Score'],PCombo2['Match Score'],PCombo3['Match Score'],
+        PCombo4['Match Score']])
 
-    # Number of Games Distribution:
-    AvNumGamesDist = ComputeAverageArray([PCombo1['Number of Games'],PCombo2['Number of Games'],
-    PCombo3['Number of Games'],PCombo4['Number of Games']])
+        # Number of Games Distribution:
+        AvNumGamesDist = ComputeAverageArray([PCombo1['Number of Games'],PCombo2['Number of Games'],
+        PCombo3['Number of Games'],PCombo4['Number of Games']])
 
-    # Set Score Distribution:
-    AvSetScoreDist = ComputeAverageArray([PCombo1['Set Score'],PCombo2['Set Score'],PCombo3['Set Score'],
-    PCombo4['Set Score']])
+        # Set Score Distribution:
+        AvSetScoreDist = ComputeAverageArray([PCombo1['Set Score'],PCombo2['Set Score'],PCombo3['Set Score'],
+        PCombo4['Set Score']])
 
-    # Create dictionary of average distributions:
-    AvDists = {'Match Outcome': AvMatchOutcomeDist, 'Match Score': AvMatchScoreDist, 'Number of Games': AvNumGamesDist,
-    'Set Score': AvSetScoreDist}
+        # Create dictionary of average distributions:
+        AvDists = {'Match Outcome': AvMatchOutcomeDist, 'Match Score': AvMatchScoreDist, 'Number of Games': AvNumGamesDist,
+        'Set Score': AvSetScoreDist}
+    else:
+        # Match Score Distribution:
+        AvMatchScoreDist = ComputeAverageArray([PCombo1['Match Score'],PCombo2['Match Score'],PCombo3['Match Score'],
+        PCombo4['Match Score']])    
+
+        # Create dictionary of average distributions:
+        AvDists = {'Match Score': AvMatchScoreDist}
+
     return AvDists
 
-def LinearInterp(PCombo1, PCombo2, EvenWeight = True, Weighting = 0.5):
+def LinearInterp(PCombo1, PCombo2, allDists = True, EvenWeight = True, Weighting = 0.5):
     # Takes in 2 points either sidewith corresponding distributions and computes their average
     # Assumes an equally weighted averaged is required unless specified otherwise
 
-    if (EvenWeight):
-        # Match Outcome Distribution:
-        AvMatchOutcomeDist = ComputeAverageArray([PCombo1['Match Outcome'],PCombo2['Match Outcome']])
+    if (allDists):
+        if (EvenWeight):
+            # Match Outcome Distribution:
+            AvMatchOutcomeDist = ComputeAverageArray([PCombo1['Match Outcome'],PCombo2['Match Outcome']])
 
-        # Match Score Distribution:
-        AvMatchScoreDist = ComputeAverageArray([PCombo1['Match Score'],PCombo2['Match Score']])
+            # Match Score Distribution:
+            AvMatchScoreDist = ComputeAverageArray([PCombo1['Match Score'],PCombo2['Match Score']])
 
-        # Number of Games Distribution:
-        AvNumGamesDist = ComputeAverageArray([PCombo1['Number of Games'],PCombo2['Number of Games']])
+            # Number of Games Distribution:
+            AvNumGamesDist = ComputeAverageArray([PCombo1['Number of Games'],PCombo2['Number of Games']])
 
-        # Set Score Distribution:
-        AvSetScoreDist = ComputeAverageArray([PCombo1['Set Score'],PCombo2['Set Score']])
+            # Set Score Distribution:
+            AvSetScoreDist = ComputeAverageArray([PCombo1['Set Score'],PCombo2['Set Score']])
+        else:
+            # Match Outcome Distribution:
+            AvMatchOutcomeDist = WeightedAverage([PCombo1['Match Outcome'],PCombo2['Match Outcome']],Weighting)
+
+            # Match Score Distribution:
+            AvMatchScoreDist = WeightedAverage([PCombo1['Match Score'],PCombo2['Match Score']],Weighting)
+
+            # Number of Games Distribution:
+            AvNumGamesDist = WeightedAverage([PCombo1['Number of Games'],PCombo2['Number of Games']],Weighting)
+
+            # Set Score Distribution:
+            AvSetScoreDist = WeightedAverage([PCombo1['Set Score'],PCombo2['Set Score']],Weighting)  
     else:
-        # Match Outcome Distribution:
-        AvMatchOutcomeDist = WeightedAverage([PCombo1['Match Outcome'],PCombo2['Match Outcome']],Weighting)
+        if (EvenWeight):
+            # Match Score Distribution:
+            AvMatchScoreDist = ComputeAverageArray([PCombo1['Match Score'],PCombo2['Match Score']])
+        else:
+            # Match Score Distribution:
+            AvMatchScoreDist = WeightedAverage([PCombo1['Match Score'],PCombo2['Match Score']],Weighting)
 
-        # Match Score Distribution:
-        AvMatchScoreDist = WeightedAverage([PCombo1['Match Score'],PCombo2['Match Score']],Weighting)
-
-        # Number of Games Distribution:
-        AvNumGamesDist = WeightedAverage([PCombo1['Number of Games'],PCombo2['Number of Games']],Weighting)
-
-        # Set Score Distribution:
-        AvSetScoreDist = WeightedAverage([PCombo1['Set Score'],PCombo2['Set Score']],Weighting)    
-
-    # Create dictionary of average distributions:
-    AvDists = {'Match Outcome': AvMatchOutcomeDist, 'Match Score': AvMatchScoreDist, 'Number of Games': AvNumGamesDist,
-    'Set Score': AvSetScoreDist}
+    if (allDists):
+        # Create dictionary of average distributions:
+        AvDists = {'Match Outcome': AvMatchOutcomeDist, 'Match Score': AvMatchScoreDist, 'Number of Games': AvNumGamesDist,
+        'Set Score': AvSetScoreDist}
+    else:
+        AvDists = {'Match Score': AvMatchScoreDist}
     return AvDists
 
 def ComputeAverageArray(ListOfArrays):
@@ -324,6 +344,7 @@ def main():
     # Build the DB of model distributions:
     #params: PaStart, PaEnd, PbStart, PbEnd, stepSize, AllDists?, DB
     BuildingDB(60, 60, 40, 80, 2, False, DBToAppendTo = DB)
+    # BuildingDB5SetsUsingOMalleys(40, 80, 40, 80, 2)
 
     # Compute the RMSEs:
     # RMSEs = ValidatingStepSize(DB, 0.02)

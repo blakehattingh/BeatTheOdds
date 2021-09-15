@@ -2,6 +2,7 @@ import numpy as np
 import scipy
 from scipy.optimize import minimize
 from CalculatingP import EvalEquations, ReadInGridDB
+import os
 import csv
 from csv import writer
 
@@ -190,23 +191,63 @@ def Newtowns(x0, dim, h, tol = 1e-06, maxit = 100):
 
     return xk
 
-def ObjectiveFunction(parameters, DB, testDataFN, obj, equation):
-    # This function computes the objective function (overall ROI) for eqautions 1 & 2 and a set of given hyperparameters
-    objMetric = EvalEquations(DB, testDataFN, obj, [equation], parameters[0], parameters[1], parameters[2])
-    value = (1*objMetric['Equation {}'.format(equation)]['Match Outcome']+3*objMetric['Equation {}'.format(equation)]
-    ['Match Score'])/objMetric['Equation {}'.format(equation)]['Matches Predicted']#+objMetric['Equation 1']['Set Score']
-    print("parameters : ")
-    print( parameters)
-    print(value)
-    return -1*value
+def ObjectiveFunction(parameters, testDataFN, obj, equation, riskProfile = [], betas = []):
+    # This function computes the objective function (overall ROI / Match Stats) for eqautions 1 & 2 and a 
+    # set of given hyperparameters.
+    # Inputs:
+    # - paramaeters: A set of parameters to use
+    # - testDataFN: the filename for the test set of matches
+    # - obj: Which objective metric is being used (either 'Match Stats' or 'ROI')
+    # - equation: The equatio we are using, for this function it is either 1 or 2
+    # - riskProfile and betas: Only needed when using ROI as objective, describes the users risk profile
+    
+    # Evaluate the equation on the test set:
+    objMetric = EvalEquations(testDataFN, obj, [equation], parameters[0], parameters[1], parameters[2], riskProfile,
+    betas)
 
-def ObjectiveFunction3(parameters, DB, testDataFN, obj, equation):
-    objMetric = EvalEquations(DB, testDataFN, obj, [equation], parameters[0], parameters[1], parameters[2], parameters[3])
-    value = (1*objMetric['Equation {}'.format(equation)]['Match Outcome']+3*objMetric['Equation {}'.format(equation)]
-    ['Match Score'])/objMetric['Equation {}'.format(equation)]['Matches Predicted']#+objMetric['Equation 1']['Set Score']
+    # Compute the objective metric:
+    if (obj == 'Match Stats'):
+        value = (1 * objMetric['Equation {}'.format(equation)]['Match Outcome'] + 3 * objMetric['Equation {}'.
+        format(equation)]['Match Score']) / objMetric['Equation {}'.format(equation)]['Matches Predicted']
+    elif (obj == 'ROI'):
+        # Compute the overall ROI:
+        value = ((objMetric['Equation {}'.format(equation)]['Returns'] - objMetric['Equation {}'.format(equation)]
+        ['Betted']) / objMetric['Equation {}'.format(equation)]['Betted']) * 100.
+        
+    # Print the parameters used and the objective value:
     print("parameters : ")
     print( parameters)
     print(value)
+
+    # Minimising so return the negative of the value:
+    return -1 * value
+
+def ObjectiveFunction3(parameters, testDataFN, obj, riskProfile = [], betas = []):
+    # This function computes the objective function (overall ROI / Match Stats) for eqautions 1 & 2 and a 
+    # set of given hyperparameters.
+    # Inputs:
+    # - paramaeters: A set of parameters to use
+    # - testDataFN: the filename for the test set of matches
+    # - obj: Which objective metric is being used (either 'Match Stats' or 'ROI')
+    # - riskProfile and betas: Only needed when using ROI as objective, describes the users risk profile
+
+    # Evaluate the equation on the test set:
+    objMetric = EvalEquations(testDataFN, obj, [3], parameters[0], parameters[1], parameters[2], parameters[3],
+    riskProfile, betas)
+
+    # Compute the objective metric:
+    if (obj == 'Match Stats'):
+        value = (1 * objMetric['Equation 3']['Match Outcome'] + 3 * objMetric['Equation 3']['Match Score']) / objMetric['Equation 3']['Matches Predicted']
+    elif (obj == 'ROI'):
+        # Compute the overall ROI:
+        value = ((objMetric['Equation 3']['Returns'] - objMetric['Equation 3']['Betted']) / objMetric['Equation 3']['Betted']) * 100.
+        
+    # Print the parameters used and the objective value:
+    print("parameters : ")
+    print( parameters)
+    print(value)
+
+    # Collect and store the plotting data:
     LISTOFOBJS.append(value)
     LISTOFPARAMS.append(parameters)
     global BESTCURRENTSOL
@@ -214,30 +255,38 @@ def ObjectiveFunction3(parameters, DB, testDataFN, obj, equation):
         BESTCURRENTSOL = value
         LISTOFBESTOBJS.append(value)
     else:
-        LISTOFBESTOBJS.append(BESTCURRENTSOL)
-    return -1*value
+        LISTOFBESTOBJS.append(BESTCURRENTSOL) 
 
-def CalibrateHyperparameters(DB, testDataFN, obj, equation, eq3StartingPoints = []):
+    # Minimising so return the negative of the value:
+    return -1 * value
+
+def CalibrateHyperparameters(testDataFN, obj, equation, startingPoints = [], riskProfile = [], betas = []):
     # This function calibrates an given equation using a given objective metric on a given set of training data from various different
     # starting points.
     # Inputs:
-    # - DB = The database of model distributions
     # - testDataFN = the filename corresponding to the test data csv file
     # - obj = the objective metric to use to calibrate hyperparameters ('Match Stats' or 'ROI')
     # - equation = the equation we are tuning
+    # - startingPoints = a list of parameters to start from, if not supplied then we use the standard ones    
+    # # - riskProfile and betas: Only needed when using ROI as objective, describes the users risk profile
 
     # Returns:
     # - A set of calibrated hyperparameters
 
-    startingPoints = []
-    ageValues = [6, 9, 12]
-    surfaceValues = [0.25, 0.5, 0.75]
-    weightingValues = [0.25, 0.5, 0.75]
-    thetaValues = [0.25, 0.5, 0.75]
-    for valA in ageValues:
-        for valS in surfaceValues:
-            for valW in weightingValues:
-                startingPoints.append([valA,valS,valW])
+    # Create all the starting points:
+    if (startingPoints == []):
+        ageValues = [6, 9, 12]
+        surfaceValues = [0.25, 0.5, 0.75]
+        weightingValues = [0.25, 0.5, 0.75]
+        thetaValues = [0.25, 0.5, 0.75]
+        for valA in ageValues:
+            for valS in surfaceValues:
+                for valW in weightingValues:
+                    if (equation == 3):
+                        for valT in thetaValues:
+                            startingPoints.append([valA,valS,valW,valT])
+                    else:
+                        startingPoints.append([valA,valS,valW])
 
     # Track the best solution so far:
     bestSol = startingPoints[0]
@@ -245,35 +294,35 @@ def CalibrateHyperparameters(DB, testDataFN, obj, equation, eq3StartingPoints = 
     allSolsObjs = []
 
     # Calibrate the hyperparameters for a range of different starting points:
-    if (equation <= 2):
-        for start in startingPoints:
+    for start in startingPoints:
+        if (equation <= 2):
             # Equation 1 or 2:
-            optimizedResult = minimize(ObjectiveFunction,start,args=(DB,testDataFN,obj,equation),method='Nelder-Mead',bounds=[(4.,15.),(0.,1.),
-            (0.,1.)])
+            optimizedResult = minimize(ObjectiveFunction,start,args=(testDataFN,obj,equation,riskProfile,betas),
+            method='Nelder-Mead',bounds=[(4.,15.),(0.,1.),(0.,1.)])
             allSolsObjs.append((optimizedResult.x,optimizedResult.fun))
+
             # Check if the optimal solution is the best so far:
             if (optimizedResult.fun < bestObj):
                 bestSol = optimizedResult.x
                 bestObj = optimizedResult.fun
                 print('New Best Solution Found')
                 print('Objective Value is {}'.format(bestObj))
-                print('New Solution is: Age = {}, Surface = {}, Weighting = {}'.format(bestSol[0],bestSol[1],bestSol[2]))
-    else:
-        for start in eq3StartingPoints:
-            for valT in thetaValues:
-                startingParams = start[0:3]
-                startingParams.append(valT)
-                # Equation 3:
-                optimizedResult = minimize(ObjectiveFunction3,startingParams,args=(DB,testDataFN,obj,equation),method='Nelder-Mead',bounds=[(4.,15.),(0.,1.),
-                (0.,1.),(0.,1.)])
-                allSolsObjs.append((optimizedResult.x,optimizedResult.fun))
-                # Check if the optimal solution is the best so far:
-                if (optimizedResult.fun < bestObj):
-                    bestSol = optimizedResult.x
-                    bestObj = optimizedResult.fun
-                    print('New Best Solution Found')
-                    print('Objective Value is {}'.format(bestObj))
-                    print('New Solution is: Age = {}, Surface = {}, Weighting = {}, Theta = {}'.format(bestSol[0],bestSol[1],bestSol[2], bestSol[3]))
+                print('New Solution is: Age = {}, Surface = {}, Weighting = {}'.format(bestSol[0],bestSol[1],
+                bestSol[2]))
+        else:
+            # Equation 3:
+            optimizedResult = minimize(ObjectiveFunction3,start,args=(testDataFN,obj,equation,riskProfile,betas),
+            method='Nelder-Mead',bounds=[(4.,15.),(0.,1.),(0.,1.),(0.,1.)])
+            allSolsObjs.append((optimizedResult.x,optimizedResult.fun))
+
+            # Check if the optimal solution is the best so far:
+            if (optimizedResult.fun < bestObj):
+                bestSol = optimizedResult.x
+                bestObj = optimizedResult.fun
+                print('New Best Solution Found')
+                print('Objective Value is {}'.format(bestObj))
+                print('New Solution is: Age = {}, Surface = {}, Weighting = {}, Theta = {}'.format(bestSol[0],
+                bestSol[1],bestSol[2], bestSol[3]))
 
     return [bestSol, allSolsObjs]
 
@@ -290,7 +339,7 @@ def buildCalibratedParamsDB(fileName, bestSolObjs, eqNum):
             writer_obj.writerow(row)
         csv_file.close()
 
-def storePlottingData(fileName, eqNum):
+def storePlottingDataCalibration(fileName, eqNum):
     with open(fileName, 'a', newline='') as csv_file:
         writer_obj = writer(csv_file)  
         writer_obj.writerow(LISTOFBESTOBJS)
@@ -329,53 +378,97 @@ def getStartParamsFromCSV(fileName):
         
     return StartingParams
 
-def TestEquations(DB, testDataFN, calibratedParms, obj):
+def storePlottingDataTesting(fileName, values, equation):
+    # Open a new CSV file to write to:
+    with open(fileName, mode = 'a') as csv_file:
+        writer = csv.writer(csv_file)
+        for key, value in values.items():
+            writer.writerow([equation, key, value])
+        csv_file.close()
+
+def TestEquations(testDataFN, calibratedParms, obj, equation, riskProfile = [], betas = []):
     # This function takes in a set of calibrated parameters for a given equation and computes a specified objective 
     # metric for each set on the given data set.
     # Inputs:
-    # - DB: Dictionary of model distributions
     # - testDataFN: The filename of the testdata in CSVFiles
     # - calibratedParms: A list of sets of calibrated parameters to use, it also includes the equation number
     # - obj: The objective metric we will be using (either 'Match Stats' or 'ROI')
+    # - equation: The equation we are testing
+    # - riskProfile and betas: Only needed when using ROI as objective, describes the users risk profile
 
     # Create a dictionary to store the objective value for each set of parameters:
     objValues = {}
 
     # Iterate through each set of parameters:
     for set in calibratedParms:
-        # Extract the equation number:
-        equation = set[0]
-
         # Compute the objective metric for this set:
         if (equation == 3):
-            objValues[((round(set[1],4),round(set[2],4),round(set[3],4),round(set[4],4)))] = EvalEquations(DB, 
-            testDataFN, obj, [equation], set[1], set[2], set[3], set[4])
+            # Extract the parameters:
+            parameters = [set[0],set[1],set[2],set[3]]
+
+            # Compute the objective value:
+            objValues[((round(set[1],4),round(set[2],4),round(set[3],4),round(set[4],4)))] = ObjectiveFunction(parameters, 
+            testDataFN, obj, equation, riskProfile, betas)
         else:
-            objValues[((round(set[1],4),round(set[2],4),round(set[3],4)))] = EvalEquations(DB, testDataFN, obj, 
-            [equation], set[1], set[2], set[3])
+            # Extract the parameters:
+            parameters = [set[0],set[1],set[2]]
+            objValues[((round(set[1],4),round(set[2],4),round(set[3],4)))] = ObjectiveFunction(parameters, 
+            testDataFN, obj, equation, riskProfile, betas)
 
     return objValues
 
 def main():
-    # Read in DB:
-    DB = ReadInGridDB('ModelDistributions.csv')
-    testDataFN = 'threeHundredCalMatches.csv'
-    fileName = 'C:\\Uni\\4thYearProject\\repo\\BeatTheOdds\\CSVFiles\\CalibratedParametersAllEquations.csv'
-    fileName2 = 'C:\\Uni\\4thYearProject\\repo\\BeatTheOdds\\CSVFiles\\CalibratedPlottingDataEq3.csv'
-    # Get location of file:
-    #THIS_FOLDER = os.path.abspath('CSVFiles')
-    #fileName = os.path.join(THIS_FOLDER, fileName)
+    # Set up file names:
+    person = 'Blake'
+    
+    if (person == 'Blake'):
+        testDataFN = 'threeHundredCalMatches.csv'
+        fileName = 'C:\\Uni\\4thYearProject\\repo\\BeatTheOdds\\CSVFiles\\CalibratedParametersAllEquations.csv'
+        fileName2 = 'C:\\Uni\\4thYearProject\\repo\\BeatTheOdds\\CSVFiles\\CalibratedPlottingDataEq3.csv'
+        fileName3 = 'C:\\Uni\\4thYearProject\\repo\\BeatTheOdds\\CSVFiles\\ObjectiveValuesForCalibratedParameters.csv'
+    elif (person == 'Campbell'):
+        # Get location of file:
+        THIS_FOLDER = os.path.abspath('CSVFiles')
+        fileName1 = os.path.join(THIS_FOLDER, 'CalibratedParametersAllEquations.csv')
+        fileName2 = os.path.join(THIS_FOLDER, 'CalibratedPlottingDataEq3.csv')
+        fileName3 = os.path.join(THIS_FOLDER, 'ObjectiveValuesForCalibratedParameters.csv')
 
-    # Calibrate equations using Match Stats:
+    # What are we doing? (Calibrated or testing? Match Stats or ROI? What equation?)
+    purpose = 'Testing'
     obj = 'Match Stats'
-    equation = 3
-    startingPintsEq3 = getStartParamsFromCSV(fileName)
-    [bestSol,allSolsObjs] = CalibrateHyperparameters(DB, testDataFN, 'Match Stats', equation, startingPintsEq3)
-    bestSolObjs = sorted(allSolsObjs,key = lambda x: x[1])[:6]
-    buildCalibratedParamsDB(fileName, bestSolObjs, equation)
-    storePlottingData(fileName2, equation)
-    print(bestSol)
-    print(allSolsObjs)
+    equation = [1,2,3]
+    riskProfile = []
+    betas = []
+
+    if (purpose == 'Calibration'):
+        # Calibrate the specified equation with the given objective metric:
+        if (equation <= 2):
+            [bestSol,allSolsObjs] = CalibrateHyperparameters(testDataFN, obj, equation, riskProfile, betas)
+            bestSolObjs = sorted(allSolsObjs,key = lambda x: x[1])[:6]
+            buildCalibratedParamsDB(fileName, bestSolObjs, equation)
+            storePlottingDataCalibration(fileName2, equation)
+        elif (equation == 3):
+            # Get the starting points from the calibrated parameters for equation 2:
+            startingPintsEq3 = getStartParamsFromCSV(fileName)
+            [bestSol,allSolsObjs] = CalibrateHyperparameters(testDataFN, obj, equation, startingPintsEq3, 
+            riskProfile, betas)
+            bestSolObjs = sorted(allSolsObjs,key = lambda x: x[1])[:6]
+            buildCalibratedParamsDB(fileName, bestSolObjs, equation)
+            storePlottingDataCalibration(fileName2, equation)
+
+        # Print the best set of calibrated parameters and their respective objective values:
+        print(bestSol)
+        print(allSolsObjs)
+    
+    elif (purpose == 'Testing'):
+        for eq in equation:
+            # Read in the calibrated parameters to test:
+
+            # Test the equation:
+            objectiveValues = TestEquations(testDataFN, calibratedParms, obj, eq, riskProfile, betas)
+
+            # Store the values for each set of calibrated parameters for plotting:
+            storePlottingDataTesting(fileName3, objectiveValues, eq)
 
     # Test the calibrated equations:
 

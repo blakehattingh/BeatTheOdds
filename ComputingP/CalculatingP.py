@@ -14,19 +14,19 @@ from CalculatingP import *
 currentPath = os.path.abspath(os.getcwd())
 
 # Markov Model Files:
-sys.path.insert(0, currentPath + '\\BeatTheOdds\\MarkovModel')
-#sys.path.insert(0, currentPath + '\MarkovModel')
+#sys.path.insert(0, currentPath + '\\BeatTheOdds\\MarkovModel')
+sys.path.insert(0, currentPath + '\MarkovModel')
 from FirstImplementation import *
 
 
 # Optimisation Model Files:
-sys.path.insert(0, currentPath + '\\BeatTheOdds\\OptimisationModel')
-#sys.path.insert(0, currentPath + '\\OptimisationModel')
+#sys.path.insert(0, currentPath + '\\BeatTheOdds\\OptimisationModel')
+sys.path.insert(0, currentPath + '\\OptimisationModel')
 from CVaRModel import RunCVaRModel
 
 # Data Extraction Files:
-sys.path.insert(0, currentPath + '\\BeatTheOdds\\DataExtraction')
-#sys.path.insert(0, currentPath + '\\DataExtraction')
+#sys.path.insert(0, currentPath + '\\BeatTheOdds\\DataExtraction')
+sys.path.insert(0, currentPath + '\\DataExtraction')
 from TestSetCollector import *
 from DataCollector import *
 
@@ -101,7 +101,7 @@ def ObjectiveMetricROI(outcome, Zk, bets):
                 ROI = ((returns - spent)/spent) * 100.
     return [ROI, spent, returns]
 
-def InterpolateDists(Pa, Pb, DB, pBoundaryL = 0.4, pBoundaryH = 0.8, Spacing = 0.02):
+def InterpolateDists(Pa, Pb, DB, pBoundaryL = 0.5, pBoundaryH = 0.9, Spacing = 0.02):
     # Takes in a set of P values and returns the interpolated distributions for them
     # Grid:
     # A ----E- B
@@ -115,9 +115,9 @@ def InterpolateDists(Pa, Pb, DB, pBoundaryL = 0.4, pBoundaryH = 0.8, Spacing = 0
             ZDists = {}
             for dist in DB[(pBoundaryL,pBoundaryL)]:
                 # Convert distributions to arrays:
-                pCorner = np.array(DB[(pBoundaryL,pBoundaryL)][dist])
-                PaNext = np.array(DB[(pBoundaryL+Spacing,pBoundaryL)][dist])
-                PbNext = np.array(DB[(pBoundaryL,pBoundaryL+Spacing)][dist])
+                pCorner = np.array(DB[(round(pBoundaryL,2),round(pBoundaryL,2))][dist])
+                PaNext = np.array(DB[(round(pBoundaryL+Spacing,2),round(pBoundaryL,2))][dist])
+                PbNext = np.array(DB[(round(pBoundaryL,2),round(pBoundaryL+Spacing,2))][dist])
 
                 # Extrapolate to this point:
                 ZDists[dist] = np.subtract(pCorner, ((pBoundaryL - Pa) * np.subtract(PaNext, pCorner) / Spacing))
@@ -130,13 +130,27 @@ def InterpolateDists(Pa, Pb, DB, pBoundaryL = 0.4, pBoundaryH = 0.8, Spacing = 0
         else:
             ZDists = {}
             for dist in DB[(pBoundaryL,pBoundaryL)]:
-                # Convert distributions to arrays:
-                pSide = np.array(DB[(pBoundaryL,Pb)][dist])
-                pSideNext = np.array(DB[(pBoundaryL+Spacing,Pb)][dist])
+                # Find the points above and below the point:
+                roundedB = round(Pb, 1)
+                if (roundedB > Pb):
+                    roundedB -= 0.1
+                while (roundedB <= Pb):
+                    PbBefore = round(roundedB,2)
+                    roundedB += Spacing
+
+                # Get the two sides: (A before it, B is after it on the edge of our grid)
+                pBefore = (round(pBoundaryL,2), round(PbBefore,2))
+                pAfter = (round(pBoundaryL,2), round(PbBefore + Spacing,2))
+
+                # Compute gradient between A and B:
+                gradPb = (np.subtract(np.array(DB[pAfter][dist]), np.array(DB[pBefore][dist]))) / Spacing
+
+                # Compute gradient to extrapolate out to this point:
+                gradPa = (np.subtract(np.array(DB[(round(pBoundaryL + Spacing,2),PbBefore)][dist]),np.array(DB[pBefore][dist]))) / Spacing
 
                 # Extrapolate to this point:
-                ZDists[dist] = np.subtract(pSide, ((pBoundaryL - Pa) * np.subtract(pSideNext, pSide) / Spacing))
-                
+                ZDists[dist] = DB[pBefore][dist] - (pBoundaryL - Pa) * gradPa + (Pb - PbBefore) * gradPb
+
                 # Convert it back to a list:
                 ZDists[dist].tolist()
 
@@ -145,15 +159,30 @@ def InterpolateDists(Pa, Pb, DB, pBoundaryL = 0.4, pBoundaryH = 0.8, Spacing = 0
         if (Pb < pBoundaryL):
             ZDists = {}
             for dist in DB[(pBoundaryL,pBoundaryL)]:
-                # Convert distributions to arrays:
-                pSide = np.array(DB[(Pa,pBoundaryL)][dist])
-                pSideNext = np.array(DB[(Pa,pBoundaryL+Spacing)][dist])
+                # Find the points above and below the point:
+                roundedA = round(Pa, 1)
+                if (roundedA > Pa):
+                    roundedA -= 0.1
+                while (roundedA <= Pa):
+                    PaBefore = round(roundedA,2)
+                    roundedA += Spacing
+
+                # Get the two sides: (A before it, B is after it on the edge of our grid)
+                pBefore = (round(PaBefore,2),round(pBoundaryL,2))
+                pAfter = (round(PaBefore + Spacing,2),round(pBoundaryL,2))
+
+                # Compute gradient between A and B:
+                gradPa = (np.subtract(np.array(DB[pAfter][dist]), np.array(DB[pBefore][dist]))) / Spacing
+
+                # Compute gradient to extrapolate out to this point:
+                gradPb = (np.subtract(np.array(DB[(PaBefore, round(pBoundaryL+Spacing,2))][dist]),np.array(DB[pBefore][dist]))) / Spacing
 
                 # Extrapolate to this point:
-                ZDists[dist] = np.subtract(pSide, ((pBoundaryL - Pb) * np.subtract(pSideNext, pSide) / Spacing))
-                
+                ZDists[dist] = DB[pBefore][dist] - (pBoundaryL - Pb) * gradPb + (Pa - PaBefore) * gradPa
+
                 # Convert it back to a list:
                 ZDists[dist].tolist()
+
             return ZDists
 
     if (Pa > pBoundaryH):
@@ -161,13 +190,13 @@ def InterpolateDists(Pa, Pb, DB, pBoundaryL = 0.4, pBoundaryH = 0.8, Spacing = 0
             ZDists = {}
             for dist in DB[(pBoundaryH,pBoundaryH)]:
                 # Convert distributions to arrays:
-                pCorner = np.array(DB[(pBoundaryH,pBoundaryH)][dist])
-                PaBefore = np.array(DB[(pBoundaryH-Spacing,pBoundaryH)][dist])
-                PbBefore = np.array(DB[(pBoundaryH,pBoundaryH-Spacing)][dist])
+                pCorner = np.array(DB[(round(pBoundaryH,2),round(pBoundaryH,2))][dist])
+                PaBefore = np.array(DB[(round(pBoundaryH-Spacing,2),round(pBoundaryH,2))][dist])
+                PbBefore = np.array(DB[(round(pBoundaryH,2),round(pBoundaryH-Spacing,2))][dist])
 
                 # Extrapolate to this point:
-                ZDists[dist] = np.add(pCorner, ((Pa - pBoundaryH) * np.subtract(pCorner, PaBefore) / Spacing))
-                ZDists[dist] = np.add(ZDists[dist], ((Pb - pBoundaryH) * np.subtract(pCorner, PbBefore) / Spacing))
+                ZDists[dist] = np.subtract(pCorner, ((pBoundaryH - Pa) * np.subtract(pCorner, PaBefore) / Spacing))
+                ZDists[dist] = np.subtract(ZDists[dist], ((pBoundaryH - Pb) * np.subtract(pCorner, PbBefore) / Spacing))
                 
                 # Convert it back to a list:
                 ZDists[dist].tolist()
@@ -176,30 +205,59 @@ def InterpolateDists(Pa, Pb, DB, pBoundaryL = 0.4, pBoundaryH = 0.8, Spacing = 0
         else:
             ZDists = {}
             for dist in DB[(pBoundaryH,pBoundaryH)]:
-                # Convert distributions to arrays:
-                pSide = np.array(DB[(pBoundaryH,Pb)][dist])
-                pSideBefore = np.array(DB[(pBoundaryH-Spacing,Pb)][dist])
+                # Find the points above and below the point:
+                roundedB = round(Pb, 1)
+                if (roundedB > Pb):
+                    roundedB -= 0.1
+                while (roundedB <= Pb):
+                    PbBefore = round(roundedB,2)
+                    roundedB += Spacing
+
+                # Get the two sides: (A before it, B is after it on the edge of our grid)
+                pBefore = (round(pBoundaryH,2), round(PbBefore,2))
+                pAfter = (round(pBoundaryH,2), round(PbBefore + Spacing,2))
+
+                # Compute gradient between A and B:
+                gradPb = (np.subtract(np.array(DB[pAfter][dist]), np.array(DB[pBefore][dist]))) / Spacing
+
+                # Compute gradient to extrapolate out to this point:
+                gradPa = (np.subtract(np.array(DB[pBefore][dist]),np.array(DB[(round(pBoundaryH - Spacing,2),PbBefore)][dist]))) / Spacing
 
                 # Extrapolate to this point:
-                ZDists[dist] = np.add(pSide, ((Pa - pBoundaryH) * np.subtract(pSide, pSideBefore) / Spacing))
-                
+                ZDists[dist] = DB[pBefore][dist] + (Pa - pBoundaryH) * gradPa + (Pb - PbBefore) * gradPb
+
                 # Convert it back to a list:
                 ZDists[dist].tolist()
 
             return ZDists
     else:
-        if (Pb < pBoundaryL):
+        if (Pb > pBoundaryH):
             ZDists = {}
             for dist in DB[(pBoundaryH,pBoundaryH)]:
-                # Convert distributions to arrays:
-                pSide = np.array(DB[(Pa,pBoundaryH)][dist])
-                pSideBefore = np.array(DB[(Pa,pBoundaryH-Spacing)][dist])
+                # Find the points above and below the point:
+                roundedA = round(Pa, 1)
+                if (roundedA > Pa):
+                    roundedA -= 0.1
+                while (roundedA <= Pa):
+                    PaBefore = round(roundedA,2)
+                    roundedA += Spacing
+
+                # Get the two sides: (A before it, B is after it on the edge of our grid)
+                pBefore = (round(PaBefore,2),round(pBoundaryH,2))
+                pAfter = (round(PaBefore + Spacing,2),round(pBoundaryH,2))
+
+                # Compute gradient between A and B:
+                gradPa = (np.subtract(np.array(DB[pAfter][dist]), np.array(DB[pBefore][dist]))) / Spacing
+
+                # Compute gradient to extrapolate out to this point:
+                gradPb = (np.subtract(np.array(DB[(PaBefore, round(pBoundaryH,2))][dist]),np.array(DB[(PaBefore,round(pBoundaryH-Spacing,2))][dist]))) / Spacing
 
                 # Extrapolate to this point:
-                ZDists[dist] = np.add(pSide, ((Pb - pBoundaryH) * np.subtract(pSide, pSideBefore) / Spacing))
-                
+                ZDists[dist] = DB[pBefore][dist] + (Pb - pBoundaryH) * gradPb + (Pa - PaBefore) * gradPa
+
                 # Convert it back to a list:
                 ZDists[dist].tolist()
+
             return ZDists
 
     # Compute the base point for the 4 points around this point (Point A):
@@ -244,7 +302,7 @@ def try_parsing_date(text):
             pass
     raise ValueError('no valid date format found')
 
-def EvalEquations(DB, testDataFN, obj, equations, age, surface, weighting, theta = 0.5, riskProfile = [], betas = []):
+def EvalEquations(testDataFN, obj, equations, age, surface, weighting, theta = 0.5, riskProfile = [], betas = []):
     # This function takes a test or training set of matches, an equation(s) to use and it evaluates the specified 
     # objective metric across the inputted data set.
     # Inputs:
@@ -257,7 +315,6 @@ def EvalEquations(DB, testDataFN, obj, equations, age, surface, weighting, theta
 
     # Returns:
     # - The objective metric for the equations given on the data inputted
-    minP = 0.5
 
     # Read in the model distributions:
     DB = ReadInGridDB('ModelDistributions.csv')
@@ -296,7 +353,7 @@ def EvalEquations(DB, testDataFN, obj, equations, age, surface, weighting, theta
             # Look to make predictions using these P values:
             if (predict):
                 # Interpolate the distributions for these P values:
-                Dists = InterpolateDists(Pa, Pb, DB)
+                Dists = InterpolateDists(Pa, Pb, DB, pBoundaryL = 0.5, pBoundaryH = 0.9)
 
                 # Compute the objective metrics for this match:
                 if (obj == 'Match Stats'):
@@ -305,14 +362,11 @@ def EvalEquations(DB, testDataFN, obj, equations, age, surface, weighting, theta
                     objectiveValues['Equation {}'.format(eq)]['Set Score'] += ObjectiveMetricSetScore(Dists['Set Score'], SetScores)
                     objectiveValues['Equation {}'.format(eq)]['Matches Predicted'] += 1
                 elif (obj == 'ROI'):
-                    # Import the 'odds' for this match:
-                    oddsMO = 10
-                    oddsMS = 10
-                    oddsNumSets = 10
-
-                    # Infer what odds we are considering from the odds available:
-                    # (Match Outomce, Match Score, Number of Sets, Set Score, Number of Games)
+                    # Extract the odds for the bets we are considering: (change to inputs to function?)
                     betsConsidered = [1,1,1,0,0]
+                    oddsMO = [match[58],match[59]]
+                    oddsMS = [match[63],match[62],match[60],match[61]]
+                    oddsNumSets = [match[65],match[64]]
 
                     # Find the best set of bets to make:
                     [Zk, suggestedBets] = RunCVaRModel(betsConsidered,Dists['Match Score'],riskProfile,betas,oddsMO,
@@ -673,7 +727,7 @@ def ReadInData(fileName):
     return testData
 
 def test(DB, matchesFileName):
-    # Test the ROI as an objective
+    # Test the ROI as an objective on a small test manually gathered.
     FirstTest = False
     ExtensiveTest = True
 
@@ -822,8 +876,24 @@ def test(DB, matchesFileName):
 
 def main():
     DB = ReadInGridDB('ModelDistributions.csv')
-    x = InterpolateDists(0.56, 0.52, DB, 0.5, 0.9)
-    test(DB, '2018_19MatchesWithOdds.csv')
+    '''
+    DB = {(0.4, 0.4): {'Match Score': [0.25, 0.25, 0.25, 0.25]}, (0.4, 0.42): {'Match Score': [0.22, 0.21, 0.29, 0.28]},
+    (0.4, 0.44): {'Match Score': [0.18, 0.17, 0.33, 0.32]},(0.4, 0.46): {'Match Score': [0.15, 0.14, 0.35, 0.36]},
+    (0.42, 0.4): {'Match Score': [0.29, 0.28, 0.21, 0.22]},(0.42, 0.42): {'Match Score': [0.25, 0.25, 0.25, 0.25]},
+    (0.42, 0.44): {'Match Score': [0.22, 0.2, 0.36, 0.22]},(0.42, 0.46): {'Match Score': [0.2, 0.18, 0.4, 0.22]},
+    (0.44, 0.4): {'Match Score: [0.3, 0.32, 0.18, 0.2]},(0.44, 0.42): {'Match Score': [0.27, 0.27, 0.23, 0.23]},
+    (0.46, 0.4): {'Match Score': [0.38, 0.33, 0.12, 0.17]}}
+    '''
+    x = InterpolateDists(0.48, 0.49, DB, 0.5, 0.9)
+    y = InterpolateDists(0.91, 0.92, DB, 0.5, 0.9)
+    z = InterpolateDists(0.54, 0.48, DB, 0.5, 0.9)
+    a = InterpolateDists(0.94, 0.88, DB, 0.5, 0.9)
+    print(x['Match Score'])
+    print(y['Match Score'])
+    print(z['Match Score'])
+    print(a['Match Score'])
+    # CVaR Test:
+    # test(DB, '2018_19MatchesWithOdds.csv')
 
 if __name__ == "__main__":
     main()

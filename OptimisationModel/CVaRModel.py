@@ -136,6 +136,14 @@ def CreateZMatrix(betsConsidered, odds, probabilities):
     return [Zk, oddCoef, bettingOptions]
 
 def RunCVaRModel(betsConsidered,probDist,RHS,betas,oddsMO,oddsMS,oddsNumSets,oddsSS=[],oddsNumGames=[]):
+    # This function sets up the required data and runs the CVaR model, returning a set of bets to make.
+    # Inputs:
+    # - betsConsidered: A list of booleans of the bets we want to consider (Outcome, Score, #Sets, SS, #Games)
+    # - probDist: A list of probabilities corresponding to the possible outcomes (currently 2-0, 2-1, 0-2, 1-2)
+    # - RHS: A list of RHS values from the user about their risk profile
+    # - betas: The beta parameters we are using in the CVaR model (Currently 0.2, 0.33, 0.5)
+    # - odds--: The odds for each type of bet as a list e.g. [oddsAWins, oddsBWins]
+
     # Create odds dictionary:
     odds = {'Match Outcome': oddsMO, 'Match Score': oddsMS, 'Number of Sets': oddsNumSets,
     'Set Score': oddsSS, 'Number of Games': oddsNumGames}
