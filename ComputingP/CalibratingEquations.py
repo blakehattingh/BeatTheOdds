@@ -217,6 +217,7 @@ def ObjectiveFunction(parameters, testDataFN, obj, equation, riskProfile = [], b
     # Print the parameters used and the objective value:
     print("parameters : ")
     print( parameters)
+    print(objMetric['Equation {}'.format(equation)]['Matches Predicted'])
     print(value)
 
     # Minimising so return the negative of the value:
@@ -453,7 +454,7 @@ def main():
             storePlottingDataCalibration(fileName2, equation)
         elif (equation == 3):
             # Get the starting points from the calibrated parameters for equation 2:
-            startingPintsEq3 = getStartParamsFromCSV(fileName)
+            startingPintsEq3 = getCalibratedParamsFromCSV(fileName)
             [bestSol,allSolsObjs] = CalibrateHyperparameters(testDataFN, obj, equation, startingPintsEq3, 
             riskProfile, betas)
             bestSolObjs = sorted(allSolsObjs,key = lambda x: x[1])[:6]
