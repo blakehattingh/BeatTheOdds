@@ -437,7 +437,7 @@ def main():
         fileName = 'C:\\Uni\\4thYearProject\\repo\\BeatTheOdds\\CSVFiles\\CalibratedParametersAllEquations2.csv'
         #fileName2 = 'C:\\Uni\\4thYearProject\\repo\\BeatTheOdds\\CSVFiles\\CalibratedPlottingDataEq3.csv'
         fileName2 = 'C:\\Uni\\4thYearProject\\repo\\BeatTheOdds\\CSVFiles\\CalibratedPlottingDataRound2.csv'
-        fileName3 = 'C:\\Uni\\4thYearProject\\repo\\BeatTheOdds\\CSVFiles\\ObjectiveValuesForCalibratedParameters.csv'
+        fileName3 = 'C:\\Uni\\4thYearProject\\repo\\BeatTheOdds\\CSVFiles\\ObjectiveValuesForCalibratedParametersRound2.csv'
     elif (person == 'Campbell'):
         # Get location of file:
         THIS_FOLDER = os.path.abspath('CSVFiles')
@@ -481,14 +481,12 @@ def main():
         for eq in equation:
             # Read in the calibrated parameters to test:
             calibratedParams = getCalibratedParamsFromCSV(fileName, eq, True)
+
             # Test the equation:
             objectiveValues = TestEquations(testDataFN, calibratedParams , obj, eq, riskProfile, betas)
 
             # Store the values for each set of calibrated parameters for plotting:
             storePlottingDataTesting(fileName3, objectiveValues, eq)
-
-
-
 
 if __name__ == "__main__":
     main()
