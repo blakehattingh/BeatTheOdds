@@ -5,7 +5,7 @@ from ComputingP.CalculatingP import try_parsing_date
 from DataExtraction.TestSetCollector import getPotentialMatches
 import numpy as np
 from datetime import datetime, timedelta
-import os
+import os, sys
 import csv
 from CalculatingP import try_parsing_date
 
@@ -138,3 +138,15 @@ def FindAllMatchesWithThisPlayer(matchData, lastName, firstName):
                 playerMatches.append(match)
     
     return playerMatches
+
+def main():
+    files = ['ATPHalle.csv']
+    margin = 7
+
+    # Run the function:
+    testSet = CreateTestDataSet(files, margin)
+
+    print(testSet)
+
+if __name__ == "__main__":
+    main()
