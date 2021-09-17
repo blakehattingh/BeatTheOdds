@@ -1,12 +1,7 @@
-from time import time
-
-from matplotlib.pyplot import margins
-from ComputingP.CalculatingP import try_parsing_date
-from DataExtraction.TestSetCollector import getPotentialMatches
-import numpy as np
 from datetime import datetime, timedelta
 import os, sys
 import csv
+from time import strftime
 from CalculatingP import try_parsing_date
 
 # Add required folders to the system path:
@@ -84,11 +79,14 @@ def CreateTestDataSet(oddsCSVFiles, margin):
 
 def ExtractDates(match, margin):
     # Extract the date string:
-    date = try_parsing_date(match[0])
+    [date, type] = try_parsing_date(match[0])
     
     # Compute the margin either side of the match date:
     beforeDate = date + timedelta(days = margin)
-    afterDate = date + timedelta(days = margin)
+    afterDate = date - timedelta(days = margin)
+    #convert to string
+    beforeDate = beforeDate.strftime(type)
+    afterDate = afterDate.strftime(type)
 
     return [afterDate, beforeDate]
 

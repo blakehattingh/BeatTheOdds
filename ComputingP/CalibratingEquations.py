@@ -438,6 +438,7 @@ def main():
         #fileName2 = 'C:\\Uni\\4thYearProject\\repo\\BeatTheOdds\\CSVFiles\\CalibratedPlottingDataEq3.csv'
         fileName2 = 'C:\\Uni\\4thYearProject\\repo\\BeatTheOdds\\CSVFiles\\CalibratedPlottingDataRound2.csv'
         fileName3 = 'C:\\Uni\\4thYearProject\\repo\\BeatTheOdds\\CSVFiles\\ObjectiveValuesForCalibratedParameters.csv'
+        fileNameFinalCal = 'C:\\Uni\\4thYearProject\\repo\\BeatTheOdds\\CSVFiles\\FinalCalibratedParametersAllEquations.csv'
     elif (person == 'Campbell'):
         # Get location of file:
         THIS_FOLDER = os.path.abspath('CSVFiles')
@@ -480,7 +481,7 @@ def main():
     elif (purpose == 'Testing'):
         for eq in equation:
             # Read in the calibrated parameters to test:
-            calibratedParams = getCalibratedParamsFromCSV(fileName, eq, True)
+            calibratedParams = getCalibratedParamsFromCSV(eq,eq,fileNameFinalCal)
             # Test the equation:
             objectiveValues = TestEquations(testDataFN, calibratedParams , obj, eq, riskProfile, betas)
 

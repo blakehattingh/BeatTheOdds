@@ -295,9 +295,9 @@ def InterpolateDists(Pa, Pb, DB, pBoundaryL = 0.5, pBoundaryH = 0.9, Spacing = 0
     return XDists
     
 def try_parsing_date(text):
-    for fmt in ('%d/%m/%Y', '%d-%m-%Y', '%Y-%m-%d'):
+    for fmt in (' %d/%m/%Y','%d/%m/%Y', '%d-%m-%Y', '%Y-%m-%d'):
         try:
-            return datetime.strptime(text, fmt)
+            return [datetime.strptime(text, fmt), fmt]
         except ValueError:
             pass
     raise ValueError('no valid date format found')
