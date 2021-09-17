@@ -5,7 +5,7 @@ from ComputingP.CalculatingP import try_parsing_date
 from DataExtraction.TestSetCollector import getPotentialMatches
 import numpy as np
 from datetime import datetime, timedelta
-import os
+import os, sys
 import csv
 from CalculatingP import try_parsing_date
 
@@ -13,8 +13,8 @@ from CalculatingP import try_parsing_date
 currentPath = os.path.abspath(os.getcwd())
 
 # Data Extraction Files:
-#sys.path.insert(0, currentPath + '\\BeatTheOdds\\DataExtraction')
-sys.path.insert(0, currentPath + '\DataExtraction')
+sys.path.insert(0, currentPath + '\\BeatTheOdds\\DataExtraction')
+#sys.path.insert(0, currentPath + '\DataExtraction')
 from TestSetCollector import *
 
 BLAKES_DIRECTORY = 'C:\\Uni\\4thYearProject\\repo\\BeatTheOdds\\CSVFiles\\'

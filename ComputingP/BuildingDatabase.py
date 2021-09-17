@@ -8,8 +8,8 @@ import os, sys
 currentPath = os.path.abspath(os.getcwd())
 
 # Markov Model Files:
-# sys.path.insert(0, currentPath + '\\BeatTheOdds\\MarkovModel')
-sys.path.insert(0, currentPath + '\\MarkovModel')
+sys.path.insert(0, currentPath + '\\BeatTheOdds\\MarkovModel')
+#sys.path.insert(0, currentPath + '\\MarkovModel')
 from FirstImplementation import *
 from OMalleysEqns import *
 
@@ -64,8 +64,8 @@ def BuildingDB(PStartA, PEndA, PStartB, PEndB, Increment, AllDists, DBToAppendTo
             DataBase[(round(P1,2), round(P2,2))] = Distributions
 
     # Export the dictionary of distributions to a csv file:
-    writeToFile = 'CSVFiles\\ModelDistributions2.csv'
-    #writeToFile = 'C:\\Uni\\4thYearProject\\repo\\BeatTheOdds\\CSVFiles\\ModelDistributions2.csv'
+    #writeToFile = 'CSVFiles\\ModelDistributions2.csv'
+    writeToFile = 'C:\\Uni\\4thYearProject\\repo\\BeatTheOdds\\CSVFiles\\ModelDistributions2.csv'
     with open(writeToFile, mode='w') as csv_file:
         writer = csv.writer(csv_file)
         for key, value in DataBase.items():
@@ -312,8 +312,8 @@ def ComputeWeighting(Pa, Pb, Spacing = 0.02):
 
 def ReadInGridDB(FileName):
     # Get location of file:
-    THIS_FOLDER = os.path.abspath('CSVFiles')
-    # THIS_FOLDER = 'C:\\Uni\\4thYearProject\\repo\\BeatTheOdds\\CSVFiles\\'
+    #THIS_FOLDER = os.path.abspath('CSVFiles')
+    THIS_FOLDER = 'C:\\Uni\\4thYearProject\\repo\\BeatTheOdds\\CSVFiles\\'
     FileName = os.path.join(THIS_FOLDER, FileName)
 
     # Read in the model distributions database: 
