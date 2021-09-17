@@ -1,8 +1,4 @@
 from time import time
-
-from matplotlib.pyplot import margins
-from ComputingP.CalculatingP import try_parsing_date
-from DataExtraction.TestSetCollector import getPotentialMatches
 import numpy as np
 from datetime import datetime, timedelta
 import os, sys
@@ -13,8 +9,8 @@ from CalculatingP import try_parsing_date
 currentPath = os.path.abspath(os.getcwd())
 
 # Data Extraction Files:
-#sys.path.insert(0, currentPath + '\\BeatTheOdds\\DataExtraction')
-sys.path.insert(0, currentPath + '\DataExtraction')
+sys.path.insert(0, currentPath + '\\BeatTheOdds\\DataExtraction')
+#sys.path.insert(0, currentPath + '\DataExtraction')
 from TestSetCollector import *
 
 BLAKES_DIRECTORY = 'C:\\Uni\\4thYearProject\\repo\\BeatTheOdds\\CSVFiles\\'
@@ -26,19 +22,7 @@ def CreateTestDataSet(oddsCSVFiles, margin):
     # Read in Odds CSV Files:
     for file in oddsCSVFiles:
         # Create the directory for file:
-        fileName = os.path.join(BLAKES_DIRECTORY, file)
-
-        # Open it, read in contents and append it to the list structure:
-        with open(fileName) as csv_file:
-            csv_reader = csv.reader(csv_file, delimiter=',')
-            line_count = 0
-            for row in csv_reader:
-                if line_count == 0:
-                    line_count += 1
-                else:
-                    oddsData.append(row)
-                    line_count += 1
-            csv_file.close()
+        oddsData.append(ReadInOddsData(file))
 
     # Create a list to store the combination of odds and match stats:
     fullTestSet = []
@@ -75,20 +59,43 @@ def CreateTestDataSet(oddsCSVFiles, margin):
         if (len(finalPotentialMatches) == 1):
             # Append the odds data to the match:
             foundMatch = finalPotentialMatches[0].append(oddsMatch[3:11])
-            fullTestSet.append(foundMatch)
+            fullTestSet = AppendOdds(foundMatch, oddsMatch, 8)
         else:
             print("Found multiple potential matches")
             print(finalPotentialMatches)
 
     return fullTestSet
 
+def ReadInOddsData(file):
+    fileName = os.path.join(BLAKES_DIRECTORY, file)
+    #THIS_FOLDER = os.path.abspath('CSVFiles')
+    #fileName = os.path.join(THIS_FOLDER, file)
+
+    oddsData = []
+    # Open it, read in contents and append it to the list structure:
+    with open(fileName) as csv_file:
+        csv_reader = csv.reader(csv_file, delimiter=',')
+        line_count = 0
+        for row in csv_reader:
+            if line_count == 0:
+                line_count += 1
+            else:
+                oddsData.append(row)
+                line_count += 1
+        csv_file.close()
+    return oddsData
+
 def ExtractDates(match, margin):
     # Extract the date string:
-    date = try_parsing_date(match[0])
+    [date, type] = try_parsing_date(match[0])
     
     # Compute the margin either side of the match date:
     beforeDate = date + timedelta(days = margin)
-    afterDate = date + timedelta(days = margin)
+    afterDate = date - timedelta(days = margin)
+
+    # Convert it to the required format for the database:
+    beforeDate = beforeDate.strftime('%Y-%m-%d')
+    afterDate = afterDate.strftime('%Y-%m-%d')
 
     return [afterDate, beforeDate]
 
@@ -139,10 +146,42 @@ def FindAllMatchesWithThisPlayer(matchData, lastName, firstName):
     
     return playerMatches
 
+def AppendOdds(match, oddsMatch, numOdds):
+    # This function takes 2 corresponding lists, one with the match data and one with the odds and appends them
+    # to each other.
+
+    # Iterate through the odds:
+    for i in range(numOdds):
+        oddsString = oddsMatch[3 + i]
+        
+        # Extract the actual odd value:
+        odds = oddsString.split()
+
+        # If it is the only value, which it should be, convert it to a floating point:
+        if (len(odds) == 1):
+            odds = float(odds[0])
+        else:
+            raise ValueError('More than one value found')
+        
+        # Append it the match:
+        match.append(odds)
+
+    return match
+
 def main():
     files = ['ATPHalle.csv']
     margin = 7
 
+    '''
+    # Read in the data:
+    THIS_FOLDER = os.path.abspath('CSVFiles')
+    fileName = os.path.join(THIS_FOLDER, files[0])
+    oddsData = ReadInOddsData(fileName)
+
+    # Test Append Odds function:
+    print(AppendOdds([],oddsData[0], 8))
+    '''
+    
     # Run the function:
     testSet = CreateTestDataSet(files, margin)
 
