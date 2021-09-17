@@ -14,19 +14,19 @@ from CalculatingP import *
 currentPath = os.path.abspath(os.getcwd())
 
 # Markov Model Files:
-#sys.path.insert(0, currentPath + '\\BeatTheOdds\\MarkovModel')
-sys.path.insert(0, currentPath + '\MarkovModel')
+sys.path.insert(0, currentPath + '\\BeatTheOdds\\MarkovModel')
+#sys.path.insert(0, currentPath + '\MarkovModel')
 from FirstImplementation import *
 
 
 # Optimisation Model Files:
-#sys.path.insert(0, currentPath + '\\BeatTheOdds\\OptimisationModel')
-sys.path.insert(0, currentPath + '\\OptimisationModel')
+sys.path.insert(0, currentPath + '\\BeatTheOdds\\OptimisationModel')
+#sys.path.insert(0, currentPath + '\\OptimisationModel')
 from CVaRModel import RunCVaRModel
 
 # Data Extraction Files:
-#sys.path.insert(0, currentPath + '\\BeatTheOdds\\DataExtraction')
-sys.path.insert(0, currentPath + '\\DataExtraction')
+sys.path.insert(0, currentPath + '\\BeatTheOdds\\DataExtraction')
+#sys.path.insert(0, currentPath + '\\DataExtraction')
 from TestSetCollector import *
 from DataCollector import *
 
