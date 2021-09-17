@@ -87,8 +87,19 @@ def getRandomSamples(matchesByYears, numMatches):
         sampledMatchesByYears.append(sampledMatches)
     return sampledMatchesByYears
               
+def getPotentialMatches(afterDate, beforeDate):
+    # This function gets all matches between the two dates specified.
+    conn = psy.connect('dbname=tcb user=postgres password=12qwaszx host=localhost')
+    cursor = conn.cursor()
+    potentialMatches = []
 
-
+    # SQL Command:
+    queryMatches = f"""select * from tcb.match m join tcb.match_stats s on m.match_id = s.match_id where m.date >= 
+    {afterDate} AND m.date < {beforeDate} AND m.best_of = 3 AND m.outcome is NULL"""
+    cursor.execute(queryMatches)
+    potentialMatches.append(cursor.fetchall())
+        
+    return potentialMatches
 
 def main():
     years = [2012,2014,2016,2018,2019]

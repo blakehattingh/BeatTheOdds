@@ -11,7 +11,8 @@ import time
 currentPath = os.path.abspath(os.getcwd())
 
 # Markov Model Files:
-sys.path.insert(0, currentPath + '\\BeatTheOdds\\MarkovModel')
+# sys.path.insert(0, currentPath + '\\BeatTheOdds\\MarkovModel')
+sys.path.insert(0, currentPath + '\MarkovModel')
 from FirstImplementation import *
 
 
@@ -53,12 +54,9 @@ def main():
     #[A, B] = Matrices()
     #print(Set(P1S, 1. - P2S, A, B))
 
-    # run MM:
-    start = time.time()
-    MarkovModelFirstImplementation(0.62, 0.61, 3)
-    end = time.time()
-    print('time taken =')
-    print(end-start)
+    x = '14/03/1999'
+    dateX = datetime.strptime(x, "%d/%m/%Y")
+    print(dateX + timedelta(days = 7))
     
 if __name__ == "__main__":
     main()

@@ -1,11 +1,25 @@
+from time import time
+
+from matplotlib.pyplot import margins
+from ComputingP.CalculatingP import try_parsing_date
+from DataExtraction.TestSetCollector import getPotentialMatches
 import numpy as np
+from datetime import datetime, timedelta
 import os
 import csv
+from CalculatingP import try_parsing_date
+
+# Add required folders to the system path:
+currentPath = os.path.abspath(os.getcwd())
+
+# Data Extraction Files:
+#sys.path.insert(0, currentPath + '\\BeatTheOdds\\DataExtraction')
+sys.path.insert(0, currentPath + '\DataExtraction')
+from TestSetCollector import *
 
 BLAKES_DIRECTORY = 'C:\\Uni\\4thYearProject\\repo\\BeatTheOdds\\CSVFiles\\'
 
-def CreateTestDataSet(oddsCSVFiles, matchData):
-
+def CreateTestDataSet(oddsCSVFiles, margin):
     # Set up a list of lists to store the odds for each match:
     oddsData = []
 
@@ -26,36 +40,58 @@ def CreateTestDataSet(oddsCSVFiles, matchData):
                     line_count += 1
             csv_file.close()
 
+    # Create a list to store the combination of odds and match stats:
+    fullTestSet = []
+
+    # Create a list to store potential matches:
+    finalPotentialMatches = []
+
     # For each match with odds, try and find the corresponding match:
     for oddsMatch in oddsData:
-        # Find column of Last Name In Match Data
+        # Extract the margin dates:
+        [afterDate, beforeDate] = ExtractDates(oddsMatch, margin)
 
-        # Extract Player A's names:
-        [firstNames, lastNames, NumberOfNames] = ExtractNames(oddsMatch, 1)
+        # Extract all matches played a within a week either side of the match of interest:
+        potentialMatches = getPotentialMatches(afterDate, beforeDate)
 
-        # Search the database of matches:
-        potentialMatches = []
-        
-        # Find all matches that player A played in:
+        # Extract Player A's and B's names:
+        [firstNamesA, lastNamesA, NumberOfNamesA] = ExtractNames(oddsMatch, 1)
+        [firstNamesB, lastNamesB, NumberOfNamesB] = ExtractNames(oddsMatch, 2)
+
+        # Search the potential matches for ones where player A played in:
         playerAMatches = []
-        
+
         # Iterate through all possible combination of names:
-        for last in lastNames:
-            for first in firstNames:
-                playerAMatches = FindAllMatchesWithThisPlayer(matchData, last, first)
+        for last in lastNamesA:
+            for first in firstNamesA:
+                playerAMatches.append(FindAllMatchesWithThisPlayer(potentialMatches, last, first))
 
-            for i in range(NumberOfNames-1):
-                if (lastNames[i] == match['Player As last name']):
-                    potentialMatches.append(match)
-                elif (lastNames[i] == match['Player Bs last name']):
-                    potentialMatches.append(match)
+        # Search player A's matches for ones where player B played in:
+        for last in lastNamesB:
+            for first in firstNamesB:
+                finalPotentialMatches.append(FindAllMatchesWithThisPlayer(playerAMatches, last, first))
 
-                #
+        # Check how many matches are in the final list:
+        if (len(finalPotentialMatches) == 1):
+            # Append the odds data to the match:
+            foundMatch = finalPotentialMatches[0].append(oddsMatch[3:11])
+            fullTestSet.append(foundMatch)
+        else:
+            print("Found multiple potential matches")
+            print(finalPotentialMatches)
 
-                    
-                x =10
+    return fullTestSet
 
-        
+def ExtractDates(match, margin):
+    # Extract the date string:
+    date = try_parsing_date(match[0])
+    
+    # Compute the margin either side of the match date:
+    beforeDate = date + timedelta(days = margin)
+    afterDate = date + timedelta(days = margin)
+
+    return [afterDate, beforeDate]
+
 def ExtractNames(match, col):
     # Get the full name of the player of interest:
     stringName = match[col].lower()
