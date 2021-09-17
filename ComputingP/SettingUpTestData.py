@@ -9,8 +9,8 @@ from CalculatingP import try_parsing_date
 currentPath = os.path.abspath(os.getcwd())
 
 # Data Extraction Files:
-sys.path.insert(0, currentPath + '\\BeatTheOdds\\DataExtraction')
-#sys.path.insert(0, currentPath + '\DataExtraction')
+#sys.path.insert(0, currentPath + '\\BeatTheOdds\\DataExtraction')
+sys.path.insert(0, currentPath + '\DataExtraction')
 from TestSetCollector import *
 from DataCollector import *
 
@@ -203,9 +203,19 @@ def AppendOdds(match, oddsMatch, numOdds):
 
     return match
 
+def WriteToCSV(testSet, file):
+    # Write the test data to a CSV file:
+    fileName = os.path.join(BLAKES_DIRECTORY, file)
+    with open(fileName, mode = 'a', newline='') as csv_file:
+        writer = csv.writer(csv_file)
+        for row in testSet:
+            writer.writerow(row)
+        csv_file.close()
+
 def main():
     files = ['ATPWorldTourWeek2.csv','ATPIndianWells.csv','ATPMadrid.csv','ATPRome.csv' ]
     margin = 7
+    fileName = 'trainingSetForCalibrationWithROI.csv'
 
     '''
     # Read in the data:
@@ -216,7 +226,7 @@ def main():
     # Test Append Odds function:
     print(AppendOdds([],oddsData[0], 8))
     '''
-    
+
     # Run the function:
     testSet = CreateTestDataSet(files, margin)
 

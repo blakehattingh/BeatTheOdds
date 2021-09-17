@@ -21,11 +21,11 @@ from FirstImplementation import *
 
 # Optimisation Model Files:
 sys.path.insert(0, currentPath + '\\BeatTheOdds\\OptimisationModel')
-# sys.path.insert(0, currentPath + '\\OptimisationModel')
+#sys.path.insert(0, currentPath + '\\OptimisationModel')
 
 # Data Extraction Files:
 sys.path.insert(0, currentPath + '\\BeatTheOdds\\DataExtraction')
-# sys.path.insert(0, currentPath + '\\DataExtraction')
+#sys.path.insert(0, currentPath + '\\DataExtraction')
 from TestSetCollector import *
 from DataCollector import *
 
