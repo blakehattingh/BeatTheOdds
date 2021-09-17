@@ -15,18 +15,17 @@ currentPath = os.path.abspath(os.getcwd())
 
 # Markov Model Files:
 sys.path.insert(0, currentPath + '\\BeatTheOdds\\MarkovModel')
-#sys.path.insert(0, currentPath + '\MarkovModel')
+# sys.path.insert(0, currentPath + '\MarkovModel')
 from FirstImplementation import *
 
 
 # Optimisation Model Files:
 sys.path.insert(0, currentPath + '\\BeatTheOdds\\OptimisationModel')
-#sys.path.insert(0, currentPath + '\\OptimisationModel')
-from CVaRModel import RunCVaRModel
+# sys.path.insert(0, currentPath + '\\OptimisationModel')
 
 # Data Extraction Files:
 sys.path.insert(0, currentPath + '\\BeatTheOdds\\DataExtraction')
-#sys.path.insert(0, currentPath + '\\DataExtraction')
+# sys.path.insert(0, currentPath + '\\DataExtraction')
 from TestSetCollector import *
 from DataCollector import *
 
@@ -295,7 +294,7 @@ def InterpolateDists(Pa, Pb, DB, pBoundaryL = 0.5, pBoundaryH = 0.9, Spacing = 0
     return XDists
     
 def try_parsing_date(text):
-    for fmt in (' %d/%m/%Y','%d/%m/%Y', '%d-%m-%Y', '%Y-%m-%d'):
+    for fmt in (' %d/%m/%Y', '%d/%m/%Y', '%d-%m-%Y', '%Y-%m-%d'):
         try:
             return [datetime.strptime(text, fmt), fmt]
         except ValueError:

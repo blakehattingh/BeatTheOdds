@@ -54,9 +54,10 @@ def main():
     #[A, B] = Matrices()
     #print(Set(P1S, 1. - P2S, A, B))
 
-    x = '14/03/1999'
-    dateX = datetime.strptime(x, "%d/%m/%Y")
-    print(dateX + timedelta(days = 7))
+    x = '\n\t\t\t\t3.92\n\t\t\t'
+    y = x.split()
+    print(float(y))
+    
     
 if __name__ == "__main__":
     main()

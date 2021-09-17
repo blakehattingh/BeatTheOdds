@@ -488,8 +488,5 @@ def main():
             # Store the values for each set of calibrated parameters for plotting:
             storePlottingDataTesting(fileName3, objectiveValues, eq)
 
-
-
-
 if __name__ == "__main__":
     main()
