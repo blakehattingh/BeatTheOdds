@@ -138,3 +138,15 @@ def FindAllMatchesWithThisPlayer(matchData, lastName, firstName):
                 playerMatches.append(match)
     
     return playerMatches
+
+def main():
+    files = ['ATPHalle.csv']
+    margin = 7
+
+    # Run the function:
+    testSet = CreateTestDataSet(files, margin)
+
+    print(testSet)
+
+if __name__ == "__main__":
+    main()
