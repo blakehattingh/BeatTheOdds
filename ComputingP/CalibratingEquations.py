@@ -432,12 +432,13 @@ def main():
     person = 'Blake'
     
     if (person == 'Blake'):
-        testDataFN = 'threeHundredCalMatches.csv'
+        trainingDataFN = 'threeHundredCalMatches.csv'
+        testDataFN = 'hundredCalMatches.csv'
         #fileName = 'C:\\Uni\\4thYearProject\\repo\\BeatTheOdds\\CSVFiles\\CalibratedParametersAllEquations.csv'
         fileName = 'C:\\Uni\\4thYearProject\\repo\\BeatTheOdds\\CSVFiles\\CalibratedParametersAllEquations2.csv'
         #fileName2 = 'C:\\Uni\\4thYearProject\\repo\\BeatTheOdds\\CSVFiles\\CalibratedPlottingDataEq3.csv'
         fileName2 = 'C:\\Uni\\4thYearProject\\repo\\BeatTheOdds\\CSVFiles\\CalibratedPlottingDataRound2.csv'
-        fileName3 = 'C:\\Uni\\4thYearProject\\repo\\BeatTheOdds\\CSVFiles\\ObjectiveValuesForCalibratedParameters.csv'
+        fileName3 = 'C:\\Uni\\4thYearProject\\repo\\BeatTheOdds\\CSVFiles\\ObjectiveValuesForCalibratedParametersRound2.csv'
         fileNameFinalCal = 'C:\\Uni\\4thYearProject\\repo\\BeatTheOdds\\CSVFiles\\FinalCalibratedParametersAllEquations.csv'
     elif (person == 'Campbell'):
         # Get location of file:
@@ -447,9 +448,9 @@ def main():
         fileName3 = os.path.join(THIS_FOLDER, 'ObjectiveValuesForCalibratedParameters.csv')
 
     # What are we doing? (Calibrated or testing? Match Stats or ROI? What equation?)
-    purpose = 'Calibration'
+    purpose = 'Testing'
     obj = 'Match Stats'
-    equation = [3]
+    equation = [1,2,3]
     fromEquation = 2
     riskProfile = [1.,1.,1.]
     betas = [0.2, 1./3., 0.5]
@@ -461,14 +462,14 @@ def main():
             # Calibrate the specified equation with the given objective metric:
             if (eq <= 2):
                 startingPoints = getCalibratedParamsFromCSV(eq, eq)
-                [bestSol,allSolsObjs] = CalibrateHyperparameters(testDataFN, obj, eq,startingPoints, riskProfile, betas)
+                [bestSol,allSolsObjs] = CalibrateHyperparameters(trainingDataFN, obj, eq,startingPoints, riskProfile, betas)
                 bestSolObjs = sorted(allSolsObjs,key = lambda x: x[1])[:6]
                 buildCalibratedParamsDB(fileName, bestSolObjs, eq)
                 storePlottingDataCalibration(fileName2, eq)
             elif (eq == 3):
                 # Get the starting points from the calibrated parameters for eq 2:
                 startingPoints = getCalibratedParamsFromCSV(eq,fromEquation,thetas, fileName)
-                [bestSol,allSolsObjs] = CalibrateHyperparameters(testDataFN, obj, eq, startingPoints, 
+                [bestSol,allSolsObjs] = CalibrateHyperparameters(trainingDataFN, obj, eq, startingPoints, 
                 riskProfile, betas)
                 bestSolObjs = sorted(allSolsObjs,key = lambda x: x[1])[:6]
                 buildCalibratedParamsDB(fileName, bestSolObjs, eq)
@@ -481,7 +482,7 @@ def main():
     elif (purpose == 'Testing'):
         for eq in equation:
             # Read in the calibrated parameters to test:
-            calibratedParams = getCalibratedParamsFromCSV(eq,eq,fileNameFinalCal)
+            calibratedParams = getCalibratedParamsFromCSV(eq,eq,fileName=fileNameFinalCal)
             # Test the equation:
             objectiveValues = TestEquations(testDataFN, calibratedParams , obj, eq, riskProfile, betas)
 
