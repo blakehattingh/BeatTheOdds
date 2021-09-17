@@ -439,6 +439,7 @@ def main():
         #fileName2 = 'C:\\Uni\\4thYearProject\\repo\\BeatTheOdds\\CSVFiles\\CalibratedPlottingDataEq3.csv'
         fileName2 = 'C:\\Uni\\4thYearProject\\repo\\BeatTheOdds\\CSVFiles\\CalibratedPlottingDataRound2.csv'
         fileName3 = 'C:\\Uni\\4thYearProject\\repo\\BeatTheOdds\\CSVFiles\\ObjectiveValuesForCalibratedParametersRound2.csv'
+        fileNameFinalCal = 'C:\\Uni\\4thYearProject\\repo\\BeatTheOdds\\CSVFiles\\FinalCalibratedParametersAllEquations.csv'
     elif (person == 'Campbell'):
         # Get location of file:
         THIS_FOLDER = os.path.abspath('CSVFiles')
@@ -447,9 +448,9 @@ def main():
         fileName3 = os.path.join(THIS_FOLDER, 'ObjectiveValuesForCalibratedParameters.csv')
 
     # What are we doing? (Calibrated or testing? Match Stats or ROI? What equation?)
-    purpose = 'Calibration'
+    purpose = 'Testing'
     obj = 'Match Stats'
-    equation = [3]
+    equation = [1,2,3]
     fromEquation = 2
     riskProfile = [1.,1.,1.]
     betas = [0.2, 1./3., 0.5]
@@ -481,8 +482,7 @@ def main():
     elif (purpose == 'Testing'):
         for eq in equation:
             # Read in the calibrated parameters to test:
-            calibratedParams = getCalibratedParamsFromCSV(fileName, eq, True)
-
+            calibratedParams = getCalibratedParamsFromCSV(eq,eq,fileName=fileNameFinalCal)
             # Test the equation:
             objectiveValues = TestEquations(testDataFN, calibratedParams , obj, eq, riskProfile, betas)
 

@@ -1,8 +1,7 @@
-from time import time
-import numpy as np
 from datetime import datetime, timedelta
 import os, sys
 import csv
+from time import strftime
 from CalculatingP import try_parsing_date
 
 # Add required folders to the system path:
