@@ -64,8 +64,8 @@ def BuildingDB(PStartA, PEndA, PStartB, PEndB, Increment, AllDists, DBToAppendTo
             DataBase[(round(P1,2), round(P2,2))] = Distributions
 
     # Export the dictionary of distributions to a csv file:
-    writeToFile = 'CSVFiles\\ModelDistributions2.csv'
-    #writeToFile = 'C:\\Uni\\4thYearProject\\repo\\BeatTheOdds\\CSVFiles\\ModelDistributions2.csv'
+    #writeToFile = 'CSVFiles\\ModelDistributions2.csv'
+    writeToFile = 'C:\\Uni\\4thYearProject\\repo\\BeatTheOdds\\CSVFiles\\ModelDistributions2.csv'
     with open(writeToFile, mode='w') as csv_file:
         writer = csv.writer(csv_file)
         for key, value in DataBase.items():
