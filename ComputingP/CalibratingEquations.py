@@ -432,7 +432,8 @@ def main():
     person = 'Blake'
     
     if (person == 'Blake'):
-        testDataFN = 'threeHundredCalMatches.csv'
+        trainingDataFN = 'threeHundredCalMatches.csv'
+        testDataFN = 'hundredCalMatches.csv'
         #fileName = 'C:\\Uni\\4thYearProject\\repo\\BeatTheOdds\\CSVFiles\\CalibratedParametersAllEquations.csv'
         fileName = 'C:\\Uni\\4thYearProject\\repo\\BeatTheOdds\\CSVFiles\\CalibratedParametersAllEquations2.csv'
         #fileName2 = 'C:\\Uni\\4thYearProject\\repo\\BeatTheOdds\\CSVFiles\\CalibratedPlottingDataEq3.csv'
@@ -460,14 +461,14 @@ def main():
             # Calibrate the specified equation with the given objective metric:
             if (eq <= 2):
                 startingPoints = getCalibratedParamsFromCSV(eq, eq)
-                [bestSol,allSolsObjs] = CalibrateHyperparameters(testDataFN, obj, eq,startingPoints, riskProfile, betas)
+                [bestSol,allSolsObjs] = CalibrateHyperparameters(trainingDataFN, obj, eq,startingPoints, riskProfile, betas)
                 bestSolObjs = sorted(allSolsObjs,key = lambda x: x[1])[:6]
                 buildCalibratedParamsDB(fileName, bestSolObjs, eq)
                 storePlottingDataCalibration(fileName2, eq)
             elif (eq == 3):
                 # Get the starting points from the calibrated parameters for eq 2:
                 startingPoints = getCalibratedParamsFromCSV(eq,fromEquation,thetas, fileName)
-                [bestSol,allSolsObjs] = CalibrateHyperparameters(testDataFN, obj, eq, startingPoints, 
+                [bestSol,allSolsObjs] = CalibrateHyperparameters(trainingDataFN, obj, eq, startingPoints, 
                 riskProfile, betas)
                 bestSolObjs = sorted(allSolsObjs,key = lambda x: x[1])[:6]
                 buildCalibratedParamsDB(fileName, bestSolObjs, eq)

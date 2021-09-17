@@ -9,7 +9,7 @@ currentPath = os.path.abspath(os.getcwd())
 
 # Markov Model Files:
 sys.path.insert(0, currentPath + '\\BeatTheOdds\\MarkovModel')
-# sys.path.insert(0, currentPath + '\\MarkovModel')
+#sys.path.insert(0, currentPath + '\\MarkovModel')
 from FirstImplementation import *
 from OMalleysEqns import *
 

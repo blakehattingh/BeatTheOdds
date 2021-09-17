@@ -21,11 +21,11 @@ from FirstImplementation import *
 
 # Optimisation Model Files:
 sys.path.insert(0, currentPath + '\\BeatTheOdds\\OptimisationModel')
-# sys.path.insert(0, currentPath + '\\OptimisationModel')
+#sys.path.insert(0, currentPath + '\\OptimisationModel')
 
 # Data Extraction Files:
 sys.path.insert(0, currentPath + '\\BeatTheOdds\\DataExtraction')
-# sys.path.insert(0, currentPath + '\\DataExtraction')
+#sys.path.insert(0, currentPath + '\\DataExtraction')
 from TestSetCollector import *
 from DataCollector import *
 
@@ -316,7 +316,7 @@ def EvalEquations(testDataFN, obj, equations, age, surface, weighting, theta = 0
     # - The objective metric for the equations given on the data inputted
 
     # Read in the model distributions:
-    DB = ReadInGridDB('ModelDistributions2.csv')
+    DB = ReadInGridDB('ModelDistributions.csv')
 
     # Read in the data:
     testData = ReadInData(testDataFN)

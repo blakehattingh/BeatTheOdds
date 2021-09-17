@@ -9,8 +9,8 @@ from CalculatingP import try_parsing_date
 currentPath = os.path.abspath(os.getcwd())
 
 # Data Extraction Files:
-sys.path.insert(0, currentPath + '\\BeatTheOdds\\DataExtraction')
-#sys.path.insert(0, currentPath + '\DataExtraction')
+#sys.path.insert(0, currentPath + '\\BeatTheOdds\\DataExtraction')
+sys.path.insert(0, currentPath + '\DataExtraction')
 from TestSetCollector import *
 
 BLAKES_DIRECTORY = 'C:\\Uni\\4thYearProject\\repo\\BeatTheOdds\\CSVFiles\\'
@@ -33,7 +33,7 @@ def CreateTestDataSet(oddsCSVFiles, margin):
     # For each match with odds, try and find the corresponding match:
     for oddsMatch in oddsData:
         # Extract the margin dates:
-        [afterDate, beforeDate] = ExtractDates(oddsMatch, margin)
+        [afterDate, beforeDate] = ExtractDates(oddsMatch[0], margin)
 
         # Extract all matches played a within a week either side of the match of interest:
         potentialMatches = getPotentialMatches(afterDate, beforeDate)
@@ -116,8 +116,8 @@ def ExtractNames(match, col):
     numNames = len(names)
     if (numNames == 2):
         # First and Last name:
-        firstName = names[0]
-        lastName = names[1]
+        firstName = [names[0]]
+        lastName = [names[1]]
     elif(numNames == 3):
         # Either double first name or double last name:
         firstName = [[names[0]],[names[0]+ ' '+names[1]]]
@@ -132,17 +132,18 @@ def ExtractNames(match, col):
     
     return [firstName, lastName, numNames]
 
-def FindAllMatchesWithThisPlayer(matchData, lastName, firstName):
+def FindAllMatchesWithThisPlayer(matchData, playerID):
     # This function finds all matches that the specified player played in.
     # Inputs:
     # matchData: List of lists, each list is an individual match
-    # lastName & firstName: The name of the player of interest
+    # playerID: The ID of the player of interest
 
     playerMatches = []
     for match in matchData:
-        if (match['Last Name Column'] == lastName):
-            if (match['First name Col'] == firstName):
-                playerMatches.append(match)
+        if (match[8] == playerID):
+            playerMatches.append(match)
+        elif (match[18] == playerID):
+            playerMatches.append(match)
     
     return playerMatches
 
@@ -168,9 +169,19 @@ def AppendOdds(match, oddsMatch, numOdds):
 
     return match
 
+def WriteToCSV(testSet, file):
+    # Write the test data to a CSV file:
+    fileName = os.path.join(BLAKES_DIRECTORY, file)
+    with open(fileName, mode = 'a', newline='') as csv_file:
+        writer = csv.writer(csv_file)
+        for row in testSet:
+            writer.writerow(row)
+        csv_file.close()
+
 def main():
     files = ['ATPHalle.csv']
     margin = 7
+    fileName = 'trainingSetForCalibrationWithROI.csv'
 
     '''
     # Read in the data:
@@ -181,11 +192,12 @@ def main():
     # Test Append Odds function:
     print(AppendOdds([],oddsData[0], 8))
     '''
-    
+
     # Run the function:
     testSet = CreateTestDataSet(files, margin)
 
-    print(testSet)
+    # Write the test set to a CSV file:
+    WriteToCSV(testSet, fileName)
 
 if __name__ == "__main__":
     main()
