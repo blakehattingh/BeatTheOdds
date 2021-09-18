@@ -330,7 +330,7 @@ def EvalEquations(testDataFN, obj, equations, age, surface, weighting, theta = 0
             'Matches Predicted': 0}        
     elif (obj == 'ROI'):
         for eq in equations:
-            objectiveValues['Equation {}'.format(eq)] = {'ROI': [], 'Betted': 0, 'Returns': 0}
+            objectiveValues['Equation {}'.format(eq)] = {'ROI': [], 'Betted': 0, 'Returns': 0, 'Matches Predicted': 0}
 
     # Using the equations specified, compute the objective metric specified for each match in test data:
     for match in testData:
@@ -363,9 +363,9 @@ def EvalEquations(testDataFN, obj, equations, age, surface, weighting, theta = 0
                 elif (obj == 'ROI'):
                     # Extract the odds for the bets we are considering: (change to inputs to function?)
                     betsConsidered = [1,1,1,0,0]
-                    oddsMO = [match[58],match[59]]
-                    oddsMS = [match[63],match[62],match[60],match[61]]
-                    oddsNumSets = [match[65],match[64]]
+                    oddsMO = [float(match[58]),float(match[59])]
+                    oddsMS = [float(match[63]),float(match[62]),float(match[60]),float(match[61])]
+                    oddsNumSets = [float(match[65]),float(match[64])]
 
                     # Find the best set of bets to make:
                     [Zk, suggestedBets] = RunCVaRModel(betsConsidered,Dists['Match Score'],riskProfile,betas,oddsMO,
@@ -376,6 +376,7 @@ def EvalEquations(testDataFN, obj, equations, age, surface, weighting, theta = 0
                     objectiveValues['Equation {}'.format(eq)]['ROI'].append(ROI)
                     objectiveValues['Equation {}'.format(eq)]['Betted'] += spent
                     objectiveValues['Equation {}'.format(eq)]['Returns'] += returns
+                    objectiveValues['Equation {}'.format(eq)]['Matches Predicted'] += 1
 
     return objectiveValues
 

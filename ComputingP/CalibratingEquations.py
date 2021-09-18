@@ -220,6 +220,16 @@ def ObjectiveFunction(parameters, testDataFN, obj, equation, riskProfile = [], b
     print(objMetric['Equation {}'.format(equation)]['Matches Predicted'])
     print(value)
 
+    # Collect and store the plotting data:
+    LISTOFOBJS.append(value)
+    LISTOFPARAMS.append(parameters)
+    global BESTCURRENTSOL
+    if(value >= BESTCURRENTSOL):
+        BESTCURRENTSOL = value
+        LISTOFBESTOBJS.append(value)
+    else:
+        LISTOFBESTOBJS.append(BESTCURRENTSOL)
+
     # Minimising so return the negative of the value:
     return -1 * value
 
