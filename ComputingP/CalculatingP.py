@@ -22,6 +22,7 @@ from FirstImplementation import *
 # Optimisation Model Files:
 sys.path.insert(0, currentPath + '\\BeatTheOdds\\OptimisationModel')
 #sys.path.insert(0, currentPath + '\\OptimisationModel')
+from CVaRModel import *
 
 # Data Extraction Files:
 sys.path.insert(0, currentPath + '\\BeatTheOdds\\DataExtraction')
@@ -100,7 +101,7 @@ def ObjectiveMetricROI(outcome, Zk, bets):
                 ROI = ((returns - spent)/spent) * 100.
     return [ROI, spent, returns]
 
-def InterpolateDists(Pa, Pb, DB, pBoundaryL = 0.5, pBoundaryH = 0.9, Spacing = 0.02):
+def InterpolateDists(Pa, Pb, DB, pBoundaryL = 0.4, pBoundaryH = 0.8, Spacing = 0.02):
     # Takes in a set of P values and returns the interpolated distributions for them
     # Grid:
     # A ----E- B
@@ -316,7 +317,7 @@ def EvalEquations(testDataFN, obj, equations, age, surface, weighting, theta = 0
     # - The objective metric for the equations given on the data inputted
 
     # Read in the model distributions:
-    DB = ReadInGridDB('ModelDistributions.csv')
+    DB = ReadInGridDB('ModelDistributions2.csv')
 
     # Read in the data:
     testData = ReadInData(testDataFN)
@@ -330,7 +331,7 @@ def EvalEquations(testDataFN, obj, equations, age, surface, weighting, theta = 0
             'Matches Predicted': 0}        
     elif (obj == 'ROI'):
         for eq in equations:
-            objectiveValues['Equation {}'.format(eq)] = {'ROI': [], 'Betted': 0, 'Returns': 0}
+            objectiveValues['Equation {}'.format(eq)] = {'ROI': [], 'Betted': 0, 'Returns': 0, 'Matches Predicted': 0}
 
     # Using the equations specified, compute the objective metric specified for each match in test data:
     for match in testData:
@@ -363,9 +364,9 @@ def EvalEquations(testDataFN, obj, equations, age, surface, weighting, theta = 0
                 elif (obj == 'ROI'):
                     # Extract the odds for the bets we are considering: (change to inputs to function?)
                     betsConsidered = [1,1,1,0,0]
-                    oddsMO = [match[58],match[59]]
-                    oddsMS = [match[63],match[62],match[60],match[61]]
-                    oddsNumSets = [match[65],match[64]]
+                    oddsMO = [float(match[58]),float(match[59])]
+                    oddsMS = [float(match[63]),float(match[62]),float(match[60]),float(match[61])]
+                    oddsNumSets = [float(match[65]),float(match[64])]
 
                     # Find the best set of bets to make:
                     [Zk, suggestedBets] = RunCVaRModel(betsConsidered,Dists['Match Score'],riskProfile,betas,oddsMO,
@@ -376,6 +377,7 @@ def EvalEquations(testDataFN, obj, equations, age, surface, weighting, theta = 0
                     objectiveValues['Equation {}'.format(eq)]['ROI'].append(ROI)
                     objectiveValues['Equation {}'.format(eq)]['Betted'] += spent
                     objectiveValues['Equation {}'.format(eq)]['Returns'] += returns
+                    objectiveValues['Equation {}'.format(eq)]['Matches Predicted'] += 1
 
     return objectiveValues
 
@@ -875,25 +877,12 @@ def test(DB, matchesFileName):
     plt.show()
 
 def main():
-    DB = ReadInGridDB('ModelDistributions.csv')
-    '''
-    DB = {(0.4, 0.4): {'Match Score': [0.25, 0.25, 0.25, 0.25]}, (0.4, 0.42): {'Match Score': [0.22, 0.21, 0.29, 0.28]},
-    (0.4, 0.44): {'Match Score': [0.18, 0.17, 0.33, 0.32]},(0.4, 0.46): {'Match Score': [0.15, 0.14, 0.35, 0.36]},
-    (0.42, 0.4): {'Match Score': [0.29, 0.28, 0.21, 0.22]},(0.42, 0.42): {'Match Score': [0.25, 0.25, 0.25, 0.25]},
-    (0.42, 0.44): {'Match Score': [0.22, 0.2, 0.36, 0.22]},(0.42, 0.46): {'Match Score': [0.2, 0.18, 0.4, 0.22]},
-    (0.44, 0.4): {'Match Score: [0.3, 0.32, 0.18, 0.2]},(0.44, 0.42): {'Match Score': [0.27, 0.27, 0.23, 0.23]},
-    (0.46, 0.4): {'Match Score': [0.38, 0.33, 0.12, 0.17]}}
-    '''
-    x = InterpolateDists(0.48, 0.49, DB, 0.5, 0.9)
-    y = InterpolateDists(0.91, 0.92, DB, 0.5, 0.9)
-    z = InterpolateDists(0.54, 0.48, DB, 0.5, 0.9)
-    a = InterpolateDists(0.94, 0.88, DB, 0.5, 0.9)
-    print(x['Match Score'])
-    print(y['Match Score'])
-    print(z['Match Score'])
-    print(a['Match Score'])
-    # CVaR Test:
-    # test(DB, '2018_19MatchesWithOdds.csv')
+    outcome = '2-0'
+    zk = {'2-0':{'bet 1':2.2,'bet 2': 0.,'bet 3': 1.6,'bet 4': 0.}, '2-1':{'bet 1':2.2,'bet 2': 0.,'bet 3': 0.,'bet 4': 1.8},
+    '0-2':{'bet 1':0.,'bet 2':1.8,'bet 3': 1.6,'bet 4': 0.},'1-2':{'bet 1':0.,'bet 2':1.8,'bet 3':0.,'bet 4':1.8}}
+    bets = {'bet 1':2.5,'bet 2': 3.2,'bet 3': 0.,'bet 4': 1.2} 
+    print(ObjectiveMetricROI(outcome, zk, bets))
+    
 
 if __name__ == "__main__":
     main()

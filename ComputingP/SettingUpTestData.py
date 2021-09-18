@@ -34,6 +34,8 @@ def CreateTestDataSet(oddsCSVFiles, margin):
     for tournament in oddsData:
         print(len(tournament))
         numCollected = 0
+        #reset tournament
+        tournamentId = False
         for oddsMatch in tournament:
             # Create a list to store potential matches:
             finalPotentialMatches = []
@@ -78,6 +80,8 @@ def CreateTestDataSet(oddsCSVFiles, margin):
                 fullMatch = AppendOdds(finalPotentialMatches[0], oddsMatch, 8)
                 fullTestSet.append(fullMatch)
                 numCollected+=1
+                if(not tournamentId):
+                    tournamentId = fullMatch[1]
                 #print(fullTestSet)
             elif (len(finalPotentialMatches) > 1):
                 matchId = finalPotentialMatches[0][0]
@@ -89,10 +93,24 @@ def CreateTestDataSet(oddsCSVFiles, margin):
                     fullMatch = AppendOdds(finalPotentialMatches[0], oddsMatch, 8)
                     fullTestSet.append(fullMatch)
                     numCollected+= 1
+                    if(not tournamentId):
+                        tournamentId = fullMatch[1]
                     #print(fullTestSet)
                 else:
-                    print("Found multiple potential matches")
-                    print(finalPotentialMatches)
+                    tournamentCounter = 0
+                    tempMatch =[]
+                    for i in finalPotentialMatches:
+                        if(i[1] == tournamentId):
+                            tournamentCounter += 1
+                            tempMatch = i
+                    if (tournamentCounter == 1):
+                        fullMatch = AppendOdds(tempMatch, oddsMatch, 8)
+                        fullTestSet.append(fullMatch)
+                        numCollected+= 1
+                    else:    
+                        print("Found multiple potential matches")
+                        print(lastNamesA, lastNamesB)
+                        print(finalPotentialMatches)
             else:
                 print("no matches found")
         print(numCollected)
@@ -213,8 +231,8 @@ def WriteToCSV(testSet, file):
         csv_file.close()
 
 def main():
-    files = ['ATPWorldTourWeek2.csv','ATPIndianWells.csv','ATPMadrid.csv','ATPRome.csv' ]
-    margin = 7
+    files = ['ATPWorldTourWeek2.csv','ATPIndianWells.csv','ATPMadrid.csv','ATPRome.csv','ATPHalleWeek2.csv','ATPIndianWellsWeek2.csv','ATPMadridWeek2.csv' ]
+    margin = 10
     fileName = 'trainingSetForCalibrationWithROI.csv'
 
     '''
@@ -233,6 +251,7 @@ def main():
     print(testSet)
     print("length of test set = ")
     print(len(testSet))
+    WriteToCSV(testSet, fileName)
 
 if __name__ == "__main__":
     main()

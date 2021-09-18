@@ -23,7 +23,7 @@ def CVaRModel(Pk, odds, betsConsidered, RHS, betas):
         count += 1
 
     # Create the Linear Problem:
-    Problem = LpProblem("CVaR Model", LpMaximize)
+    Problem = LpProblem("CVaR_Model", LpMaximize)
 
     # Create the variables that correspond to the betting options:
     Bets = LpVariable.dicts("Bets", bettingOptions, lowBound = 0, upBound = 1, cat = 'Continuous')
@@ -55,7 +55,7 @@ def CVaRModel(Pk, odds, betsConsidered, RHS, betas):
 
     # Solve Model:
     # LpSolverDefault.msg = 1
-    Problem.solve()
+    Problem.solve(PULP_CBC_CMD(msg=0))
     #for var in Problem.variables():
      #   print(var.name, "=", var.varValue)
 
