@@ -31,6 +31,18 @@ def getIds(matchDetails, cursor):
     p2ID = cursor.fetchall()[0][0]
     return p1ID,p2ID
 
+def getIdForName(firstName, lastName):
+    conn = psy.connect('dbname=tcb user=postgres password=12qwaszx host=localhost')
+    cursor = conn.cursor()
+    query = "SELECT player_id FROM tcb.player WHERE UPPER(first_name) LIKE UPPER('"+firstName+"%') AND UPPER(last_name) = UPPER('"+lastName+"')"
+    cursor.execute(query)
+    response = cursor.fetchall()
+    if (response == []):
+        return False
+    else:    
+        id = response[0][0]
+        return id
+
 def getP1vP2(startOfDataCollection,cursor,p1ID,p2ID, dateOfTestMatch):
     
     query = f"select * from tcb.match m join tcb.match_stats s on \

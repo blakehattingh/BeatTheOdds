@@ -95,9 +95,10 @@ def getPotentialMatches(afterDate, beforeDate):
 
     # SQL Command:
     queryMatches = f"""select * from tcb.match m join tcb.match_stats s on m.match_id = s.match_id where m.date >= 
-    {afterDate} AND m.date < {beforeDate} AND m.best_of = 3 AND m.outcome is NULL"""
+    '{afterDate}' AND m.date < '{beforeDate}' AND m.best_of = 3 AND m.outcome is NULL"""
     cursor.execute(queryMatches)
-    potentialMatches.append(cursor.fetchall())
+    #potentialMatches.append(cursor.fetchall())
+    potentialMatches = cursor.fetchall()
         
     return potentialMatches
 

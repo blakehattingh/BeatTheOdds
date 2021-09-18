@@ -228,7 +228,7 @@ def ObjectiveFunction(parameters, testDataFN, obj, equation, riskProfile = [], b
         BESTCURRENTSOL = value
         LISTOFBESTOBJS.append(value)
     else:
-        LISTOFBESTOBJS.append(BESTCURRENTSOL)
+        LISTOFBESTOBJS.append(BESTCURRENTSOL) 
 
     # Minimising so return the negative of the value:
     return -1 * value
@@ -442,12 +442,15 @@ def main():
     person = 'Blake'
     
     if (person == 'Blake'):
-        trainingDataFN = 'threeHundredCalMatches.csv'
+        #trainingDataFN = 'threeHundredCalMatches.csv'
+        trainingDataFN = 'trainingSetForCalibrationWithROI.csv'
         testDataFN = 'hundredCalMatches.csv'
         #fileName = 'C:\\Uni\\4thYearProject\\repo\\BeatTheOdds\\CSVFiles\\CalibratedParametersAllEquations.csv'
-        fileName = 'C:\\Uni\\4thYearProject\\repo\\BeatTheOdds\\CSVFiles\\CalibratedParametersAllEquations2.csv'
+        #fileName = 'C:\\Uni\\4thYearProject\\repo\\BeatTheOdds\\CSVFiles\\CalibratedParametersAllEquations2.csv'
+        fileName = 'C:\\Uni\\4thYearProject\\repo\\BeatTheOdds\\CSVFiles\\CalibratedParametersROI.csv'
         #fileName2 = 'C:\\Uni\\4thYearProject\\repo\\BeatTheOdds\\CSVFiles\\CalibratedPlottingDataEq3.csv'
-        fileName2 = 'C:\\Uni\\4thYearProject\\repo\\BeatTheOdds\\CSVFiles\\CalibratedPlottingDataRound2.csv'
+        #fileName2 = 'C:\\Uni\\4thYearProject\\repo\\BeatTheOdds\\CSVFiles\\CalibratedPlottingDataRound2.csv'
+        fileName2 = 'C:\\Uni\\4thYearProject\\repo\\BeatTheOdds\\CSVFiles\\CalibratedPlottingDataROI.csv'
         fileName3 = 'C:\\Uni\\4thYearProject\\repo\\BeatTheOdds\\CSVFiles\\ObjectiveValuesForCalibratedParametersRound2.csv'
         fileNameFinalCal = 'C:\\Uni\\4thYearProject\\repo\\BeatTheOdds\\CSVFiles\\FinalCalibratedParametersAllEquations.csv'
     elif (person == 'Campbell'):
@@ -458,9 +461,9 @@ def main():
         fileName3 = os.path.join(THIS_FOLDER, 'ObjectiveValuesForCalibratedParameters.csv')
 
     # What are we doing? (Calibrated or testing? Match Stats or ROI? What equation?)
-    purpose = 'Testing'
-    obj = 'Match Stats'
-    equation = [1,2,3]
+    purpose = 'Calibration'
+    obj = 'ROI'
+    equation = [2]
     fromEquation = 2
     riskProfile = [1.,1.,1.]
     betas = [0.2, 1./3., 0.5]
