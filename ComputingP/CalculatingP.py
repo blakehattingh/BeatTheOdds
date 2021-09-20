@@ -14,19 +14,19 @@ from CalculatingP import *
 currentPath = os.path.abspath(os.getcwd())
 
 # Markov Model Files:
-sys.path.insert(0, currentPath + '\\BeatTheOdds\\MarkovModel')
-# sys.path.insert(0, currentPath + '\MarkovModel')
+#sys.path.insert(0, currentPath + '\\BeatTheOdds\\MarkovModel')
+sys.path.insert(0, currentPath + '\MarkovModel')
 from FirstImplementation import *
 
 
 # Optimisation Model Files:
-sys.path.insert(0, currentPath + '\\BeatTheOdds\\OptimisationModel')
-#sys.path.insert(0, currentPath + '\\OptimisationModel')
+#sys.path.insert(0, currentPath + '\\BeatTheOdds\\OptimisationModel')
+sys.path.insert(0, currentPath + '\\OptimisationModel')
 from CVaRModel import *
 
 # Data Extraction Files:
-sys.path.insert(0, currentPath + '\\BeatTheOdds\\DataExtraction')
-#sys.path.insert(0, currentPath + '\\DataExtraction')
+#sys.path.insert(0, currentPath + '\\BeatTheOdds\\DataExtraction')
+sys.path.insert(0, currentPath + '\\DataExtraction')
 from TestSetCollector import *
 from DataCollector import *
 
@@ -728,7 +728,7 @@ def ReadInData(fileName):
     
     return testData
 
-def test(DB, matchesFileName):
+def test(DB, matchesFileName, obj):
     # Test the ROI as an objective on a small test manually gathered.
     FirstTest = False
     ExtensiveTest = True
@@ -769,27 +769,29 @@ def test(DB, matchesFileName):
             
     # Iterate through the matches we have data for:
     objectiveValues = {}
-    objectiveValues['Match Outcome'] = []
-    objectiveValues['Match Score'] = []
-    objectiveValues['Set Score'] = []
-    objectiveValues['ROI'] = {}
-    objectiveValues['ROI']['Risk-Averse'] = []
-    objectiveValues['ROI']['Risk-Neutral'] = []
-    objectiveValues['ROI']['Risk-Seeking'] = []
-    ROIs = {}    
-    ROIs['Risk-Averse'] = []
-    ROIs['Risk-Neutral'] = []
-    ROIs['Risk-Seeking'] = []
-    overallROIs = {}
-    overallROIs['Risk-Averse'] = {}
-    overallROIs['Risk-Neutral'] = {}
-    overallROIs['Risk-Seeking'] = {}
-    overallROIs['Risk-Averse']['Spent'] = []
-    overallROIs['Risk-Averse']['Returns'] = []
-    overallROIs['Risk-Neutral']['Spent'] = []
-    overallROIs['Risk-Neutral']['Returns'] = []
-    overallROIs['Risk-Seeking']['Spent'] = []
-    overallROIs['Risk-Seeking']['Returns'] = []
+    if (obj == 'Match Stats'):
+        objectiveValues['Match Outcome'] = []
+        objectiveValues['Match Score'] = []
+        objectiveValues['Set Score'] = []
+    else:
+        objectiveValues['ROI'] = {}
+        objectiveValues['ROI']['Risk-Averse'] = []
+        objectiveValues['ROI']['Risk-Neutral'] = []
+        objectiveValues['ROI']['Risk-Seeking'] = []
+        ROIs = {}    
+        ROIs['Risk-Averse'] = []
+        ROIs['Risk-Neutral'] = []
+        ROIs['Risk-Seeking'] = []
+        overallROIs = {}
+        overallROIs['Risk-Averse'] = {}
+        overallROIs['Risk-Neutral'] = {}
+        overallROIs['Risk-Seeking'] = {}
+        overallROIs['Risk-Averse']['Spent'] = []
+        overallROIs['Risk-Averse']['Returns'] = []
+        overallROIs['Risk-Neutral']['Spent'] = []
+        overallROIs['Risk-Neutral']['Returns'] = []
+        overallROIs['Risk-Seeking']['Spent'] = []
+        overallROIs['Risk-Seeking']['Returns'] = []
 
     # Construct varying possible risk profiles:
     betsConsidered = [1,1,1,0,0]
@@ -810,71 +812,73 @@ def test(DB, matchesFileName):
         setScores = ExtractSetScores(match[8])
         outcome = '{}-{}'.format(int(matchScore[0]),int(matchScore[1]))
 
-        # Compute the objective metrics for this match:
-        objectiveValues['Match Outcome'].append(ObjectiveMetricMatchOutcome(Dists['Match Outcome'], winner))
-        objectiveValues['Match Score'].append(ObjectiveMetricMatchScore(Dists['Match Score'], matchScore))
-        objectiveValues['Set Score'].append(ObjectiveMetricSetScore(Dists['Set Score'], setScores))
+        if (obj == 'Match Stats'):
+            # Compute the objective metrics for this match:
+            objectiveValues['Match Outcome'].append(ObjectiveMetricMatchOutcome(Dists['Match Outcome'], winner))
+            objectiveValues['Match Score'].append(ObjectiveMetricMatchScore(Dists['Match Score'], matchScore))
+            objectiveValues['Set Score'].append(ObjectiveMetricSetScore(Dists['Set Score'], setScores))
+        else:
+            # Find the best bets to place:
+            for profile in riskProfiles:
+                # Set up the list to store all the ROI values for each alpha 3:
+                allROIs = np.zeros(N, dtype = float)
+                allSpent = np.zeros(N, dtype = float)
+                allReturns = np.zeros(N, dtype = float) 
+                counter = 0
 
-        # Find the best bets to place:
-        for profile in riskProfiles:
-            # Set up the list to store all the ROI values for each alpha 3:
-            allROIs = np.zeros(N, dtype = float)
-            allSpent = np.zeros(N, dtype = float)
-            allReturns = np.zeros(N, dtype = float) 
-            counter = 0
+                # Iterate through possible alpha_3 values:
+                for alpha_3 in alphaValues_3[profile]:
+                    riskProfiles[profile][2] = alpha_3
+                    # Run CVaR model:
+                    [Zk, suggestedBets] = RunCVaRModel(betsConsidered,Dists['Match Score'],riskProfiles[profile],
+                    betas,[float(match[18]),float(match[19])],[float(match[20]),float(match[21]),float(match[22]),
+                    float(match[23])],[float(match[24]),float(match[25])],oddsSS=[],oddsNumGames=[])
 
-            # Iterate through possible alpha_3 values:
-            for alpha_3 in alphaValues_3[profile]:
-                riskProfiles[profile][2] = alpha_3
-                # Run CVaR model:
-                [Zk, suggestedBets] = RunCVaRModel(betsConsidered,Dists['Match Score'],riskProfiles[profile],
-                betas,[float(match[18]),float(match[19])],[float(match[20]),float(match[21]),float(match[22]),
-                float(match[23])],[float(match[24]),float(match[25])],oddsSS=[],oddsNumGames=[])
+                    # "place" these bets and the computed the ROI:
+                    [ROI, spent, returns] = ObjectiveMetricROI(outcome, Zk, suggestedBets)
+                    allROIs[counter] = ROI
+                    allSpent[counter] = spent
+                    allReturns[counter] = returns
+                    counter += 1
 
-                # "place" these bets and the computed the ROI:
-                [ROI, spent, returns] = ObjectiveMetricROI(outcome, Zk, suggestedBets)
-                allROIs[counter] = ROI
-                allSpent[counter] = spent
-                allReturns[counter] = returns
-                counter += 1
+                # Store it in ROIs:
+                ROIs[profile].append(allROIs)
+                overallROIs[profile]['Spent'].append(allSpent)
+                overallROIs[profile]['Returns'].append(allReturns) 
 
-            # Store it in ROIs:
-            ROIs[profile].append(allROIs)
-            overallROIs[profile]['Spent'].append(allSpent)
-            overallROIs[profile]['Returns'].append(allReturns) 
+    if (obj == 'ROI'):
+        # Compute the average ROI for each profile:
+        averageOverallROIs = {}
+        for profile in objectiveValues['ROI']:
+            averageROIs = np.zeros(N, dtype = float)
+            averageSpent = np.zeros(N, dtype = float)
+            averageReturns = np.zeros(N, dtype = float)
+            for alpha in range(N):
+                for match in range(len(ROIs[profile])):
+                    averageROIs[alpha] += ROIs[profile][match][alpha]
+                    averageSpent[alpha] += overallROIs[profile]['Spent'][match][alpha]
+                    averageReturns[alpha] += overallROIs[profile]['Returns'][match][alpha]
+                averageReturns[alpha] = averageReturns[alpha] - averageSpent[alpha]
 
-    # Compute the average ROI for each profile:
-    averageOverallROIs = {}
-    for profile in objectiveValues['ROI']:
-        averageROIs = np.zeros(N, dtype = float)
-        averageSpent = np.zeros(N, dtype = float)
-        averageReturns = np.zeros(N, dtype = float)
-        for alpha in range(N):
-            for match in range(len(ROIs[profile])):
-                averageROIs[alpha] += ROIs[profile][match][alpha]
-                averageSpent[alpha] += overallROIs[profile]['Spent'][match][alpha]
-                averageReturns[alpha] += overallROIs[profile]['Returns'][match][alpha]
-            averageReturns[alpha] = averageReturns[alpha] - averageSpent[alpha]
+            # Divide by number of matches:
+            averageROIs = averageROIs / N
+            objectiveValues['ROI'][profile] = averageROIs
+            averageOverallROIs[profile] = (averageReturns / averageSpent) * 100.
 
-        # Divide by number of matches:
-        averageROIs = averageROIs / N
-        objectiveValues['ROI'][profile] = averageROIs
-        averageOverallROIs[profile] = (averageReturns / averageSpent) * 100.
-
-    # Create a plot of the 3 sequences of ROIs:
-    for profile in objectiveValues['ROI']:
-        plt.plot(alphaValues_3[profile], objectiveValues['ROI'][profile], label = profile)
-    plt.xlabel('Alpha 3 - Proportion willing to lose in the worst 50% of cases')
-    plt.ylabel('ROI as a percentage')
-    plt.legend()
-    plt.show()
-
-    for profile in averageOverallROIs:
-        plt.plot(alphaValues_3[profile], averageOverallROIs[profile], label = profile)
+        # Create a plot of the 3 sequences of ROIs:
+        for profile in objectiveValues['ROI']:
+            plt.plot(alphaValues_3[profile], objectiveValues['ROI'][profile], label = profile)
         plt.xlabel('Alpha 3 - Proportion willing to lose in the worst 50% of cases')
-        plt.ylabel('Overall ROI as a percentage')
-    plt.legend()
-    plt.show()
+        plt.ylabel('ROI as a percentage')
+        plt.legend()
+        plt.show()
+
+        for profile in averageOverallROIs:
+            plt.plot(alphaValues_3[profile], averageOverallROIs[profile], label = profile)
+            plt.xlabel('Alpha 3 - Proportion willing to lose in the worst 50% of cases')
+            plt.ylabel('Overall ROI as a percentage')
+        plt.legend()
+        plt.show()
 
 def main():
     #outcome = '2-0'
@@ -886,6 +890,9 @@ def main():
     DB = ReadInGridDB('ModelDistributions2.csv')
     test(DB, '2018_19MatchesWithOdds.csv')
     
+    # Test for CVaR Model:
+    DB = ReadInGridDB('ModelDistributions2.csv')
+    test(DB, '2018_19MatchesWithOdds.csv', 'ROI')
 
 if __name__ == "__main__":
     main()
