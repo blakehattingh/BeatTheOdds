@@ -881,13 +881,14 @@ def test(DB, matchesFileName, obj):
         plt.show()
 
 def main():
+    #outcome = '2-0'
+    #zk = {'2-0':{'bet 1':2.2,'bet 2': 0.,'bet 3': 1.6,'bet 4': 0.}, '2-1':{'bet 1':2.2,'bet 2': 0.,'bet 3': 0.,'bet 4': 1.8},
+    #'0-2':{'bet 1':0.,'bet 2':1.8,'bet 3': 1.6,'bet 4': 0.},'1-2':{'bet 1':0.,'bet 2':1.8,'bet 3':0.,'bet 4':1.8}}
+    #bets = {'bet 1':2.5,'bet 2': 3.2,'bet 3': 0.,'bet 4': 1.2} 
+    #print(ObjectiveMetricROI(outcome, zk, bets))
 
-    # Test for ObejectiveMetricROI:
-    outcome = '2-0'
-    zk = {'2-0':{'bet 1':2.2,'bet 2': 0.,'bet 3': 1.6,'bet 4': 0.}, '2-1':{'bet 1':2.2,'bet 2': 0.,'bet 3': 0.,'bet 4': 1.8},
-    '0-2':{'bet 1':0.,'bet 2':1.8,'bet 3': 1.6,'bet 4': 0.},'1-2':{'bet 1':0.,'bet 2':1.8,'bet 3':0.,'bet 4':1.8}}
-    bets = {'bet 1':2.5,'bet 2': 3.2,'bet 3': 0.,'bet 4': 1.2} 
-    print(ObjectiveMetricROI(outcome, zk, bets))
+    DB = ReadInGridDB('ModelDistributions2.csv')
+    test(DB, '2018_19MatchesWithOdds.csv')
     
     # Test for CVaR Model:
     DB = ReadInGridDB('ModelDistributions2.csv')

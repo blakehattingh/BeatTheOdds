@@ -361,7 +361,7 @@ def getCalibratedParamsFromCSV(eqNum,fromEq,thetas=[], fileName = ''):
     startingPoints = []
     #create starting points
     if(fileName == ''):
-        ageValues = [2, 4]
+        ageValues = [2,4,6]
         surfaceValues = [0.25, 0.5, 0.75]
         weightingValues = [0.25, 0.5, 0.75]
         thetaValues = [0.25, 0.5, 0.75]
@@ -443,16 +443,21 @@ def main():
     
     if (person == 'Blake'):
         #trainingDataFN = 'threeHundredCalMatches.csv'
-        trainingDataFN = 'trainingSetForCalibrationWithROI.csv'
-        testDataFN = 'hundredCalMatches.csv'
+        trainingDataFN = 'trainingSetSplitCalibrationForROI.csv'
+        #testDataFN = 'hundredCalMatches.csv'
+        testDataFN = 'testSetSplitCalibrationForROI.csv'
         #fileName = 'C:\\Uni\\4thYearProject\\repo\\BeatTheOdds\\CSVFiles\\CalibratedParametersAllEquations.csv'
         #fileName = 'C:\\Uni\\4thYearProject\\repo\\BeatTheOdds\\CSVFiles\\CalibratedParametersAllEquations2.csv'
-        fileName = 'C:\\Uni\\4thYearProject\\repo\\BeatTheOdds\\CSVFiles\\CalibratedParametersROI.csv'
+        #fileName = 'C:\\Uni\\4thYearProject\\repo\\BeatTheOdds\\CSVFiles\\CalibratedParametersROI.csv'
+        fileName = 'C:\\Uni\\4thYearProject\\repo\\BeatTheOdds\\CSVFiles\\CalibratedParametersROIWithRiskProfile.csv'
         #fileName2 = 'C:\\Uni\\4thYearProject\\repo\\BeatTheOdds\\CSVFiles\\CalibratedPlottingDataEq3.csv'
         #fileName2 = 'C:\\Uni\\4thYearProject\\repo\\BeatTheOdds\\CSVFiles\\CalibratedPlottingDataRound2.csv'
-        fileName2 = 'C:\\Uni\\4thYearProject\\repo\\BeatTheOdds\\CSVFiles\\CalibratedPlottingDataROI.csv'
-        fileName3 = 'C:\\Uni\\4thYearProject\\repo\\BeatTheOdds\\CSVFiles\\ObjectiveValuesForCalibratedParametersRound2.csv'
-        fileNameFinalCal = 'C:\\Uni\\4thYearProject\\repo\\BeatTheOdds\\CSVFiles\\FinalCalibratedParametersAllEquations.csv'
+        #fileName2 = 'C:\\Uni\\4thYearProject\\repo\\BeatTheOdds\\CSVFiles\\CalibratedPlottingDataROI.csv'
+        fileName2 = 'C:\\Uni\\4thYearProject\\repo\\BeatTheOdds\\CSVFiles\\CalibratedPlottingDataROIWithRiskProfile.csv'
+        #fileName3 = 'C:\\Uni\\4thYearProject\\repo\\BeatTheOdds\\CSVFiles\\ObjectiveValuesForCalibratedParametersRound2.csv'
+        fileName3 = 'C:\\Uni\\4thYearProject\\repo\\BeatTheOdds\\CSVFiles\\TestingPlottingDataROI.csv'
+        #fileNameFinalCal = 'C:\\Uni\\4thYearProject\\repo\\BeatTheOdds\\CSVFiles\\FinalCalibratedParametersAllEquations.csv'
+        fileNameFinalCal = 'C:\\Uni\\4thYearProject\\repo\\BeatTheOdds\\CSVFiles\\CalibratedParametersROI.csv'
     elif (person == 'Campbell'):
         # Get location of file:
         THIS_FOLDER = os.path.abspath('CSVFiles')
@@ -465,7 +470,7 @@ def main():
     obj = 'ROI'
     equation = [2]
     fromEquation = 2
-    riskProfile = [1.,1.,1.]
+    riskProfile = [0.6,0.4,0.2]
     betas = [0.2, 1./3., 0.5]
     thetas = [0.25,0.5,0.75]
 
