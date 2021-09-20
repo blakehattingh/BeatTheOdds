@@ -202,8 +202,8 @@ def ObjectiveFunction(parameters, testDataFN, obj, equation, riskProfile = [], b
     # - riskProfile and betas: Only needed when using ROI as objective, describes the users risk profile
     
     # Evaluate the equation on the test set:
-    objMetric = EvalEquations(testDataFN, obj, [equation], parameters[0], parameters[1], parameters[2], riskProfile,
-    betas)
+    objMetric = EvalEquations(testDataFN, obj, [equation], parameters[0], parameters[1], parameters[2],
+        riskProfile = riskProfile,betas = betas)
 
     # Compute the objective metric:
     if (obj == 'Match Stats'):
@@ -379,22 +379,19 @@ def getCalibratedParamsFromCSV(eqNum,fromEq,thetas=[], fileName = ''):
             csv_reader = csv.reader(csv_file, delimiter=',')
             line_count = 0
             for row in csv_reader:
-                if line_count == 0:
-                    line_count += 1
-                else:
-                    if(row[0] == str(fromEq)):
-                        if(eqNum == 3):
-                            if(fromEq != 3):
-                                for theta in thetas:
-                                    params = [float(row[2]),float(row[3]),float(row[4]), theta]
-                                    startingPoints.append(params)
-                            else:
-                                params = [float(row[2]),float(row[3]),float(row[4]), float(row[5])]
+                if(row[0] == str(fromEq)):
+                    if(eqNum == 3):
+                        if(fromEq != 3):
+                            for theta in thetas:
+                                params = [float(row[2]),float(row[3]),float(row[4]), theta]
                                 startingPoints.append(params)
                         else:
-                            params = [float(row[2]),float(row[3]),float(row[4])]
+                            params = [float(row[2]),float(row[3]),float(row[4]), float(row[5])]
                             startingPoints.append(params)
-                    line_count += 1
+                    else:
+                        params = [float(row[2]),float(row[3]),float(row[4])]
+                        startingPoints.append(params)
+                line_count += 1
         
     return startingPoints
 
@@ -455,9 +452,11 @@ def main():
         #fileName2 = 'C:\\Uni\\4thYearProject\\repo\\BeatTheOdds\\CSVFiles\\CalibratedPlottingDataROI.csv'
         fileName2 = 'C:\\Uni\\4thYearProject\\repo\\BeatTheOdds\\CSVFiles\\CalibratedPlottingDataROIWithRiskProfile.csv'
         #fileName3 = 'C:\\Uni\\4thYearProject\\repo\\BeatTheOdds\\CSVFiles\\ObjectiveValuesForCalibratedParametersRound2.csv'
-        fileName3 = 'C:\\Uni\\4thYearProject\\repo\\BeatTheOdds\\CSVFiles\\TestingPlottingDataROI.csv'
+        #fileName3 = 'C:\\Uni\\4thYearProject\\repo\\BeatTheOdds\\CSVFiles\\TestingPlottingDataROI.csv'
+        fileName3 = 'C:\\Uni\\4thYearProject\\repo\\BeatTheOdds\\CSVFiles\\TestingPlottingDataROIWithRiskProfile.csv'
         #fileNameFinalCal = 'C:\\Uni\\4thYearProject\\repo\\BeatTheOdds\\CSVFiles\\FinalCalibratedParametersAllEquations.csv'
-        fileNameFinalCal = 'C:\\Uni\\4thYearProject\\repo\\BeatTheOdds\\CSVFiles\\CalibratedParametersROI.csv'
+        #fileNameFinalCal = 'C:\\Uni\\4thYearProject\\repo\\BeatTheOdds\\CSVFiles\\CalibratedParametersROI.csv'
+        fileNameFinalCal = 'C:\\Uni\\4thYearProject\\repo\\BeatTheOdds\\CSVFiles\\CalibratedParametersROIWithRiskProfile.csv'
     elif (person == 'Campbell'):
         # Get location of file:
         THIS_FOLDER = os.path.abspath('CSVFiles')
@@ -466,7 +465,7 @@ def main():
         fileName3 = os.path.join(THIS_FOLDER, 'ObjectiveValuesForCalibratedParameters.csv')
 
     # What are we doing? (Calibrated or testing? Match Stats or ROI? What equation?)
-    purpose = 'Calibration'
+    purpose = 'Testing'
     obj = 'ROI'
     equation = [2]
     fromEquation = 2
