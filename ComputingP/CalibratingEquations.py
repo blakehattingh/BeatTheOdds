@@ -202,8 +202,8 @@ def ObjectiveFunction(parameters, testDataFN, obj, equation, riskProfile = [], b
     # - riskProfile and betas: Only needed when using ROI as objective, describes the users risk profile
     
     # Evaluate the equation on the test set:
-    objMetric = EvalEquations(testDataFN, obj, [equation], parameters[0], parameters[1], parameters[2], riskProfile,
-    betas)
+    objMetric = EvalEquations(testDataFN, obj, [equation], parameters[0], parameters[1], parameters[2], riskProfile = riskProfile,
+    betas = betas)
 
     # Compute the objective metric:
     if (obj == 'Match Stats'):
