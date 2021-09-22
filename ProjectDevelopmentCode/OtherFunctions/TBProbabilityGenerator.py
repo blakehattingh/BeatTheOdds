@@ -2,7 +2,7 @@ from AdditionalFunctions import TieBreakerProbability
 import numpy as np
 import csv
 
-def main():
+def BuildingTheTBDataBase():
     # Calculating the TB values for each possible combination of P1S and P2S values:
     # Store each probability for player 1 winning for each combination of P1S and P2S values:
     # Each row corresponds to a new P1S value:
