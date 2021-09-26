@@ -60,7 +60,7 @@ def CVaRModel(Pk, odds, betsConsidered, RHS, betas):
      #   print(var.name, "=", var.varValue)
 
     # Return Zk matrix and the suggested bets:
-    return [Zk, Problem.variables()[0:len(Bets)]]
+    return [Zk, Problem.variables()[0:len(Bets)], value(Problem.objective)]
 
 def CreateZMatrix(betsConsidered, odds, probabilities):
     # Given a set of bets to consider and their corresponding odds, this function creates the "Payoff Matrix" (Z)
@@ -79,18 +79,17 @@ def CreateZMatrix(betsConsidered, odds, probabilities):
     # 1) Match Outcome (2 outcomes: AWins, BWins)
     # 2) Match Score (4 outcomes: 2-0, 2-1, 0-2, 1-2)
     # 3) Number of Sets (2 outcomes: 2, 3)
+    # NOT being considered:
     # 4) Set Score (14 outcomes: 6-0, 6-1... 7-5, 7-6, 0-6, 1-6... 5-7, 6-7)
     # 5) Number of Games (10 outcomes: O/U 20.5, O/U 22.5, O/U 24.5, O/U 26.5, O/U 28.5)
 
     # Check the inputs:
-    if (len(betsConsidered) != 5):
-        raise ValueError('Length of First Input must be 5')
+    if (len(betsConsidered) != 3):
+        raise ValueError('Length of First Input must be 3')
     
     # Create the list of betting options we are considering:
     options = {'Match Outcome': ['AWins','BWins'], 'Match Score': ['2-0','2-1','0-2','1-2'],
-    'Number of Sets': ['2','3'], 'Set Score': ['6-0','6-1','6-2','6-3','6-4','7-5','7-6','0-6','1-6','2-6',
-    '3-6','4-6','5-7','6-7'], 'Number of Games': ['u20.5','o20.5','u22.5','o22.5','u24.5','o24.5','u26.5',
-    'o26.5','u28.5','o28.5']}
+    'Number of Sets': ['2','3']}
     bettingOptions = []
     count = 0
     for option in options:
@@ -103,10 +102,7 @@ def CreateZMatrix(betsConsidered, odds, probabilities):
  
     # Create a dictionary showing which bets payout under which outcomes:
     paysOut = {'AWins':['2-0','2-1'], 'BWins':['0-2','1-2'], '2-0': ['2-0'], '2-1': ['2-1'], '0-2': ['0-2'],
-    '1-2': ['1-2'], '2': ['2-0', '0-2'], '3': ['2-1','1-2'], '6-0': [], '6-1': [], '6-2': [], '6-3': [], 
-    '6-4': [], '7-5': [], '7-6': [], '0-6': [], '1-6': [], '2-6': [], '3-6': [], '4-6': [], '5-7': [],
-    '6-7': [], 'u20.5': [], 'o20.5': [], 'u22.5': [], 'o22.5': [], 'u24.5': [], 'o24.5': [], 'u26.5': [],
-    'o26.5': [], 'u28.5': [], 'o28.5': []}
+    '1-2': ['1-2'], '2': ['2-0', '0-2'], '3': ['2-1','1-2']}
 
     # Create the Z matrix:
     Zk = {}
@@ -135,18 +131,14 @@ def CreateZMatrix(betsConsidered, odds, probabilities):
 
     return [Zk, oddCoef, bettingOptions]
 
-def RunCVaRModel(betsConsidered,probDist,RHS,betas,oddsMO,oddsMS,oddsNumSets,oddsSS=[],oddsNumGames=[]):
+def RunCVaRModel(betsConsidered,probDist,RHS,betas,odds):
     # This function sets up the required data and runs the CVaR model, returning a set of bets to make.
     # Inputs:
     # - betsConsidered: A list of booleans of the bets we want to consider (Outcome, Score, #Sets, SS, #Games)
     # - probDist: A list of probabilities corresponding to the possible outcomes (currently 2-0, 2-1, 0-2, 1-2)
     # - RHS: A list of RHS values from the user about their risk profile
     # - betas: The beta parameters we are using in the CVaR model (Currently 0.2, 0.33, 0.5)
-    # - odds--: The odds for each type of bet as a list e.g. [oddsAWins, oddsBWins]
-
-    # Create odds dictionary:
-    odds = {'Match Outcome': oddsMO, 'Match Score': oddsMS, 'Number of Sets': oddsNumSets,
-    'Set Score': oddsSS, 'Number of Games': oddsNumGames}
+    # - odds: The odds for each type of bet in dictionary format
 
     # Run the CVaR model:
     [Zk, suggestedBets] = CVaRModel(probDist, odds, betsConsidered, RHS, betas)

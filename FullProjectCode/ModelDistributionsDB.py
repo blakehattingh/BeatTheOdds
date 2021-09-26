@@ -183,7 +183,7 @@ def ValidatingStepSize(DB,StepSize):
 
 def ReadInGridDB(FileName):
     # Get location of file:
-    FileName = os.path.join('\\CSVFiles', FileName)
+    FileName = os.path.join('FullProjectCode\\CSVFiles', FileName)
 
     # Read in the model distributions database: 
     DB = {} 
