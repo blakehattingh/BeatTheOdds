@@ -192,7 +192,7 @@ def ExtractSetScores(setScoresStirng):
 
 def ReadInData(fileName):
     # Get location of file:
-    fileName = os.path.join('\\CSVFiles', fileName)
+    fileName = os.path.join('FullProjectCode\\CSVFiles', fileName)
 
     # Read in CSV file:
     testData = []
