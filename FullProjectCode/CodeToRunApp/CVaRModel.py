@@ -141,7 +141,7 @@ def RunCVaRModel(betsConsidered,probDist,RHS,betas,odds):
     # - odds: The odds for each type of bet in dictionary format
 
     # Run the CVaR model:
-    [Zk, suggestedBets] = CVaRModel(probDist, odds, betsConsidered, RHS, betas)
+    [Zk, suggestedBets, obj] = CVaRModel(probDist, odds, betsConsidered, RHS, betas)
 
     # Extract and store the values of the variables:
     bets = {}
@@ -160,4 +160,4 @@ def RunCVaRModel(betsConsidered,probDist,RHS,betas,odds):
         bets[betName] = suggestedBets[count].varValue
         count += 1
 
-    return [Zk, bets]
+    return [Zk, bets, obj]
