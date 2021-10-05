@@ -111,3 +111,10 @@ def ComputeBets(matchDetails, riskProfile, riskParameters, betas, budget, oddsMO
     #       - Expected payout overall (includes their betted amount)
     #       - Expected profit (minus their bets)
     #       - Payout under eacu possible scenario (2-0, 2-1, 0-2, 1-2)
+
+def main():
+    # Run Compete Bets:
+    ComputeBets([], [], [], [], [], [], [], [])
+
+if __name__ == "__main__":
+    main()
