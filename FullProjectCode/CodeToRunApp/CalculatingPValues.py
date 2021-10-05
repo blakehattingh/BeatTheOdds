@@ -4,7 +4,7 @@ def CalcPEquation(matchDetails,equation,calibratedParams,PrevMatches,PrevMatches
     # This function computes the respective P values for two opponents playing on a specified surface.
 
     # Inputs:
-    # - matchDetails: A list of required match details (P1ID, P2ID, Date of Match, Surface being Played on)
+    # - matchDetails: A list of required match details (P1ID, P2ID, Surface being Played on)
     # - equation: What equation we will use to compute P
     # - calibratedParams: A list of hyperparameters to use to compute P (Age, Surface, Weightin, Theta if needed)
     # - PrevMatches = The previous matches between the players playing in the match
@@ -22,8 +22,7 @@ def CalcPEquation(matchDetails,equation,calibratedParams,PrevMatches,PrevMatches
     # Extract required info:
     PlayerA = int(matchDetails[0])
     PlayerB = int(matchDetails[1])
-    dateOfMatch = matchDetails[2]
-    surfaceOfMatch = matchDetails[3]
+    surfaceOfMatch = matchDetails[2]
 
     # Extract calibrated parameters:
     age = calibratedParams[0]

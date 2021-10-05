@@ -694,17 +694,21 @@ def testRegretConstraints(DB, matchesFileName):
     outcome = '{}-{}'.format(int(matchScore[0]),int(matchScore[1]))
 
     # Set up the risk parameters:
+    profile = 'Risk-Seeking'
     betsConsidered = [1,1,1,0,0]
-    betasLoss = [0.2, 0.33, 0.5]
-    alphasLoss = [1., 1., 1.]
-    betasRegret = [0.5]
-    alphasRegret = [1.]
+    #betas = [0.2, 0.33, 0.5]
+    #alphas = [0.8, 0.6, 0.4]
+    betas = [0.2]
+    alphas = [2.52]
 
     # Run CVaR model:
-    [Zk, suggestedBets] = RunCVaRModel(betsConsidered,Dists['Match Score'],'Risk-Seeking', alphasLoss,
-    betasLoss,[float(match[18]),float(match[19])],[float(match[20]),float(match[21]),float(match[22]),
-    float(match[23])],[float(match[24]),float(match[25])],RHSRegret = alphasRegret,betasRegret = betasRegret)
-
+    
+    [Zk, suggestedBets] = RunCVaRModel(betsConsidered,Dists['Match Score'],profile, alphas,betas,
+    [float(match[18]),float(match[19])],[float(match[20]),float(match[21]),float(match[22]),
+    float(match[23])],[float(match[24]),float(match[25])])
+    '''
+    [Zk, suggestedBets] = RunCVaRModel(betsConsidered,Dists['Match Score'],profile,alphas,betas,[1.5,1.5],[2.,2.,2.,2.],[1.2, 1.2])
+    '''
     # "place" these bets and the computed the ROI:
     [ROI, spent, returns] = ObjectiveMetricROI(outcome, Zk, suggestedBets)
     print(suggestedBets)

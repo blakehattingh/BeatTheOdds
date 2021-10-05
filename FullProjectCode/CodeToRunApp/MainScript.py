@@ -1,15 +1,16 @@
-from datetime import timedelta
+from datetime import timedelta, date
+from time import strptime
 from CalculatingPValues import CalcPEquation
 from DataExtractionFromDB import getSPWData
 from InterpolatingDistributions import InterpolateDists
-from ModelDistributionsDB import ReadInGridDB
+from ReadInGridDB import ReadInGridDB
 from CVaRModel import RunCVaRModel
 
 def ComputeBets(matchDetails, riskProfile, riskParameters, betas, budget, oddsMO, oddsMS, oddsNS):
     # This function computes the optimal bets to suggest to a specific user, based off their risk profile.
 
     # Inputs:
-    # - matchDetails: A list of required match details (P1ID, P2ID, Date of Match, Surface being Played on)
+    # - matchDetails: A list of required match details (P1ID, P2ID, Surface being Played on)
     # - riskProfile: The user's risk profile (either 'Risk-Seeking', 'Risk-Neutral' or 'Risk-Averse')
     # - riskParameters: A list of parameters relating to the users responses to the risk questions
     # - betas: The quantiles used in the questions
@@ -24,6 +25,10 @@ def ComputeBets(matchDetails, riskProfile, riskParameters, betas, budget, oddsMO
     equation = 2
     options = ['Match Outcome', 'Match Score', 'Number of Sets']
 
+    # Todays Date:
+    todaysDate = date.today()
+    todaysDateFormatted = strptime(todaysDate, "%d/%m/%Y")
+
     # Use the calibrated parameters for the given user's risk profile:
     if (riskProfile == 'Risk-Seeking'):
         # Calibrated parameters for a risk-seeking profile:
@@ -34,8 +39,8 @@ def ComputeBets(matchDetails, riskProfile, riskParameters, betas, budget, oddsMO
 
     # Extract the required historical data for computing P:
     ageGap = timedelta(days = 365.25 * calibratedParameters[0])
-    startOfDataCollection = matchDetails[2] - ageGap
-    [p1vP2, p1vCO, p2vCO, COIds] = getSPWData(matchDetails[0],matchDetails[1],matchDetails[2],startOfDataCollection)
+    startOfDataCollection = todaysDateFormatted - ageGap
+    [p1vP2, p1vCO, p2vCO, COIds] = getSPWData(matchDetails[0],matchDetails[1], todaysDateFormatted, startOfDataCollection)
 
     # Compute Pa and Pb:
     [Pa, Pb, Message] = CalcPEquation(matchDetails, 2, calibratedParameters, p1vP2, p1vCO, p2vCO, COIds)
@@ -107,7 +112,7 @@ def ComputeBets(matchDetails, riskProfile, riskParameters, betas, budget, oddsMO
     #         more than X % of your budget, if you would like to change this, please click here etc.
 
     # 2) A table highlighting the follow features of their betting portfolio:
-    #       - Amount betting
+    #       - Amount betted
     #       - Expected payout overall (includes their betted amount)
     #       - Expected profit (minus their bets)
     #       - Payout under eacu possible scenario (2-0, 2-1, 0-2, 1-2)

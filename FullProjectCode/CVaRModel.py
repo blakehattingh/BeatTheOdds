@@ -1,7 +1,7 @@
 from pulp import *
 import numpy as np
 
-def CVaRModel(Pk, odds, betsConsidered, profile, alphasLoss, betasLoss, alphasRegret = [], betasRegret = []):
+def CVaRModel(Pk, odds, betsConsidered, profile, alphas, betas):
     # Inputs:
     # - Pk: The probability of outcome 'k' occuring
     # - odds: a dictionary of odds with ALL bet types as keys
@@ -11,7 +11,6 @@ def CVaRModel(Pk, odds, betsConsidered, profile, alphasLoss, betasLoss, alphasRe
     # - profile: The users risk profile, either "Risk-Averse, Risk-Neutral or Risk-Seeking"
     #   - This affects the number of alpha and beta values that should be inputted
     # - alphas and betas: parameters corresponding to the users risk profile 
-    #   - the Loss ones refer to averse or neutral profiles whereas the regret ones are for risk seeking profiles 
     
     # Create the Zk matrix, the oddCoef vector and the list of available bets:
     [Zk, oddCoef, bettingOptions] = CreateZMatrix(betsConsidered, odds, Pk)
@@ -20,13 +19,45 @@ def CVaRModel(Pk, odds, betsConsidered, profile, alphasLoss, betasLoss, alphasRe
     Outcomes = ['2-0', '2-1', '0-2', '1-2']
     Pk = dict(zip(Outcomes, Pk))
 
-    # Set up the appropriate CVaR constraints to add to the model:
-    risksLoss = {}
-    count = 0
+    # Profile = Risk-Neutral:
+    if (profile == 'Risk-Neutral'):
+        return CVaRModelRN(bettingOptions, oddCoef, Zk)
+    
+    # Profile = Risk-Averse:
+    elif (profile == 'Risk-Averse'):
+        return CVaRModelRA(betas, alphas, bettingOptions, Outcomes, oddCoef, Pk, Zk)
 
-    # Create the parameters for the Loss CVaR constraints:
-    for b in betasLoss:
-        risksLoss[b] = alphasLoss[count]
+    # Profile = Risk-Seeking:
+    elif (profile == 'Risk-Seeking'):
+        return CVaRModelRS(betas, alphas, bettingOptions, Outcomes, oddCoef, Pk, Zk)
+    else:
+        print('Not a suitable risk profile entered')
+
+def CVaRModelRN(bettingOptions, oddCoef, Zk):
+    # Create the Linear Problem:
+    Problem = LpProblem("CVaR_Model", LpMaximize)
+
+    # Create the variables that correspond to the betting options:
+    Bets = LpVariable.dicts("Bets", bettingOptions, lowBound = 0, upBound = 1, cat = 'Continuous')
+
+    # Add the objective function:
+    Problem += (lpSum([oddCoef[bet] * Bets[bet] - Bets[bet] for bet in oddCoef.keys()]))
+
+    # Using a budget of 1: (constraint bets)
+    Problem += sum(Bets.values()) <= 1
+
+    # Solve Model:
+    Problem.solve(PULP_CBC_CMD(msg=0))
+
+    # Return Zk matrix and the suggested bets:
+    return [Zk, Problem.variables()[0:len(Bets)]]
+
+def CVaRModelRA(betas, alphas, bettingOptions, Outcomes, oddCoef, Pk, Zk):
+    # Create the parameters for the CVaR constraints:
+    risks = {}
+    count = 0
+    for b in betas:
+        risks[b] = alphas[count]
         count += 1      
 
     # Create the Linear Problem:
@@ -36,89 +67,96 @@ def CVaRModel(Pk, odds, betsConsidered, profile, alphasLoss, betasLoss, alphasRe
     Bets = LpVariable.dicts("Bets", bettingOptions, lowBound = 0, upBound = 1, cat = 'Continuous')
 
     # Create the nu variable:
-    NuLoss = LpVariable.dicts("Nu", betasLoss, cat = 'Continuous')
+    Nu = LpVariable.dicts("Nu", betas, cat = 'Continuous')
 
     # Create the Wk and Vk variables: (Slacks & Surps)
-    vkMatrixLoss = {}
-    wkMatrixLoss = {}
-    for b in betasLoss:
-        vkMatrixLoss[b] = LpVariable.dicts(("Slacks_{}".format(b)), Outcomes, lowBound = 0, cat = 'Continuous')
-        wkMatrixLoss[b] = LpVariable.dicts(("Surps_{}".format(b)), Outcomes, lowBound = 0, cat = 'Continuous')
+    vkMatrix = {}
+    wkMatrix = {}
+    for b in betas:
+        vkMatrix[b] = LpVariable.dicts(("Slacks_{}".format(b)), Outcomes, lowBound = 0, cat = 'Continuous')
+        wkMatrix[b] = LpVariable.dicts(("Surps_{}".format(b)), Outcomes, lowBound = 0, cat = 'Continuous')
 
     # Add the objective function:
     Problem += (lpSum([oddCoef[bet] * Bets[bet] - Bets[bet] for bet in oddCoef.keys()]))
 
     # Add constraints: (1 for each possible outcome and beta)
-    for b in betasLoss:
+    for b in betas:
         for k in Outcomes:
-            Problem += sum(Bets[bet] * Zk[k][bet] for bet in Bets.keys()) == NuLoss[b] + vkMatrixLoss[b][k] - wkMatrixLoss[b][k]
+            Problem += sum(Bets[bet] * Zk[k][bet] for bet in Bets.keys()) == Nu[b] + vkMatrix[b][k] - wkMatrix[b][k]
     
     # Add CVaR Loss constranits: (1 for each beta)
-    for b in betasLoss:
-        Problem += (1. / b) * lpSum([Pk[k] * ((1. - b) * wkMatrixLoss[b][k] + b * vkMatrixLoss[b][k]) for k in Pk.keys()]) <= risksLoss[b] # * lpSum([oddCoef[bet] * Bets[bet] - Bets[bet] for bet in oddCoef.keys()])]
-
-    # Add the risk constraints:
-    if (profile == 'Risk-Seeking'):
-        # Create the required variables:
-        NuRegret = LpVariable.dicts("NuRegrets", betasRegret, cat = 'Continuous')
-
-        # Create the Wk and Vk variables: (Slacks & Surps)
-        vkMatrixRegret = {}
-        wkMatrixRegret = {}
-        for b in betasRegret:
-            vkMatrixRegret[b] = LpVariable.dicts(("SlacksOnRegrets_{}".format(b)), Outcomes, lowBound = 0, cat = 'Continuous')
-            wkMatrixRegret[b] = LpVariable.dicts(("SurpsOnRegrets_{}".format(b)), Outcomes, lowBound = 0, cat = 'Continuous')
-
-        # Compute the regret measures:
-        regretMeasures = ComputeRegretVector(Zk)
-
-        # Create the parameters for the Regret constraints:
-        risksRegret = {}
-        count = 0
-        for b in betasRegret:
-            risksRegret[b] = alphasRegret[count]
-            count += 1
-
-        # Add constraints: (1 for each possible outcome and beta)
-        for b in betasRegret:
-            for k in Outcomes:
-                Problem += (sum(Bets[bet] * Zk[k][bet] for bet in Bets.keys()) - regretMeasures[k]) == NuRegret[b] + vkMatrixRegret[b][k] - wkMatrixRegret[b][k]
-
-        # Add CVaR Regret Measure constraints:
-        for b in betasRegret:
-            Problem += (1. / b) * lpSum([Pk[k] * ((1. - b) * wkMatrixRegret[b][k] + b * vkMatrixRegret[b][k]) for k in Pk.keys()]) <= risksRegret[b]
+    for b in betas:
+        Problem += (1. / b) * lpSum([Pk[k] * ((1. - b) * wkMatrix[b][k] + b * vkMatrix[b][k]) for k in Pk.keys()]) <= risks[b]
 
     # Using a budget of 1: (constraint bets)
     Problem += sum(Bets.values()) <= 1
 
     # Solve Model:
-    # LpSolverDefault.msg = 1
     Problem.solve(PULP_CBC_CMD(msg=0))
+
+    # Return Zk matrix and the suggested bets:
+    return [Zk, Problem.variables()[0:len(Bets)]]
+
+def CVaRModelRS(betas, alphas, bettingOptions, Outcomes, oddCoef, Pk, Zk):
+    # Create the parameters for the CVaR constraints:
+    risks = {}
+    count = 0
+    for b in betas:
+        risks[b] = alphas[count]
+        count += 1   
+
+   # Compute the regret measures:
+    regretMeasures = ComputeRegretVector(Zk)
+
+    # Create the Linear Problem:
+    Problem = LpProblem("CVaR_Model", LpMaximize)
+
+    # Create the variables that correspond to the betting options:
+    Bets = LpVariable.dicts("Bets", bettingOptions, lowBound = 0, upBound = 1, cat = 'Continuous')
+
+    # Create the nu variable:
+    Nu = LpVariable.dicts("Nu", betas, cat = 'Continuous')
+
+    # Create the Wk and Vk variables: (Slacks & Surps)
+    vkMatrix = {}
+    wkMatrix = {}
+    for b in betas:
+        vkMatrix[b] = LpVariable.dicts(("Slacks_{}".format(b)), Outcomes, lowBound = 0, cat = 'Continuous')
+        wkMatrix[b] = LpVariable.dicts(("Surps_{}".format(b)), Outcomes, lowBound = 0, cat = 'Continuous')
+
+    # Add the objective function:
+    Problem += (lpSum([oddCoef[bet] * Bets[bet] - Bets[bet] for bet in oddCoef.keys()]))
+
+    # Add constraints: (1 for each possible outcome and beta)
+    for b in betas:
+        for k in Outcomes:
+            Problem += (sum(Bets[bet] * Zk[k][bet] - Bets[bet] for bet in Bets.keys()) - regretMeasures[k]) == Nu[b] + vkMatrix[b][k] - wkMatrix[b][k]
+
+    # Add CVaR Regret Measure constraints:
+    for b in betas:
+        Problem += lpSum(Pk[k] * (sum(Bets[bet] * Zk[k][bet] - Bets[bet] for bet in Bets.keys()) - regretMeasures[k]) for k in Outcomes) - (1. / b) * lpSum([Pk[k] * ((1. - b) * wkMatrix[b][k] + b * vkMatrix[b][k]) for k in Pk.keys()]) >= -1. * risks[b]
+
+    # Using a budget of 1: (constraint bets)
+    Problem += sum(Bets.values()) <= 1
+
+    # Solve Model:
+    Problem.solve()#PULP_CBC_CMD(msg=0))
+
     for var in Problem.variables():
-        if ('Loss' in var.name):
-            print(var.name, "=", var.varValue)
         if ('Bet' in var.name):
-            print(var.name, "=", var.varValue) 
+            print(var.name, "=", var.varValue)
 
     # Compute LHS of Regret Constraints:
     for k in Pk.keys():
-        print(sum(Bets[bet].varValue * Zk[k][bet] for bet in Bets.keys()) - regretMeasures[k])
-    LHS1 = 0.
+        print(sum(Bets[bet].varValue * (Zk[k][bet] - 1.) for bet in Bets.keys()) - regretMeasures[k])
+    
+    # Compute Regret Metric:
     LHS2 = 0.
-    if (profile == 'Risk-Seeking'):
-        for k in Pk.keys():
-            # LHS1 += Pk[k] * ((1. - betasRegret[0]) * wkMatrixRegret[betasRegret[0]][k].varValue + betasRegret[0] * vkMatrixRegret[betasRegret[0]][k].varValue - regretMeasures[k])
-            LHS2 += Pk[k] * ((1. - betasRegret[0]) * wkMatrixRegret[betasRegret[0]][k].varValue + betasRegret[0] * vkMatrixRegret[betasRegret[0]][k].varValue)
-        # print(LHS1 / betasRegret[0])
-        print(LHS2)
-        print(LHS2 / betasRegret[0])
-    else:
-        for b in betasLoss:
-            LHS1 = 0.
-            for k in Pk.keys():
-                LHS1 += Pk[k] * ((1. - b) * wkMatrixLoss[b][k].varValue + b * vkMatrixLoss[b][k].varValue)
-            LHS1 = LHS1 / b
-            print('{} Quantile, the Loss is {}'.format(b, LHS1))
+    for k in Pk.keys():
+        # LHS1 += Pk[k] * ((1. - betasRegret[0]) * wkMatrixRegret[betasRegret[0]][k].varValue + betasRegret[0] * vkMatrixRegret[betasRegret[0]][k].varValue - regretMeasures[k])
+        LHS2 += Pk[k] * ((1. - betas[0]) * wkMatrix[betas[0]][k].varValue + betas[0] * vkMatrix[betas[0]][k].varValue)
+    LHS2 = LHS2 / betas[0]
+    print((lpSum(Pk[k] * (sum(Bets[bet].varValue * Zk[k][bet] - Bets[bet].varValue for bet in Bets.keys()) - regretMeasures[k]) for k in Outcomes) - LHS2))
 
     # Return Zk matrix and the suggested bets:
     return [Zk, Problem.variables()[0:len(Bets)]]
@@ -211,28 +249,26 @@ def ComputeRegretVector(Zk):
                 bestBetValue = Zk[outcome][bet]
 
                 # Compute the Regret measure:
-                regretMeasures[outcome] = bestBetValue
+                regretMeasures[outcome] = bestBetValue - 1.
     print(regretMeasures)
     return regretMeasures
     
-def RunCVaRModel(betsConsidered,probDist,profile,RHSLoss,betasLoss,oddsMO,oddsMS,oddsNumSets,oddsSS=[],oddsNumGames=[],RHSRegret=[],betasRegret=[]):
+def RunCVaRModel(betsConsidered,probDist,profile,RHS,betas,oddsMO,oddsMS,oddsNumSets,oddsSS=[],oddsNumGames=[]):
     # This function sets up the required data and runs the CVaR model, returning a set of bets to make.
     # Inputs:
     # - betsConsidered: A list of booleans of the bets we want to consider (Outcome, Score, #Sets, SS, #Games)
     # - probDist: A list of probabilities corresponding to the possible outcomes (currently 2-0, 2-1, 0-2, 1-2)
     # - profile: The users risk profile ('Risk-Averse', 'Risk-Neutral', 'Risk-Seeking')
-    # - RHSLoss: A list of RHS values from the user about their willingness to lose money
-    # - betasLoss: The beta parameters we are using in the CVaR model for the loss constraints (Currently 0.2, 0.33, 0.5)
+    # - RHS: A list of RHS values from the user about their risk profile
+    # - betas: The beta parameters we are using in the CVaR model for the constraints (Currently 0.2, 0.33, 0.5)
     # - odds--: The odds for each type of bet as a list e.g. [oddsAWins, oddsBWins]
-    # - RHSRegret: The responses from the user about how much they are willing to "regret"
-    # - betasRegret: The corresponding beta quantiles for the RHSRegret values
 
     # Create odds dictionary:
     odds = {'Match Outcome': oddsMO, 'Match Score': oddsMS, 'Number of Sets': oddsNumSets,
     'Set Score': oddsSS, 'Number of Games': oddsNumGames}
 
     # Run the CVaR model:
-    [Zk, suggestedBets] = CVaRModel(probDist, odds, betsConsidered, profile, RHSLoss, betasLoss, RHSRegret, betasRegret)
+    [Zk, suggestedBets] = CVaRModel(probDist, odds, betsConsidered, profile, RHS, betas)
 
     # Extract and store the values of the variables:
     bets = {}
