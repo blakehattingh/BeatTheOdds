@@ -699,7 +699,7 @@ def testRegretConstraints(DB, matchesFileName):
     #betas = [0.2, 0.33, 0.5]
     #alphas = [0.8, 0.6, 0.4]
     betas = [0.2]
-    alphas = [0.5]
+    alphas = [2.52]
 
     # Run CVaR model:
     

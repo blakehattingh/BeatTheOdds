@@ -134,13 +134,13 @@ def CVaRModelRS(betas, alphas, bettingOptions, Outcomes, oddCoef, Pk, Zk):
 
     # Add CVaR Regret Measure constraints:
     for b in betas:
-        Problem += (lpSum([oddCoef[bet] * Bets[bet] - Bets[bet] for bet in oddCoef.keys()])) - (1. / b) * lpSum([Pk[k] * ((1. - b) * wkMatrix[b][k] + b * vkMatrix[b][k]) for k in Pk.keys()]) >= -1. * risks[b]
+        Problem += lpSum(Pk[k] * (sum(Bets[bet] * Zk[k][bet] - Bets[bet] for bet in Bets.keys()) - regretMeasures[k]) for k in Outcomes) - (1. / b) * lpSum([Pk[k] * ((1. - b) * wkMatrix[b][k] + b * vkMatrix[b][k]) for k in Pk.keys()]) >= -1. * risks[b]
 
     # Using a budget of 1: (constraint bets)
     Problem += sum(Bets.values()) <= 1
 
     # Solve Model:
-    Problem.solve(PULP_CBC_CMD(msg=0))
+    Problem.solve()#PULP_CBC_CMD(msg=0))
 
     for var in Problem.variables():
         if ('Bet' in var.name):
@@ -156,7 +156,7 @@ def CVaRModelRS(betas, alphas, bettingOptions, Outcomes, oddCoef, Pk, Zk):
         # LHS1 += Pk[k] * ((1. - betasRegret[0]) * wkMatrixRegret[betasRegret[0]][k].varValue + betasRegret[0] * vkMatrixRegret[betasRegret[0]][k].varValue - regretMeasures[k])
         LHS2 += Pk[k] * ((1. - betas[0]) * wkMatrix[betas[0]][k].varValue + betas[0] * vkMatrix[betas[0]][k].varValue)
     LHS2 = LHS2 / betas[0]
-    print((lpSum([oddCoef[bet] * Bets[bet].varValue - Bets[bet].varValue for bet in oddCoef.keys()])) - LHS2)
+    print((lpSum(Pk[k] * (sum(Bets[bet].varValue * Zk[k][bet] - Bets[bet].varValue for bet in Bets.keys()) - regretMeasures[k]) for k in Outcomes) - LHS2))
 
     # Return Zk matrix and the suggested bets:
     return [Zk, Problem.variables()[0:len(Bets)]]
