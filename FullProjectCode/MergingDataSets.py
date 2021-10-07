@@ -5,6 +5,7 @@ from time import strftime
 from HelperFunctions import try_parsing_date
 from DataExtractionFromDB import getPotentialMatches, getIdForName
 
+BLAKES_DIRECTORY = 'C:/Uni/4thYearProject/repo/BeatTheOdds/FullProjectCode/CSVFiles'
 def CreateTestDataSet(oddsCSVFiles, margin):
     # Set up a list of lists to store the odds for each match:
     oddsData = []
@@ -106,8 +107,8 @@ def CreateTestDataSet(oddsCSVFiles, margin):
 
 def ReadInOddsData(file):
     # Get the directory for CSV files:
-    fileName = os.path.join('\\CSVFiles', file)
-
+    #fileName = os.path.join('\\CSVFiles', file)
+    fileName = os.path.join(BLAKES_DIRECTORY, file)
     oddsData = []
     # Open it, read in contents and append it to the list structure:
     with open(fileName) as csv_file:
@@ -147,7 +148,7 @@ def ExtractNames(match, col):
     names = stringName.split(' ')
 
     # Remove the last element as it is the abbreviation:
-    names.pop()
+    #names.pop()
 
     # Check how many names there are:
     numNames = len(names)
@@ -164,7 +165,7 @@ def ExtractNames(match, col):
         firstName = [names[0],names[0]+' '+names[1],names[0]+' '+names[1]+' '+names[2]]
         lastName = [names[3],names[2]+' '+names[3],names[1]+' '+names[2]+' '+names[3]]
     else:
-        # Too many fucking names:
+        # Too many names:
         print('Too many names to handle!')
     
     return [firstName, lastName, numNames]
@@ -209,9 +210,36 @@ def AppendOdds(match, oddsMatch, numOdds):
 
 def WriteToCSV(testSet, file):
     # Write the test data to a CSV file:
-    fileName = os.path.join('\\CSVFiles', file)
+    #fileName = os.path.join('\\CSVFiles', file)
+    fileName = os.path.join(BLAKES_DIRECTORY, file)
     with open(fileName, mode = 'a', newline='') as csv_file:
         writer = csv.writer(csv_file)
         for row in testSet:
             writer.writerow(row)
         csv_file.close()
+
+def main():
+    files = ['manuallyAddedGameOdds.csv' ]
+    margin = 10
+    fileName = 'testSetForCalibrationWithROIWithManualyAddedData.csv'
+
+    '''
+    # Read in the data:
+    THIS_FOLDER = os.path.abspath('CSVFiles')
+    fileName = os.path.join(THIS_FOLDER, files[0])
+    oddsData = ReadInOddsData(fileName)
+
+    # Test Append Odds function:
+    print(AppendOdds([],oddsData[0], 8))
+    '''
+
+    # Run the function:
+    testSet = CreateTestDataSet(files, margin)
+
+    print(testSet)
+    print("length of test set = ")
+    print(len(testSet))
+    WriteToCSV(testSet, fileName)
+
+if __name__ == "__main__":
+    main()
