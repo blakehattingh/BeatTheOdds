@@ -50,7 +50,7 @@ def CVaRModelRN(bettingOptions, oddCoef, Zk):
     Problem.solve(PULP_CBC_CMD(msg=0))
 
     # Return Zk matrix and the suggested bets:
-    return [Zk, Problem.variables()[0:len(Bets)]]
+    return [Zk, Problem.variables()[0:len(Bets)], value(Problem.objective)]
 
 def CVaRModelRA(betas, alphas, bettingOptions, Outcomes, oddCoef, Pk, Zk):
     # Create the parameters for the CVaR constraints:
@@ -95,7 +95,7 @@ def CVaRModelRA(betas, alphas, bettingOptions, Outcomes, oddCoef, Pk, Zk):
     Problem.solve(PULP_CBC_CMD(msg=0))
 
     # Return Zk matrix and the suggested bets:
-    return [Zk, Problem.variables()[0:len(Bets)]]
+    return [Zk, Problem.variables()[0:len(Bets)], value(Problem.objective)]
 
 def CVaRModelRS(betas, alphas, bettingOptions, Outcomes, oddCoef, Pk, Zk):
     # Create the parameters for the CVaR constraints:
@@ -143,7 +143,7 @@ def CVaRModelRS(betas, alphas, bettingOptions, Outcomes, oddCoef, Pk, Zk):
     Problem.solve(PULP_CBC_CMD(msg=0))
 
     # Return Zk matrix and the suggested bets:
-    return [Zk, Problem.variables()[0:len(Bets)]]
+    return [Zk, Problem.variables()[0:len(Bets)], value(Problem.objective)]
 
 def ComputeRegretVector(Zk):
     # This function pre-computes the maximum amount that can be made for each outcome, given we are certain of
@@ -233,7 +233,7 @@ def CreateZMatrix(betsConsidered, odds, probabilities):
 
     return [Zk, oddCoef, bettingOptions]
 
-def RunCVaRModel(betsConsidered,probDist,RHS,betas,odds):
+def RunCVaRModel(betsConsidered,probDist,profile,RHS,betas,odds):
     # This function sets up the required data and runs the CVaR model, returning a set of bets to make.
     # Inputs:
     # - betsConsidered: A list of booleans of the bets we want to consider (Outcome, Score, #Sets, SS, #Games)
@@ -243,7 +243,7 @@ def RunCVaRModel(betsConsidered,probDist,RHS,betas,odds):
     # - odds: The odds for each type of bet in dictionary format
 
     # Run the CVaR model:
-    [Zk, suggestedBets, obj] = CVaRModel(probDist, odds, betsConsidered, RHS, betas)
+    [Zk, suggestedBets, obj] = CVaRModel(probDist, odds, betsConsidered, profile, RHS, betas)
 
     # Extract and store the values of the variables:
     bets = {}

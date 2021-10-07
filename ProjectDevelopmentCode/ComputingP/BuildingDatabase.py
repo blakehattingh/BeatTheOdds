@@ -9,7 +9,7 @@ currentPath = os.path.abspath(os.getcwd())
 
 # Markov Model Files:
 #sys.path.insert(0, currentPath + '\\BeatTheOdds\\MarkovModel')
-sys.path.insert(0, currentPath + '\\MarkovModel')
+sys.path.insert(0, currentPath + '\\ProjectDevelopmentCode\\MarkovModel')
 from FirstImplementation import *
 from OMalleysEqns import *
 
@@ -312,7 +312,7 @@ def ComputeWeighting(Pa, Pb, Spacing = 0.02):
 
 def ReadInGridDB(FileName):
     # Get location of file:
-    THIS_FOLDER = os.path.abspath('CSVFiles')
+    THIS_FOLDER = currentPath + '\\ProjectDevelopmentCode\\CSVFiles'
     # THIS_FOLDER = 'C:\\Uni\\4thYearProject\\repo\\BeatTheOdds\\CSVFiles\\'
     FileName = os.path.join(THIS_FOLDER, FileName)
 
@@ -328,7 +328,7 @@ def ReadInGridDB(FileName):
 
 def main():
     # Read in grid:
-    DB = ReadInGridDB('ModelDistributions2.csv')
+    DB = ReadInGridDB('ModelDistributions.csv')
 
     # Compare both DBs:
     ''' DB1 = ReadInGridDB('ModelDistributions.csv')
@@ -346,11 +346,11 @@ def main():
 
     # Build the DB of model distributions:
     #params: PaStart, PaEnd, PbStart, PbEnd, stepSize, AllDists?, DB
-    BuildingDB(80, 80, 40, 80, 2, False, DBToAppendTo = DB)
+    # BuildingDB(80, 80, 40, 80, 2, False, DBToAppendTo = DB)
 
     # Compute the RMSEs:
-    # RMSEs = ValidatingStepSize(DB, 0.02)
-    # print(RMSEs)
+    RMSEs = ValidatingStepSize(DB, 0.02)
+    print(RMSEs)
 
 if __name__ == "__main__":
     main()

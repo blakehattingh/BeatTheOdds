@@ -5,6 +5,164 @@ from InterpolatingDistributions import InterpolateDists
 from EvaluatingPValues import ReadInData, ReadInGridDB, ExtractSetScores, ObjectiveMetricROI
 from CVaRModel import RunCVaRModel
 
+def test80Matches(DB, matchesFileName):
+    # Test the ROI as an objective on a full test set of 80 matches
+    # Plots:
+    # 1a) User's Balance vs Match Number ($10 Budget)
+    # 1b) User's Balance vs Match Number (Budget = Balance)
+    # 2) Distribution of ROIs across 80 matches
+    # 3) Distribution of Amount Betted across 80 matches
+    # All plots consider 3 standard risk-profiles
+
+    # Save figures to:
+    plotsFolder = 'C:\\Users\\campb\\OneDrive\\Documents\\University_ENGSCI\\4th Year\\ResearchProject\\ModelPlots\\'
+    saveFigures = False
+
+    # Which plots to make:
+    plot1 = True
+    plot2 = True
+    plot3 = True
+    
+    # Read in the matches, odds, and respective Pa and Pb values:
+    matches = ReadInData(matchesFileName)
+    
+    # Set up risk profile parameters:
+    profiles = ['Averse', 'Less-Averse', 'Neutral']
+    usersBalanceA = {}
+    usersBalanceB = {}
+    startingBal = 100.
+    budgetA = 10.
+    matchROIs = {}
+    amountBetted = {}
+    for profile in profiles:
+        # Plot 1a and 1b:
+        usersBalanceA[profile] = [startingBal]
+        usersBalanceB[profile] = [startingBal]
+        
+        # Plot 2:
+        matchROIs[profile] = []
+
+        # Plot 3:
+        amountBetted[profile] = []
+
+    # Construct varying possible risk profiles:
+    betsConsidered = [1,1,1,0,0]
+    betasAsFloats = [0.2, 1./3., 0.5]
+    riskProfiles = {'Averse': [0.7, 0.6, 0.4], 'Less-Averse': [0.8, 0.7, 0.6], 'Neutral': [1., 1., 1.]}
+
+    # Find the best bets to place:
+    for profile in riskProfiles:
+        if (profile == 'Neutral'):
+            CVaRProfile = 'Risk-Neutral'
+        else:
+            CVaRProfile = 'Risk-Averse'
+        
+        # Set up starting balance:
+        newBalA = startingBal
+        newBalB = startingBal
+
+        # Run the model on all matches in the data set:
+        for match in matches:
+            # Compute the interpolated distributions:
+            Dists = InterpolateDists(float(match[26]), float(match[27]), DB)
+
+            # Extract the required match details:
+            matchScore = [float(match[10]), float(match[11])]
+            outcome = '{}-{}'.format(int(matchScore[0]),int(matchScore[1]))
+
+            # Run CVaR model: (using generic risk profile)
+            [Zk, suggestedBets] = RunCVaRModel(betsConsidered,Dists['Match Score'],CVaRProfile,riskProfiles[profile],
+            betasAsFloats,[float(match[18]),float(match[19])],[float(match[20]),float(match[21]),float(match[22]),
+            float(match[23])],[float(match[24]),float(match[25])],oddsSS=[],oddsNumGames=[])
+
+            # "place" these bets and the compute the ROI:
+            [ROI, spent, returns] = ObjectiveMetricROI(outcome, Zk, suggestedBets)
+            matchROIs[profile].append(ROI)
+            amountBetted[profile].append(spent)
+
+            # Keep track of the users budget:
+            # Budget = Fixed:
+            if (newBalA > budgetA):
+                newBalA += budgetA * (returns - spent)
+            else:
+                newBalA += newBalA * (returns - spent)
+            usersBalanceA[profile].append(newBalA)
+
+            # Budget = Entire Balance (above starting balance, otherwise $10):
+            if (newBalB > startingBal):
+                newBalB += (newBalB - startingBal) * (returns - spent)
+            else:
+                newBalB += budgetA * (returns - spent)
+            usersBalanceB[profile].append(newBalB)
+
+    if (plot1):
+        # Show how the users budget changes across the 80 matches, for 3 generic profiles:
+        for profile in riskProfiles:
+            plt.plot(list(range(0,len(matches)+1)), usersBalanceA[profile], label = '{} = [{}, {}, {}]'.format(profile,
+            riskProfiles[profile][0],riskProfiles[profile][1],riskProfiles[profile][2]))
+        
+        # Set labels:
+        plt.title('Users Balance over 80 Matches (betting budget of ${})'.format(budgetA))
+        plt.xlabel('Match Number')
+        plt.ylabel('Users Balance')
+        plt.legend()
+        
+        if (saveFigures):
+            plt.savefig(plotsFolder+'Users Balance vs Risk Profile - Over 80 Matches ($10 Budget)')
+            plt.clf()
+        else:
+            plt.show()
+        
+        # Show how the users budget changes across the 80 matches, for 3 generic profiles:
+        for profile in riskProfiles:
+            plt.plot(list(range(0,len(matches)+1)), usersBalanceB[profile], label = '{} = [{}, {}, {}]'.format(profile,
+            riskProfiles[profile][0],riskProfiles[profile][1],riskProfiles[profile][2]))
+        
+        # Set labels:
+        plt.title('Users Balance over 80 Matches')
+        plt.xlabel('Match Number')
+        plt.ylabel('Users Balance')
+        plt.legend()
+        
+        if (saveFigures):
+            plt.savefig(plotsFolder+'Users Balance vs Risk Profile - Over 80 Matches (Budget = Balance)')
+            plt.clf()
+        else:
+            plt.show()
+    
+    if (plot2):
+        # Create distribution plot for ROIs:
+        plt.hist([matchROIs['Averse'],matchROIs['Less-Averse'],matchROIs['Neutral']], 
+        color=['blue','green','red'],edgecolor='black',label=['Averse = [{}, {}, {}]'.format(riskProfiles['Averse'][0],
+        riskProfiles['Averse'][1],riskProfiles['Averse'][2]),'Less-Averse = [{}, {}, {}]'.format(riskProfiles['Less-Averse'][0],
+        riskProfiles['Less-Averse'][1],riskProfiles['Less-Averse'][2]),'Neutral  [{}, {}, {}]'.format(riskProfiles['Neutral'][0],
+        riskProfiles['Neutral'][1],riskProfiles['Neutral'][2])],bins = 5)
+        plt.legend()
+        plt.xlabel('Individual Match ROIs')
+        plt.ylabel('Frequency over the 80 Matches')
+
+        if (saveFigures):
+            plt.savefig(plotsFolder+'Match ROIs - All Profiles over 80 Matches')
+            plt.clf()
+        else:
+            plt.show()
+
+    if (plot3):
+        # Amount Betted:
+        plt.hist([amountBetted['Averse'],amountBetted['Less-Averse'],amountBetted['Neutral']], 
+        color=['blue','green','red'],edgecolor='black',label=['Averse = [{}, {}, {}]'.format(riskProfiles['Averse'][0],
+        riskProfiles['Averse'][1],riskProfiles['Averse'][2]),'Less-Averse = [{}, {}, {}]'.format(riskProfiles['Less-Averse'][0],
+        riskProfiles['Less-Averse'][1],riskProfiles['Less-Averse'][2]),'Neutral  [{}, {}, {}]'.format(riskProfiles['Neutral'][0],
+        riskProfiles['Neutral'][1],riskProfiles['Neutral'][2])],bins = 5)
+        plt.legend()
+        plt.xlabel('Amount Betted (as a proportion of your budget)')
+        plt.ylabel('Frequency over the 80 Matches')
+        if (saveFigures):
+            plt.savefig(plotsFolder+'Distribution of Amount Betted - All Profiles over 80 Matches')
+            plt.clf()
+        else:
+            plt.show()
+
 def test25Matches(DB, matchesFileName):
     # Test the ROI as an objective on a small test manually gathered.
     # Test multiple matches that I have collected odds data and their Pa and Pb values for.
@@ -17,10 +175,10 @@ def test25Matches(DB, matchesFileName):
 
     # Save figures to:
     plotsFolder = 'C:\\Users\\campb\\OneDrive\\Documents\\University_ENGSCI\\4th Year\\ResearchProject\\ModelPlots\\'
-    saveFigures = True
+    saveFigures = False
 
     # Which plots to make:
-    plot1 = False
+    plot1 = True
     plot2 = True
     plot1b = True
 
@@ -88,6 +246,11 @@ def test25Matches(DB, matchesFileName):
     if (plot1):
         for beta in betas:
             for profile in riskProfiles:
+                if (profile == 'Neutral'):
+                    CVaRProfile = 'Risk-Neutral'
+                else:
+                    CVaRProfile = 'Risk-Averse'
+
                 # Iterate through possible alpha_3 values:
                 for alpha in alphaValues[beta][profile]:
                     # Set up the other 2 alpha values:
@@ -114,7 +277,7 @@ def test25Matches(DB, matchesFileName):
                         outcome = '{}-{}'.format(int(matchScore[0]),int(matchScore[1]))
 
                         # Run CVaR model: (using generic risk profile)
-                        [Zk, suggestedBets] = RunCVaRModel(betsConsidered,Dists['Match Score'],alphasToUse,
+                        [Zk, suggestedBets] = RunCVaRModel(betsConsidered,Dists['Match Score'],CVaRProfile, alphasToUse,
                         betasAsFloats,[float(match[18]),float(match[19])],[float(match[20]),float(match[21]),float(match[22]),
                         float(match[23])],[float(match[24]),float(match[25])],oddsSS=[],oddsNumGames=[])
 
@@ -129,6 +292,11 @@ def test25Matches(DB, matchesFileName):
     # Produce the Distribution of Amount Betted and Payoff for each Generic Risk Profile:
     if (plot2):
         for profile in riskProfiles:
+            if (profile == 'Neutral'):
+                CVaRProfile = 'Risk-Neutral'
+            else:
+                CVaRProfile = 'Risk-Averse'
+                
             # Set up alphas to use:
             alphasToUse = [riskProfiles[profile]['20%'],riskProfiles[profile]['33%'],riskProfiles[profile]['50%']] 
             
@@ -148,7 +316,7 @@ def test25Matches(DB, matchesFileName):
                 outcome = '{}-{}'.format(int(matchScore[0]),int(matchScore[1]))
 
                 # Run CVaR model:
-                [Zk, suggestedBets] = RunCVaRModel(betsConsidered,Dists['Match Score'],alphasToUse,
+                [Zk, suggestedBets] = RunCVaRModel(betsConsidered,Dists['Match Score'],CVaRProfile, alphasToUse,
                 betasAsFloats,[float(match[18]),float(match[19])],[float(match[20]),float(match[21]),float(match[22]),
                 float(match[23])],[float(match[24]),float(match[25])],oddsSS=[],oddsNumGames=[])
 
@@ -242,14 +410,20 @@ def test1Match(DB, matchesFileName):
     # 1) ROI vs A single alpha value changing for 3 generic risk profiles
     #       - 3 plots, one for each alpha value
     # 2) Suggested Bets made vs a single changing alpha value for 3 generic risk profiles
+    #       - This creates 3x3 axis on a figure (each row is the standard risk profile and each column is the changing alpha value)
+    # 2b) Suggested Bets made vs single changing alpha value for a single, standard risk-averse profile
+    #       - ONLY contains 3 axes (simplified version of plot 2 for ease of explaining)
+    # 3) Suggested Bets made vs single constraint profiles
 
     # Save figures to:
     plotsFolder = 'C:\\Users\\campb\\OneDrive\\Documents\\University_ENGSCI\\4th Year\\ResearchProject\\ModelPlots\\'
-    saveFigures = True
+    saveFigures = False
 
     # Which plots to make:
     plot1 = True
     plot2 = True
+    plot2b = True
+    plot3 = True
 
     # Which version of CVaR model are we using:
     cVaR = 1
@@ -270,8 +444,7 @@ def test1Match(DB, matchesFileName):
     for beta in betas:
         # Plot 1:
         allROIs[beta] = {}
-
-        # For plot 2:
+        
         totalSpent[beta] = {}
         betsMade[beta] = {}
         bets[beta] = {}
@@ -282,7 +455,7 @@ def test1Match(DB, matchesFileName):
             betsMade[beta][profile] = {}
             bets[beta][profile] = {}
             betsToPlot[beta][profile] = {}
-
+        
     # Read in data and extract ONLY the first match:
     match = ReadInData(matchesFileName)[0]
 
@@ -327,25 +500,78 @@ def test1Match(DB, matchesFileName):
     setScores = ExtractSetScores(match[8])
     outcome = '{}-{}'.format(int(matchScore[0]),int(matchScore[1]))
 
-    # Find the best bets to place:
-    for profile in riskProfiles:
+    if (plot1 or plot2 or plot2b):
+        # Find the best bets to place:
+        for profile in riskProfiles:
+
+            # Get the official name of the profile:
+            if (profile == 'Neutral'):
+                CVaRProfile = 'Risk-Neutral'
+            else:
+                CVaRProfile = 'Risk-Averse'
+
+            # Iteratre through the different alpha values we can change:
+            counter = 0
+            for beta in allROIs:
+                ROIs[profile] = []
+
+                # Iterate through possible alpha values:
+                for alpha in alphaValues[beta][profile]:
+                    # Set up the other 2 alpha values:
+                    alphasToUse = []
+                    for value in riskProfiles[profile]:
+                        if (value == beta):
+                            alphasToUse.append(alpha)
+                        else:
+                            alphasToUse.append(riskProfiles[profile][value])
+
+                    # Run CVaR model:
+                    [Zk, suggestedBets] = RunCVaRModel(betsConsidered,Dists['Match Score'],CVaRProfile, alphasToUse,
+                    betasAsFloats,[float(match[18]),float(match[19])],[float(match[20]),float(match[21]),float(match[22]),
+                    float(match[23])],[float(match[24]),float(match[25])],oddsSS=[],oddsNumGames=[])
+                    
+                    # Alpha Values used:
+                    alphaVals = '{}, {}, {}'.format(round(alphasToUse[0],3), round(alphasToUse[1],3), 
+                    round(alphasToUse[2],3))
+
+                    # Store the bets made for this set of alpha values:
+                    betsMade[beta][profile][alphaVals] = suggestedBets
+
+                    # "place" these bets and the computed the ROI:
+                    [ROI, spent, returns] = ObjectiveMetricROI(outcome, Zk, suggestedBets)
+
+                    # Append it to the ROIS dictionary for this profile:
+                    ROIs[profile].append(ROI)
+                    totalSpent[beta][profile].append(spent)
+                
+                # Add to the overall dictionary of ROIs and amount betted:
+                allROIs[beta][profile] = ROIs[profile]
+                counter += 1
+    
+    if (plot3):
+        # Profile:
+        CVaRProfile = 'Risk-Averse'
+        betsMade = {}
+        bets = {}
+        betsToPlot = {}
+           
         # Iteratre through the different alpha values we can change:
         counter = 0
         for beta in allROIs:
-            ROIs[profile] = []
+            betsMade[beta] = {}
+            bets[beta] = {}
+            betsToPlot[beta] = {}
+            totalSpent[beta] = []
 
             # Iterate through possible alpha values:
-            for alpha in alphaValues[beta][profile]:
+            alphasToUse = [1.5, 1.5, 1.5]
+            changingValues = np.linspace(0.2,1.05,50)
+            for alpha in changingValues:
                 # Set up the other 2 alpha values:
-                alphasToUse = []
-                for value in riskProfiles[profile]:
-                    if (value == beta):
-                        alphasToUse.append(alpha)
-                    else:
-                        alphasToUse.append(riskProfiles[profile][value])
+                alphasToUse[counter] = alpha
 
                 # Run CVaR model:
-                [Zk, suggestedBets] = RunCVaRModel(betsConsidered,Dists['Match Score'],profile, alphasToUse,
+                [Zk, suggestedBets] = RunCVaRModel(betsConsidered,Dists['Match Score'],CVaRProfile, alphasToUse,
                 betasAsFloats,[float(match[18]),float(match[19])],[float(match[20]),float(match[21]),float(match[22]),
                 float(match[23])],[float(match[24]),float(match[25])],oddsSS=[],oddsNumGames=[])
                 
@@ -354,17 +580,13 @@ def test1Match(DB, matchesFileName):
                 round(alphasToUse[2],3))
 
                 # Store the bets made for this set of alpha values:
-                betsMade[beta][profile][alphaVals] = suggestedBets
+                betsMade[beta][alphaVals] = suggestedBets
 
                 # "place" these bets and the computed the ROI:
                 [ROI, spent, returns] = ObjectiveMetricROI(outcome, Zk, suggestedBets)
 
                 # Append it to the ROIS dictionary for this profile:
-                ROIs[profile].append(ROI)
-                totalSpent[beta][profile].append(spent)
-            
-            # Add to the overall dictionary of ROIs and amount betted:
-            allROIs[beta][profile] = ROIs[profile]
+                totalSpent[beta].append(spent)
             counter += 1
 
     if (plot1):
@@ -445,6 +667,115 @@ def test1Match(DB, matchesFileName):
             counter2 += 1
 
         fig.legend(labels, loc = (0.8,0.77))
+        if (saveFigures):
+            plt.savefig(plotsFolder+'Amount Betted 3 - All Risk Profiles')
+            plt.clf()
+        else:
+            plt.show()
+        
+    if (plot2b):
+        # Keep track of the betting options that were considered by each profile for this match:
+        tol = 1e-06
+        # Just considering a single standard profile:
+        profile = 'Less-Averse'
+        for beta in betsMade:
+            for bet in suggestedBets:
+                # Initially Set to zero:
+                bets[beta][profile][bet] = 0.
+                for alphas in betsMade[beta][profile]:
+                    # Sum up the amount betted on this specific bet over the changing alpha values:
+                    bets[beta][profile][bet] += betsMade[beta][profile][alphas][bet]
+
+        # Check which ones were actually considered:
+        for beta in bets:
+            for bet in bets[beta][profile]:
+                if (bets[beta][profile][bet] > tol):
+                    # Record these values for plotting:
+                    betsToPlot[beta][profile][bet] = []
+                    for alphas in betsMade[beta][profile]:
+                        betsToPlot[beta][profile][bet].append(betsMade[beta][profile][alphas][bet])
+
+        # Plot the bets:
+        fig, axes = plt.subplots(1, 3,sharey=True, figsize = [20, 12])
+        fig.suptitle('Amount Betted on Various Bets as the Risk Parameters Change', fontsize = 20)
+
+        # Set up figure labels:
+        fig.supylabel('Proportion of Budget Betted')
+        fig.supxlabel('User Response to the Beta Quantile')
+        cols = ['{} Quantile Response'.format(beta) for beta in betas]
+        for ax, col in zip(axes, cols):
+            ax.set_title(col)
+
+        # Plot the various lines:
+        counter = 0
+        for beta in betsToPlot:
+            labels = []
+            for plot in betsToPlot[beta][profile]:
+                axes[counter].plot(alphaValues[beta][profile], betsToPlot[beta][profile][plot])
+                labels.append(plot)
+
+            # Plot the total amount spent too:
+            axes[counter].plot(alphaValues[beta][profile], totalSpent[beta][profile])
+            labels.append('Total Amount Betted')
+
+            # Set subplot labels:
+            axes[counter].legend(labels, loc = "upper right")
+            counter += 1
+
+        if (saveFigures):
+            plt.savefig(plotsFolder+'Amount Betted 3 - All Risk Profiles')
+            plt.clf()
+        else:
+            plt.show()
+    
+    if (plot3):
+        # Keep track of the betting options that were considering for this match:
+        tol = 1e-06
+        bets[beta] = {}
+        for beta in betsMade:
+            for bet in suggestedBets:
+                # Initially Set to zero:
+                bets[beta][bet] = 0.
+                for alphas in betsMade[beta]:
+                    # Sum up the amount betted on this specific bet over the changing alpha values:
+                    bets[beta][bet] += betsMade[beta][alphas][bet]
+
+        # Check which ones were actually considered:
+        for beta in bets:
+            for bet in bets[beta]:
+                if (bets[beta][bet] > tol):
+                    # Record these values for plotting:
+                    betsToPlot[beta][bet] = []
+                    for alphas in betsMade[beta]:
+                        betsToPlot[beta][bet].append(betsMade[beta][alphas][bet])
+
+        # Plot the bets:
+        fig, axes = plt.subplots(1, 3,sharey=True, figsize = [20, 12])
+        fig.suptitle('Amount Betted on Various Bets as the Risk Parameter Change', fontsize = 20)
+
+        # Set up figure labels:
+        fig.supylabel('Proportion of Budget Betted')
+        fig.supxlabel('User Response to the Beta Quantile')
+        cols = ['{} Quantile Response'.format(beta) for beta in betas]
+        for ax, col in zip(axes, cols):
+            ax.set_title(col)
+
+        # Plot the various lines:
+        counter = 0
+        for beta in betsToPlot:
+            labels = []
+            for plot in betsToPlot[beta]:
+                axes[counter].plot(changingValues, betsToPlot[beta][plot])
+                labels.append(plot)
+
+            # Plot the total amount spent too:
+            axes[counter].plot(changingValues, totalSpent[beta])
+            labels.append('Total Amount Betted')
+
+            # Set subplot labels:
+            axes[counter].legend(labels, loc = "upper right")
+            counter += 1
+
         if (saveFigures):
             plt.savefig(plotsFolder+'Amount Betted 3 - All Risk Profiles')
             plt.clf()
@@ -724,7 +1055,8 @@ def main():
     
     # Test for CVaR Model:
     DB = ReadInGridDB('ModelDistributions2.csv')
-    testRegretConstraints(DB, '2018_19MatchesWithOdds.csv')
+    # testRegretConstraints(DB, '2018_19MatchesWithOdds.csv')
+    test1Match(DB, '2018_19MatchesWithOdds.csv')
 
 if __name__ == "__main__":
     main()

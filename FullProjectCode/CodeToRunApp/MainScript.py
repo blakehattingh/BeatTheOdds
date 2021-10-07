@@ -27,7 +27,6 @@ def ComputeBets(matchDetails, riskProfile, riskParameters, betas, budget, oddsMO
 
     # Todays Date:
     todaysDate = date.today()
-    todaysDateFormatted = strptime(todaysDate, "%d/%m/%Y")
 
     # Use the calibrated parameters for the given user's risk profile:
     if (riskProfile == 'Risk-Seeking'):
@@ -39,8 +38,8 @@ def ComputeBets(matchDetails, riskProfile, riskParameters, betas, budget, oddsMO
 
     # Extract the required historical data for computing P:
     ageGap = timedelta(days = 365.25 * calibratedParameters[0])
-    startOfDataCollection = todaysDateFormatted - ageGap
-    [p1vP2, p1vCO, p2vCO, COIds] = getSPWData(matchDetails[0],matchDetails[1], todaysDateFormatted, startOfDataCollection)
+    startOfDataCollection = todaysDate - ageGap
+    [p1vP2, p1vCO, p2vCO, COIds] = getSPWData(matchDetails[0],matchDetails[1], todaysDate, startOfDataCollection)
 
     # Compute Pa and Pb:
     [Pa, Pb, Message] = CalcPEquation(matchDetails, 2, calibratedParameters, p1vP2, p1vCO, p2vCO, COIds)
@@ -82,7 +81,7 @@ def ComputeBets(matchDetails, riskProfile, riskParameters, betas, budget, oddsMO
         counter += 1
     
     # Compute the Optimal Bets to make for the user:
-    [Zk, suggestedBets, expectedProfit] = RunCVaRModel(betsConsidered, matchScoreDist, riskParameters, betas, odds)
+    [Zk, suggestedBets, expectedProfit] = RunCVaRModel(betsConsidered, matchScoreDist, riskProfile, riskParameters, betas, odds)
     
     # Compute the features required to show the user:
     # 1) Amount betting:
