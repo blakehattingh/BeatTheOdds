@@ -1,10 +1,14 @@
 from datetime import timedelta, date
-from time import strptime
+from time import strptime, strftime
+from typing import Counter
 from CalculatingPValues import CalcPEquation
 from DataExtractionFromDB import getSPWData
 from InterpolatingDistributions import InterpolateDists
 from ReadInGridDB import ReadInGridDB
 from CVaRModel import RunCVaRModel
+import os
+import csv
+import datetime
 
 def ComputeBets(matchDetails, riskProfile, riskParameters, betas, budget, oddsMO, oddsMS, oddsNS):
     # This function computes the optimal bets to suggest to a specific user, based off their risk profile.
@@ -31,7 +35,7 @@ def ComputeBets(matchDetails, riskProfile, riskParameters, betas, budget, oddsMO
     # Use the calibrated parameters for the given user's risk profile:
     if (riskProfile == 'Risk-Seeking'):
         # Calibrated parameters for a risk-seeking profile:
-        NEEDTOCALIBRATEMODEL = 10.
+        calibratedParameters = [2.222, 0.244, 0.233]
     else:
         # Calibrated parameters for a risk-neutral or risk-averse profile:
         calibratedParameters = [2.222, 0.244, 0.233] # Age, Surface, Weighting
@@ -56,11 +60,15 @@ def ComputeBets(matchDetails, riskProfile, riskParameters, betas, budget, oddsMO
         print('There is a limited amount of historical data for this match-up and hence the estimated probabilities for the match events have a wider confidence level than usual')
 
     # Read in the model distributions DB:
-    matchScoreDB = ReadInGridDB('ModelDistributions2.csv')
-    allDistsDB = ReadInGridDB('ModelDistributions.csv')
+    #matchScoreDB = ReadInGridDB('ModelDistributions2.csv')
+    matchScoreDB = ReadInGridDB('C:/Uni/4thYearProject/repo/BeatTheOdds/FullProjectCode/CodeToRunApp/ModelDistributions2.csv')
+
+    #allDistsDB = ReadInGridDB('ModelDistributions.csv')
+    allDistsDB = ReadInGridDB('C:/Uni/4thYearProject/repo/BeatTheOdds/FullProjectCode/CodeToRunApp/ModelDistributions2.csv')
 
     # Interploate Distributions: (those needed for analysis and the other ones to display to the user)
     matchScoreDist = InterpolateDists(Pa, Pb, matchScoreDB)
+    matchScoreDist = matchScoreDist['Match Score']
     plottingDists = InterpolateDists(Pa, Pb, allDistsDB)
 
     # Display Distributions to the user:
@@ -74,7 +82,7 @@ def ComputeBets(matchDetails, riskProfile, riskParameters, betas, budget, oddsMO
     for option in options:
         if (sum(allOdds[counter]) > 0.):
             # We are considering this option:
-            odds[option] = oddsMO
+            odds[option] = allOdds[counter]
             betsConsidered.append(1)
         else:
             betsConsidered.append(0)
@@ -91,15 +99,15 @@ def ComputeBets(matchDetails, riskProfile, riskParameters, betas, budget, oddsMO
     expectedPayout = (expectedProfit + amountBetting) * budget
 
     # 3) Expected Profit:
-    expectedProfit = expectedProfit * budget * amountBetting
+    expectedProfit = expectedProfit * budget
 
     # 4) Payout under each possible scenario:
     outcomePayouts = {}
     for outcome in Zk:
         outcomePayouts[outcome] = 0.
         for bet in Zk[outcome]:
-            outcomePayouts[outcome] += Zk[outcome][bet] * suggestedBets[bet]
-
+            outcomePayouts[outcome] += Zk[outcome][bet] * suggestedBets[bet] * budget
+    print('done')
     # Display bets to user:
     # 1) Pie chart showing split up of budget over the various bets
     #       - Make the non-betting proportion of the budget grey
@@ -114,11 +122,69 @@ def ComputeBets(matchDetails, riskProfile, riskParameters, betas, budget, oddsMO
     #       - Amount betted
     #       - Expected payout overall (includes their betted amount)
     #       - Expected profit (minus their bets)
-    #       - Payout under each possible scenario (2-0, 2-1, 0-2, 1-2)
+    #       - Payout under eacu possible scenario (2-0, 2-1, 0-2, 1-2)
+
+ # Inputs:
+    # - matchDetails: A list of required match details (P1ID, P2ID, Surface being Played on)
+    # - riskProfile: The user's risk profile (either 'Risk-Seeking', 'Risk-Neutral' or 'Risk-Averse')
+    # - riskParameters: A list of parameters relating to the users responses to the risk questions
+    # - betas: The quantiles used in the questions
+    # - budget: The users budget for the match they are wanting to bet on
+    # - odds lists (oddsMO, oddsMS, oddsNS): 3 lists containing the bookmaker's odds (supplied by the user)
+    #   - If the user doesn't want to consider a specific betting option, the list will contain only zeros
+
+def addPValuesToCsv(fileToRead,fileToWrite):
+    matchAndOddsData = []
+    matchDetails = []
+    rawMatchDetails =[]
+    dates = []
+    fileNameRead = os.path.join('C:/Uni/4thYearProject/repo/BeatTheOdds/FullProjectCode/CSVFiles', fileToRead)
+    fileNameWrite = os.path.join('C:/Uni/4thYearProject/repo/BeatTheOdds/FullProjectCode/CSVFiles', fileToWrite)
+    calibratedParameters = [2.222, 0.244, 0.233] # Age, Surface, Weighting
+    with open(fileNameRead) as csv_file:
+        csv_reader = csv.reader(csv_file, delimiter=',')
+        line_count = 0
+        for row in csv_reader:
+            matchAndOddsData.append(row)
+            line_count += 1
+        csv_file.close()
+
+    for match in matchAndOddsData:
+        idP1 = match[8]
+        idP2 = match[18]
+        surface = match[4]
+        dateToUse = match[3]
+        matchDetails.append([idP1,idP2,surface])
+        dates.append(dateToUse)
+        rawMatchDetails.append(match)
+
+
+    # Write the test data to a CSV file:
+    #fileName = os.path.join('\\CSVFiles', file)
+    
+    with open(fileNameWrite, mode = 'a', newline='') as csv_file:
+        writer = csv.writer(csv_file)
+        counter = 0
+        for row in matchDetails:
+            #Extract the required historical data for computing P:
+            dateToUse = dates[counter]
+            dateToUse1 = datetime.datetime.strptime(dateToUse,"%d/%m/%Y" ).date()
+            ageGap = timedelta(days = 365.25 * calibratedParameters[0])
+            startOfDataCollection = dateToUse1 - ageGap
+            [p1vP2, p1vCO, p2vCO, COIds] = getSPWData(row[0],row[1], dateToUse1, startOfDataCollection)
+            [Pa, Pb, Message] = CalcPEquation(row, 2, calibratedParameters, p1vP2, p1vCO, p2vCO, COIds)
+            rawMatchDetails[counter].append(Pa)
+            rawMatchDetails[counter].append(Pb)
+            rawMatchDetails[counter].append(Message)
+            writer.writerow(rawMatchDetails[counter])
+            counter += 1
+        csv_file.close()
 
 def main():
     # Run Compete Bets:
-    ComputeBets([], [], [], [], [], [], [], [])
-
+    #ComputeBets([50810,27834,'H'], 'Risk-Averse',[0.9,0.8,0.8], [0.2,1./3,0.5],100, [1.53,2.5], [2.25,4.0,5.5,4.0], [2.31,1.6])
+    fileNameRead ='testSetForCalibrationWithROIWithManualyAddedData.csv'
+    fileNameWrite ='testSetForCalibrationWithROIWithManualyAddedDataWithPValues.csv'
+    addPValuesToCsv(fileNameRead,fileNameWrite)
 if __name__ == "__main__":
     main()

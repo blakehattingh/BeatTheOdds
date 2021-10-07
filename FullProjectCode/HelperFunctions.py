@@ -5,11 +5,12 @@ import math
 import datetime
 import csv
 from itertools import islice
+from time import strptime
 
 def try_parsing_date(text):
     for fmt in (' %d/%m/%Y', '%d/%m/%Y', '%d-%m-%Y', '%Y-%m-%d'):
         try:
-            return [datetime.strptime(text, fmt), fmt]
+            return [datetime.datetime.strptime(text, fmt).date(), fmt]
         except ValueError:
             pass
     raise ValueError('no valid date format found')
