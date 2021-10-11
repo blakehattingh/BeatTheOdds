@@ -304,7 +304,7 @@ def try_parsing_date(text):
             pass
     raise ValueError('no valid date format found')
 
-def EvalEquations(testDataFN, obj, equations, age, surface, weighting, theta = 0.5, riskProfile = [], betas = []):
+def EvalEquations(testDataFN, obj, equations, age, surface, weighting, riskProfile, alphas, betas, theta = 0.5):
     # This function takes a test or training set of matches, an equation(s) to use and it evaluates the specified 
     # objective metric across the inputted data set.
     # Inputs:
@@ -312,7 +312,8 @@ def EvalEquations(testDataFN, obj, equations, age, surface, weighting, theta = 0
     # - obj = the objective metric to use (either 'Match Stats' or 'ROI')
     # - equations = a list of integer(s) corresponding to the equations to use
     # - age, surface, weighting, theta are hyperparameters for the equations
-    # - riskProfiles = a list of RHS values for the profile getting used
+    # - riskProfile = the risk profile used
+    # - alphas = a list of RHS values for the profile getting used
     # - betas = a list of beta values to use in the CVaR model
 
     # Returns:
@@ -371,7 +372,7 @@ def EvalEquations(testDataFN, obj, equations, age, surface, weighting, theta = 0
                     oddsNumSets = [float(match[65]),float(match[64])]
 
                     # Find the best set of bets to make:
-                    [Zk, suggestedBets] = RunCVaRModel(betsConsidered,Dists['Match Score'],riskProfile,betas,oddsMO,
+                    [Zk, suggestedBets, objVal, minRegret] = RunCVaRModel(betsConsidered,Dists['Match Score'],riskProfile,alphas,betas,oddsMO,
                     oddsMS,oddsNumSets,oddsSS=[],oddsNumGames=[])
 
                     # Place these bets and compute the ROI:

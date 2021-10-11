@@ -465,7 +465,7 @@ def main():
         fileName3 = os.path.join(THIS_FOLDER, 'ObjectiveValuesForCalibratedParameters.csv')
 
     # What are we doing? (Calibrated or testing? Match Stats or ROI? What equation?)
-    purpose = 'Testing'
+    purpose = 'Calibration'
     obj = 'ROI'
     equation = [2]
     fromEquation = 2
@@ -475,7 +475,6 @@ def main():
 
     if (purpose == 'Calibration'):
         for eq in equation:
-
             # Calibrate the specified equation with the given objective metric:
             if (eq <= 2):
                 startingPoints = getCalibratedParamsFromCSV(eq, eq)
