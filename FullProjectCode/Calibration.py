@@ -264,10 +264,10 @@ def main():
         testDataFN = 'testSetSplitCalibrationForROI.csv'
         fileName = 'C:\\Uni\\4thYearProject\\repo\\BeatTheOdds\\FullProjectCode\\CSVFiles\\UPDATED_CalibratedParametersROI_WithProfile.csv'
         fileName2 = 'C:\\Uni\\4thYearProject\\repo\\BeatTheOdds\\FullProjectCode\\CSVFiles\\UPDATED_CalibratedPlottingDataROI_WithProfile.csv'
-        fileName3 = 'C:\\Uni\\4thYearProject\\repo\\BeatTheOdds\\FullProjectCode\\CSVFiles\\TestingPlottingDataROIWithRiskProfile.csv'
+        fileName3 = 'C:\\Uni\\4thYearProject\\repo\\BeatTheOdds\\FullProjectCode\\CSVFiles\\UPDATED_TestingPlottingDataROI_WithProfile.csv'
         #fileNameFinalCal = 'C:\\Uni\\4thYearProject\\repo\\BeatTheOdds\\CSVFiles\\FinalCalibratedParametersAllEquations.csv'
         #fileNameFinalCal = 'C:\\Uni\\4thYearProject\\repo\\BeatTheOdds\\CSVFiles\\CalibratedParametersROI.csv'
-        fileNameFinalCal = 'C:\\Uni\\4thYearProject\\repo\\BeatTheOdds\\FullProjectCode\\CSVFiles\\CalibratedParametersROIWithRiskProfile.csv'
+        fileNameFinalCal = 'C:\\Uni\\4thYearProject\\repo\\BeatTheOdds\\FullProjectCode\\CSVFiles\\UPDATED_CalibratedParametersROI_WithProfile.csv'
     elif (person == 'Campbell'):
         # Get location of file:
         THIS_FOLDER = os.path.abspath('CSVFiles')
@@ -276,7 +276,7 @@ def main():
         fileName3 = os.path.join(THIS_FOLDER, 'ObjectiveValuesForCalibratedParameters.csv')
 
     # What are we doing? (Calibrated or testing? Match Stats or ROI? What equation?)
-    purpose = 'Calibration'
+    purpose = 'Testing'
     obj = 'ROI'
     equation = [2]
     fromEquation = 2
@@ -312,7 +312,7 @@ def main():
             # Read in the calibrated parameters to test:
             calibratedParams = getCalibratedParamsFromCSV(eq,eq,fileName=fileNameFinalCal)
             # Test the equation:
-            objectiveValues = TestEquations(testDataFN, calibratedParams , obj, eq, riskProfile, betas)
+            objectiveValues = TestEquations(testDataFN, calibratedParams , obj, eq, riskProfile,alphas, betas)
 
             # Store the values for each set of calibrated parameters for plotting:
             storePlottingDataTesting(fileName3, objectiveValues, eq)

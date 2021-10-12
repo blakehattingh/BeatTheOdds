@@ -99,7 +99,7 @@ def EvalEquations(testDataFN, obj, equations, age, surface, weighting, riskProfi
     DB = ReadInGridDB('ModelDistributions2.csv')
 
     # Read in the data:
-    testData = ReadInData(testDataFN)
+    testData = ReadInData(testDataFN, header=True)
     ageGap = timedelta(days=365.25*age)
 
     # Create a dictionary to store the objective metric(s):
