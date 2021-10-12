@@ -7,6 +7,7 @@ from CalculatingPValues import CalcPEquation
 from DataExtractionFromDB import getSPWData
 from InterpolatingDistributions import InterpolateDists
 from CVaRModel import RunCVaRModel
+import datetime
 
 def ObjectiveMetricMatchOutcome(MatchDist, Winner):
     # See who the Markov Model (MM) has as winner:
@@ -114,7 +115,7 @@ def EvalEquations(testDataFN, obj, equations, age, surface, weighting, riskProfi
     # Using the equations specified, compute the objective metric specified for each match in test data:
     for match in testData:
         # Extract the test match data:
-        dateOfMatch = strptime(match[3], '%d/%m/%Y')
+        dateOfMatch = datetime.datetime.strptime(match[3], '%d/%m/%Y').date()
         matchScore = [int(match[30]),int(match[31])]
         SetScores = ExtractSetScores(match[28])
         outcome = '{}-{}'.format(int(matchScore[0]),int(matchScore[1]))
@@ -193,7 +194,7 @@ def ExtractSetScores(setScoresStirng):
 
 def ReadInData(fileName):
     # Get location of file:
-    fileName = os.path.join('FullProjectCode\\CSVFiles', fileName)
+    fileName = os.path.join('C:\\Uni\\4thYearProject\\repo\\BeatTheOdds\\FullProjectCode\\CSVFiles', fileName)
 
     # Read in CSV file:
     testData = []

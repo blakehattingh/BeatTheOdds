@@ -2,6 +2,7 @@ import csv
 
 from scipy.optimize import minimize
 from EvaluatingPValues import EvalEquations
+import os 
 
 # Global Variables for Plotting Purposes:
 LISTOFOBJS = []
@@ -180,9 +181,9 @@ def getCalibratedParamsFromCSV(eqNum,fromEq,thetas=[], fileName = ''):
     startingPoints = []
     #create starting points
     if(fileName == ''):
-        ageValues = [2]#[2,4,6]
-        surfaceValues = [0.25]#[0.25, 0.5, 0.75]
-        weightingValues = [0.25]#[0.25, 0.5, 0.75]
+        ageValues = [2,4,6]
+        surfaceValues = [0.25, 0.5, 0.75]
+        weightingValues = [0.25, 0.5, 0.75]
         thetaValues = [0.25, 0.5, 0.75]
         for valA in ageValues:
             for valS in surfaceValues:
@@ -249,7 +250,7 @@ def TestEquations(testDataFN, calibratedParms, obj, equation, riskProfile = [], 
             # Extract the parameters:
             parameters = [set[0],set[1],set[2]]
             objValues[((round(set[0],3),round(set[1],3),round(set[2],3)))] = ObjectiveFunction(parameters, 
-            testDataFN, obj, equation, riskProfile, alpahs, betas)
+            testDataFN, obj, equation, riskProfile, alphas, betas)
 
     return objValues
 
@@ -260,8 +261,8 @@ def main():
     if (person == 'Blake'):
         trainingDataFN = 'trainingSetSplitCalibrationForROI.csv'
         testDataFN = 'testSetSplitCalibrationForROI.csv'
-        fileName = 'C:\\Uni\\4thYearProject\\repo\\BeatTheOdds\\FullProjectCode\\CSVFiles\\UPDATED_CalibratedParametersROI_NoProfile.csv'
-        fileName2 = 'C:\\Uni\\4thYearProject\\repo\\BeatTheOdds\\FullProjectCode\\CSVFiles\\UPDATED_CalibratedPlottingDataROI_NoProfile.csv'
+        fileName = 'C:\\Uni\\4thYearProject\\repo\\BeatTheOdds\\FullProjectCode\\CSVFiles\\UPDATED_CalibratedParametersROI_WithProfile.csv'
+        fileName2 = 'C:\\Uni\\4thYearProject\\repo\\BeatTheOdds\\FullProjectCode\\CSVFiles\\UPDATED_CalibratedPlottingDataROI_WithProfile.csv'
         fileName3 = 'C:\\Uni\\4thYearProject\\repo\\BeatTheOdds\\FullProjectCode\\CSVFiles\\TestingPlottingDataROIWithRiskProfile.csv'
         #fileNameFinalCal = 'C:\\Uni\\4thYearProject\\repo\\BeatTheOdds\\CSVFiles\\FinalCalibratedParametersAllEquations.csv'
         #fileNameFinalCal = 'C:\\Uni\\4thYearProject\\repo\\BeatTheOdds\\CSVFiles\\CalibratedParametersROI.csv'
@@ -278,7 +279,7 @@ def main():
     obj = 'ROI'
     equation = [2]
     fromEquation = 2
-    riskProfile = 'Risk-Neutral'
+    riskProfile = 'Risk-Averse'
     alphas = [0.9,0.8,0.7]
     betas = [0.1, 0.2, 0.3]
     thetas = [0.25,0.5,0.75]
