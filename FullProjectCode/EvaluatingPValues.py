@@ -192,7 +192,7 @@ def ExtractSetScores(setScoresStirng):
 
     return extractedSS
 
-def ReadInData(fileName):
+def ReadInData(fileName, header):
     # Get location of file:
     fileName = os.path.join('C:\\Uni\\4thYearProject\\repo\\BeatTheOdds\\FullProjectCode\\CSVFiles', fileName)
 
@@ -202,8 +202,12 @@ def ReadInData(fileName):
         csv_reader = csv.reader(csv_file, delimiter=',')
         line_count = 0
         for row in csv_reader:
-            if line_count == 0:
-                line_count += 1
+            if (header):
+                if line_count == 0:
+                    line_count += 1
+                else:
+                    testData.append(row)
+                    line_count += 1
             else:
                 testData.append(row)
                 line_count += 1

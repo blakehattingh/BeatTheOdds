@@ -1,4 +1,5 @@
 import csv
+import os
 
 from scipy.optimize import minimize
 from EvaluatingPValues import EvalEquations
