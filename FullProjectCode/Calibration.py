@@ -1,4 +1,5 @@
 import csv
+import os
 
 from scipy.optimize import minimize
 from EvaluatingPValues import EvalEquations
@@ -249,7 +250,7 @@ def TestEquations(testDataFN, calibratedParms, obj, equation, riskProfile = [], 
             # Extract the parameters:
             parameters = [set[0],set[1],set[2]]
             objValues[((round(set[0],3),round(set[1],3),round(set[2],3)))] = ObjectiveFunction(parameters, 
-            testDataFN, obj, equation, riskProfile, alpahs, betas)
+            testDataFN, obj, equation, riskProfile, alphas, betas)
 
     return objValues
 

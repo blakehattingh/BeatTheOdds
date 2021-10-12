@@ -2,6 +2,7 @@ from re import X
 from amply.amply import TabularRecord
 from matplotlib import use
 import numpy as np
+import pandas as pd
 from statistics import mean
 import matplotlib.pyplot as plt
 from InterpolatingDistributions import InterpolateDists
@@ -19,23 +20,23 @@ def test80Matches(DB, matchesFileName):
 
     # Save figures to:
     plotsFolder = 'C:\\Users\\campb\\OneDrive\\Documents\\University_ENGSCI\\4th Year\\ResearchProject\\ModelPlots\\'
-    saveFigures = False
+    saveFigures = True
 
     # Which plots to make:
-    plot1 = True
-    plot2 = True
+    plot1 = False
+    plot2 = False
     plot3 = True
     
     # Read in the matches, odds, and respective Pa and Pb values:
-    matches = ReadInData(matchesFileName)
+    matches = ReadInData(matchesFileName, False)
     
     # Set up risk profile parameters:
-    profiles = ['Averse', 'Less-Averse', 'Neutral']
+    profiles = ['Very-Averse', 'Averse', 'Less-Averse']#, 'Neutral']
     usersBalanceA = {}
     usersBalanceB = {}
     startingBal = 100.
     budgetA = 10.
-    percentOfBal = 0.4
+    percentOfBal = 0.3
     matchROIs = {}
     amountBet = {}
     for profile in profiles:
@@ -52,7 +53,7 @@ def test80Matches(DB, matchesFileName):
     # Construct varying possible risk profiles:
     betsConsidered = [1,1,1,0,0]
     betasAsFloats = [0.1, 0.2, 0.3]
-    riskProfiles = {'Averse': [0.7, 0.6, 0.5], 'Less-Averse': [0.8, 0.7, 0.6], 'Neutral': [1., 1., 1.]}
+    riskProfiles = {'Very-Averse': [0.6, 0.5, 0.4], 'Averse': [0.75, 0.65, 0.55], 'Less-Averse': [0.9, 0.8, 0.7]}#, 'Neutral': [1., 1., 1.]}
 
     # Find the best bets to place:
     for profile in riskProfiles:
@@ -77,7 +78,7 @@ def test80Matches(DB, matchesFileName):
                 outcome = '{}-{}'.format(int(matchScore[0]),int(matchScore[1]))
 
                 # Run CVaR model: (using generic risk profile)
-                [Zk, suggestedBets, objVal] = RunCVaRModel(betsConsidered,Dists['Match Score'],CVaRProfile,riskProfiles[profile],
+                [Zk, suggestedBets, objVal, minRegret] = RunCVaRModel(betsConsidered,Dists['Match Score'],CVaRProfile,riskProfiles[profile],
                 betasAsFloats,[float(match[58]),float(match[59])],[float(match[63]),float(match[62]),float(match[60]),
                 float(match[61])],[float(match[65]),float(match[64])],oddsSS=[],oddsNumGames=[])
 
@@ -112,7 +113,7 @@ def test80Matches(DB, matchesFileName):
             else:
                 print('Do not bet')
                 matchROIs[profile].append(0)
-                amountBet[profile].append(0)
+                # amountBet[profile].append(0)
                 usersBalanceA[profile].append(newBalA)
                 usersBalanceB[profile].append(newBalB)
 
@@ -123,10 +124,11 @@ def test80Matches(DB, matchesFileName):
             riskProfiles[profile][0],riskProfiles[profile][1],riskProfiles[profile][2]))
         
         # Set labels:
-        plt.title('Users Balance over 80 Matches (betting budget of ${})'.format(budgetA))
-        plt.xlabel('Match Number')
-        plt.ylabel('Users Balance')
+        plt.title('User\'s Balance over 80 Matches \n (Betting Budget of ${})'.format(budgetA), fontsize = 14)
+        plt.xlabel('Match Number', fontsize = 12)
+        plt.ylabel('User\'s Balance', fontsize = 12)
         plt.legend()
+        plt.grid()
         
         # Print final balances:
         for profile in riskProfiles:
@@ -134,7 +136,7 @@ def test80Matches(DB, matchesFileName):
             print('Lowest Balance for {} Profile: '.format(profile), min(usersBalanceA[profile]))
 
         if (saveFigures):
-            plt.savefig(plotsFolder+'Users Balance vs Risk Profile - Over 80 Matches ($10 Budget)')
+            plt.savefig(plotsFolder+'Users Balance using $10 Budget (RA Profiles)')
             plt.clf()
         else:
             plt.show()
@@ -145,10 +147,11 @@ def test80Matches(DB, matchesFileName):
             riskProfiles[profile][0],riskProfiles[profile][1],riskProfiles[profile][2]))
         
         # Set labels:
-        plt.title('Users Balance over 80 Matches')
-        plt.xlabel('Match Number')
-        plt.ylabel('Users Balance')
+        plt.title('User\'s Balance over 80 Matches \n (Betting Budget is {}% of the User\'s Balance)'.format(percentOfBal*100),fontsize = 14)
+        plt.xlabel('Match Number',fontsize = 12)
+        plt.ylabel('User\'s Balance',fontsize = 12)
         plt.legend()
+        plt.grid()
         
         # Print final balances:
         for profile in riskProfiles:
@@ -156,51 +159,52 @@ def test80Matches(DB, matchesFileName):
             print('Best Balance for {} Profile: '.format(profile), max(usersBalanceB[profile]))
 
         if (saveFigures):
-            plt.savefig(plotsFolder+'Users Balance vs Risk Profile - Over 80 Matches (Budget = Balance)')
+            plt.savefig(plotsFolder+'Users Balance using Budget =  30% Balance (RA Profiles)')
             plt.clf()
         else:
             plt.show()
     
     if (plot2):
         # Create distribution plot for ROIs:
-        plt.hist([matchROIs['Averse'],matchROIs['Less-Averse'],matchROIs['Neutral']], 
-        color=['blue','green','red'],edgecolor='black',label=['Averse = [{}, {}, {}]'.format(riskProfiles['Averse'][0],
+        plt.hist([matchROIs['Very-Averse'],matchROIs['Averse'],matchROIs['Less-Averse'],matchROIs['Neutral']], 
+        color=['blue','green','red','orange'],edgecolor='black',label=['Very-Averse = [{}, {}, {}]'.format(riskProfiles['Very-Averse'][0],
+        riskProfiles['Very-Averse'][1],riskProfiles['Very-Averse'][2]),'Averse = [{}, {}, {}]'.format(riskProfiles['Averse'][0],
         riskProfiles['Averse'][1],riskProfiles['Averse'][2]),'Less-Averse = [{}, {}, {}]'.format(riskProfiles['Less-Averse'][0],
         riskProfiles['Less-Averse'][1],riskProfiles['Less-Averse'][2]),'Neutral  [{}, {}, {}]'.format(riskProfiles['Neutral'][0],
-        riskProfiles['Neutral'][1],riskProfiles['Neutral'][2])],bins = 10)
+        riskProfiles['Neutral'][1],riskProfiles['Neutral'][2])],bins = 8)
         plt.legend()
-        plt.title('Distirbution of ROIs across Risk Profiles')
-        plt.xlabel('Individual Match ROIs')
-        plt.ylabel('Frequency over the 80 Matches')
+        plt.title('Distribution of ROIs for an Individual Match', fontsize = 14)
+        plt.xlabel('Individual Match ROIs',fontsize = 11)
+        plt.ylabel('Frequency over the 80 Matches',fontsize = 11)
 
         # Compute the average ROI for a match:
         for profile in riskProfiles:
             print(mean(matchROIs[profile]))
 
         if (saveFigures):
-            plt.savefig(plotsFolder+'Distribution of Match ROIs - All Profiles over 80 Matches')
+            plt.savefig(plotsFolder+'Distribution of Match ROIs (New CVaR)')
             plt.clf()
         else:
             plt.show()
 
     if (plot3):
         # Amount Bet:
-        plt.hist([amountBet['Averse'],amountBet['Less-Averse'],amountBet['Neutral']], 
-        color=['blue','green','red'],edgecolor='black',label=['Averse = [{}, {}, {}]'.format(riskProfiles['Averse'][0],
+        plt.hist([amountBet['Very-Averse'],amountBet['Averse'],amountBet['Less-Averse']], 
+        color=['blue','green','red'],edgecolor='black',label=['Very-Averse = [{}, {}, {}]'.format(riskProfiles['Very-Averse'][0],
+        riskProfiles['Very-Averse'][1],riskProfiles['Very-Averse'][2]),'Averse = [{}, {}, {}]'.format(riskProfiles['Averse'][0],
         riskProfiles['Averse'][1],riskProfiles['Averse'][2]),'Less-Averse = [{}, {}, {}]'.format(riskProfiles['Less-Averse'][0],
-        riskProfiles['Less-Averse'][1],riskProfiles['Less-Averse'][2]),'Neutral  [{}, {}, {}]'.format(riskProfiles['Neutral'][0],
-        riskProfiles['Neutral'][1],riskProfiles['Neutral'][2])],bins = 10)
+        riskProfiles['Less-Averse'][1],riskProfiles['Less-Averse'][2])],bins = 6)
         plt.legend()
-        plt.title('Distribution of Amount Bet across Risk Profiles')
-        plt.xlabel('Amount Bet (as a proportion of your budget)')
-        plt.ylabel('Frequency over the 80 Matches')
+        plt.title('Distribution of Amount Bet', fontsize = 14)
+        plt.xlabel('Amount Bet (as a proportion of your budget)', fontsize = 11)
+        plt.ylabel('Frequency over the 80 Matches', fontsize = 11)
 
         # Compute the average ROI for a match:
         for profile in riskProfiles:
             print(mean(amountBet[profile]))
 
         if (saveFigures):
-            plt.savefig(plotsFolder+'Distribution of Amount Bet - All Profiles over 80 Matches')
+            plt.savefig(plotsFolder+'Distribution of Amount Bet (New CVaR)')
             plt.clf()
         else:
             plt.show()
@@ -226,7 +230,7 @@ def test80MatchesRS(DB, matchesFileName):
     plot5 = False
     
     # Read in the matches, odds, and respective Pa and Pb values:
-    matches = ReadInData(matchesFileName)
+    matches = ReadInData(matchesFileName, False)
     
     # Set up risk profile parameters:
     startingBal = 100.
@@ -238,7 +242,7 @@ def test80MatchesRS(DB, matchesFileName):
     betsConsidered = [1,1,1,0,0]
     beta = 0.2
     userInputs = [2, 3, 4, 5]
-    userInputsDynamic = [0.25, 0.5, 0.75, 1., 2., 3.]
+    userInputsDynamic = [0.5, 1., 2.]
 
     # Find which profiles we are using:
     profiles = []
@@ -250,9 +254,17 @@ def test80MatchesRS(DB, matchesFileName):
        # Convert to strings:
         for i in range(len(userInputsDynamic)):
             profiles.append(str(userInputsDynamic[i]))
-        
+    
+    # Append the risk-neutral profile for comparison:
+    profiles.append('Risk-Neutral')
+
     # Find the best bets to place:
     for regret in profiles:
+        if (regret == 'Risk-Neutral'):
+            CVaRProfile = 'Risk-Neutral'
+        else:
+            CVaRProfile = 'Risk-Seeking'
+
         # Set up starting balance:
         newBalA = startingBal
         usersBalanceA[regret] = [startingBal]
@@ -274,20 +286,21 @@ def test80MatchesRS(DB, matchesFileName):
 
                 if (plot1):
                     # Run CVaR model:
-                    [Zk, suggestedBets, objVal, minRegret] = RunCVaRModel(betsConsidered,Dists['Match Score'],'Risk-Seeking',float(regret),
+                    [Zk, suggestedBets, objVal, minRegret] = RunCVaRModel(betsConsidered,Dists['Match Score'],CVaRProfile,float(regret),
                     beta,[float(match[58]),float(match[59])],[float(match[63]),float(match[62]),float(match[60]),
                     float(match[61])],[float(match[65]),float(match[64])],oddsSS=[],oddsNumGames=[])
                 elif (plot2):
                     # Compute the minimum regret:
-                    [Zk, suggestedBets, objVal, minRegret] = RunCVaRModel(betsConsidered,Dists['Match Score'],'Risk-Seeking',10.,
+                    [Zk, suggestedBets, objVal, minRegret] = RunCVaRModel(betsConsidered,Dists['Match Score'],CVaRProfile,10.,
                     beta,[float(match[58]),float(match[59])],[float(match[63]),float(match[62]),float(match[60]),
                     float(match[61])],[float(match[65]),float(match[64])],oddsSS=[],oddsNumGames=[])
 
-                    # Re-run the model dynamically changing the users input based of the minimum value:
-                    dynamicallyChangingRegret = minRegret + float(regret)
-                    [Zk, suggestedBets, objVal, minRegret] = RunCVaRModel(betsConsidered,Dists['Match Score'],'Risk-Seeking',dynamicallyChangingRegret,
-                    beta,[float(match[58]),float(match[59])],[float(match[63]),float(match[62]),float(match[60]),
-                    float(match[61])],[float(match[65]),float(match[64])],oddsSS=[],oddsNumGames=[])
+                    if (CVaRProfile != 'Risk-Neutral'):
+                        # Re-run the model dynamically changing the users input based of the minimum value:
+                        dynamicallyChangingRegret = minRegret + float(regret)
+                        [Zk, suggestedBets, objVal, minRegret] = RunCVaRModel(betsConsidered,Dists['Match Score'],CVaRProfile,dynamicallyChangingRegret,
+                        beta,[float(match[58]),float(match[59])],[float(match[63]),float(match[62]),float(match[60]),
+                        float(match[61])],[float(match[65]),float(match[64])],oddsSS=[],oddsNumGames=[])
 
                 # "place" these bets and the compute the ROI:
                 [ROI, spent, returns] = ObjectiveMetricROI(outcome, Zk, suggestedBets)
@@ -301,7 +314,7 @@ def test80MatchesRS(DB, matchesFileName):
                  
                 usersBalanceA[regret].append(newBalA)
                 matchROIs[regret].append(ROI)
-                minRegrets.append(-1.*minRegret)
+                minRegrets.append(minRegret)
             else:
                 print('Do not bet')
                 matchROIs[regret].append(0)
@@ -312,13 +325,16 @@ def test80MatchesRS(DB, matchesFileName):
         colours = ['lightsteelblue', 'cornflowerblue', 'royalblue', 'mediumblue','blue', 'navy']
         count = 0
         for regret in profiles:
-            plt.plot(list(range(0,len(matches)+1)), usersBalanceA[regret], label = 'Regret = {}'.format(regret), color = colours[count])
+            if (regret == 'Risk-Neutral'):
+                plt.plot(list(range(0,len(matches)+1)), usersBalanceA[regret], label = 'Risk-Neutral')
+            else:
+                plt.plot(list(range(0,len(matches)+1)), usersBalanceA[regret], label = 'Regret = {}'.format(regret))
             count += 1
 
         # Set labels:
-        plt.title('Users Balance over 80 Matches (betting budget of ${})'.format(budgetA))
-        plt.xlabel('Match Number')
-        plt.ylabel('Users Balance')
+        plt.title('User\'s Balance \n(Betting budget of ${})'.format(budgetA), fontsize = 14)
+        plt.xlabel('Match Number', fontsize = 11)
+        plt.ylabel('User\'s Balance', fontsize = 11)
         plt.legend()
         
         # Print final balances:
@@ -337,9 +353,9 @@ def test80MatchesRS(DB, matchesFileName):
         plt.hist([matchROIs['2'],matchROIs['3'],matchROIs['4']],color=['blue','green','red'],edgecolor='black',
         label=['2','3','4'], bins = 5)
         plt.legend()
-        plt.title('Distirbution of ROIs across Risk Profiles')
-        plt.xlabel('Individual Match ROIs')
-        plt.ylabel('Frequency over the 80 Matches')
+        plt.title('Distirbution of ROIs across Risk Profiles', fontsize = 14)
+        plt.xlabel('Individual Match ROIs',fontsize = 11)
+        plt.ylabel('Frequency over the 80 Matches', fontsize = 11)
 
         # Compute the average ROI for a match:
         for profile in profiles:
@@ -353,12 +369,12 @@ def test80MatchesRS(DB, matchesFileName):
 
     if (plot4):
         # Create distribution plot for ROIs:
-        plt.hist([matchROIs['0.25'],matchROIs['0.5'],matchROIs['0.75'],matchROIs['1.0'],matchROIs['2.0'],matchROIs['3.0']],color=colours,
-        edgecolor='black',label=['0.25','0.5','0.75','1','2','3'], bins = 5)
+        plt.hist([matchROIs['0.5'],matchROIs['1.0'],matchROIs['2.0'],matchROIs['Risk-Neutral']],color=['blue','green','red','orange'],
+        edgecolor='black',label=['0.5','1','2','Neutral'], bins = 5)
         plt.legend()
-        plt.title('Distirbution of ROIs across Risk Profiles')
-        plt.xlabel('Individual Match ROIs')
-        plt.ylabel('Frequency over the 80 Matches')
+        plt.title('Distribution of ROIs across Risk Profiles', fontsize = 14)
+        plt.xlabel('Individual Match ROIs', fontsize = 11)
+        plt.ylabel('Frequency over the 80 Matches', fontsize = 11)
 
         # Compute the average ROI for a match:
         for profile in profiles:
@@ -638,11 +654,11 @@ def test1Match(DB, matchesFileName):
 
     # Save figures to:
     plotsFolder = 'C:\\Users\\campb\\OneDrive\\Documents\\University_ENGSCI\\4th Year\\ResearchProject\\ModelPlots\\'
-    saveFigures = False
+    saveFigures = True
 
     # Which plots to make:
-    plot1 = True
-    plot2 = True
+    plot1 = False
+    plot2 = False
     plot2b = True
     plot3 = False # Must do by itself
 
@@ -723,7 +739,7 @@ def test1Match(DB, matchesFileName):
                             alphasToUse.append(riskProfiles[profile][value])
 
                     # Run CVaR model:
-                    [Zk, suggestedBets, objVal] = RunCVaRModel(betsConsidered,Dists['Match Score'],CVaRProfile, alphasToUse,
+                    [Zk, suggestedBets, objVal, minRegret] = RunCVaRModel(betsConsidered,Dists['Match Score'],CVaRProfile, alphasToUse,
                     betasAsFloats,[float(match[18]),float(match[19])],[float(match[20]),float(match[21]),float(match[22]),
                     float(match[23])],[float(match[24]),float(match[25])],oddsSS=[],oddsNumGames=[])
                     
@@ -768,7 +784,7 @@ def test1Match(DB, matchesFileName):
                 alphasToUse[counter] = alpha
 
                 # Run CVaR model:
-                [Zk, suggestedBets, objVal] = RunCVaRModel(betsConsidered,Dists['Match Score'],CVaRProfile, alphasToUse,
+                [Zk, suggestedBets, objVal, minRegret] = RunCVaRModel(betsConsidered,Dists['Match Score'],CVaRProfile, alphasToUse,
                 betasAsFloats,[float(match[18]),float(match[19])],[float(match[20]),float(match[21]),float(match[22]),
                 float(match[23])],[float(match[24]),float(match[25])],oddsSS=[],oddsNumGames=[])
                 
@@ -920,6 +936,7 @@ def test1Match(DB, matchesFileName):
             else:
                 axes[counter].set_xlabel('[0.8, 0.6, $\u03B1_{0.3}$]')
             axes[counter].legend(labels, loc = "upper left")
+            axes[counter].grid()
             counter += 1
 
         if (saveFigures):
@@ -1372,7 +1389,7 @@ def main():
     DB = ReadInGridDB('ModelDistributions2.csv')
     #testRegretConstraints(DB, '2018_19MatchesWithOdds.csv')
     test80MatchesRS(DB, 'testSetForCalibrationWithROIWithManualyAddedDataWithPValues.csv')
-    #test1MatchRS(DB, '2018_19MatchesWithOdds.csv')
+    #test1Match(DB, '2018_19MatchesWithOdds.csv')
 
 if __name__ == "__main__":
     main()
