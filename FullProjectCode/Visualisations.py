@@ -1,5 +1,4 @@
 from re import X
-#from amply.amply import TabularRecord
 from matplotlib import use
 import numpy as np
 import pandas as pd
@@ -188,7 +187,23 @@ def test80Matches(DB, matchesFileName):
         else:
             plt.show()
 
-        # Ty
+        # Smoothed density plots:
+        df = pd.DataFrame()
+        listRPs = []
+        listROIs = []
+        for profile in profiles:
+            for ROI in matchROIs[profile]:
+                listRPs.append(profile)
+                listROIs.append(ROI)   
+        df["Risk Profile"] = listRPs
+        df["Individual Match ROIs"] = listROIs
+        
+        sns.displot(df, x = "Individual Match ROIs", hue = "Risk Profile", kind = "kde", fill = True).set(title = 'Smoothed Density Plots\n(Distribution of Match ROIs)')
+        if (saveFigures):
+            plt.savefig(plotsFolder+'Smoohted Density Plot of Match ROIs (Regret)')
+            plt.clf()
+        else:
+            plt.show()
 
     if (plot3):
         # Amount Bet:
@@ -208,6 +223,24 @@ def test80Matches(DB, matchesFileName):
 
         if (saveFigures):
             plt.savefig(plotsFolder+'Distribution of Amount Bet (New CVaR)')
+            plt.clf()
+        else:
+            plt.show()
+
+        # Smoothed density plots:
+        df = pd.DataFrame()
+        listRPs = []
+        listAmountBet = []
+        for profile in profiles:
+            for ROI in amountBet[profile]:
+                listRPs.append(profile)
+                listAmountBet.append(ROI)   
+        df["Risk Profile"] = listRPs
+        df["Amount Bet"] = listAmountBet
+        
+        sns.displot(df, x = "Amount Bet", hue = "Risk Profile", kind = "kde", fill = True).set(title = 'Smoothed Density Plots\n(Distribution of Amount Bet)')
+        if (saveFigures):
+            plt.savefig(plotsFolder+'Smoohted Density Plot of Amount Bet')
             plt.clf()
         else:
             plt.show()
@@ -406,13 +439,20 @@ def test80MatchesRS(DB, matchesFileName):
         listROIs = []
         for regret in profiles:
             for ROI in matchROIs[regret]:
-                listRPs.append(regret)
+                if (regret == 'Risk-Neutral'):
+                    listRPs.append(regret)
+                else:
+                    listRPs.append('Regret = {}'.format(regret))
                 listROIs.append(ROI)   
         df["Risk Profile"] = listRPs
-        df["ROIs"] = listROIs
+        df["Individual Match ROIs"] = listROIs
         
-        sns.displot(df, x = "ROIs", hue = "Risk Profile", kind = "kde", fill = True)
-        plt.show()
+        sns.displot(df, x = "Individual Match ROIs", hue = "Risk Profile", kind = "kde", fill = True).set(title = 'Smoothed Density Plots\n(Distribution of Match ROIs)')
+        if (saveFigures):
+            plt.savefig(plotsFolder+'Smoohted Density Plot of Match ROIs (Regret)')
+            plt.clf()
+        else:
+            plt.show()
 
     if (plot5):
         # Create distribution plot for the minimum regrets:
