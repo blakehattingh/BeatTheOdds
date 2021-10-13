@@ -19,20 +19,20 @@ def test80Matches(DB, matchesFileName):
     # All plots consider 3 standard risk-profiles
 
     # Save figures to:
-    #plotsFolder = 'C:\\Users\\campb\\OneDrive\\Documents\\University_ENGSCI\\4th Year\\ResearchProject\\ModelPlots\\'
-    plotsFolder ='C:/Uni/4thYearProject/repo/BeatTheOdds/ProjectDevelopmentCode/VisualisationOutputs/'
-    saveFigures = True
+    plotsFolder = 'C:\\Users\\campb\\OneDrive\\Documents\\University_ENGSCI\\4th Year\\ResearchProject\\ModelPlots\\'
+    # plotsFolder ='C:/Uni/4thYearProject/repo/BeatTheOdds/ProjectDevelopmentCode/VisualisationOutputs/'
+    saveFigures = False
 
     # Which plots to make:
-    plot1 = False
-    plot2 = True
+    plot1 = True
+    plot2 = False
     plot3 = False
     
     # Read in the matches, odds, and respective Pa and Pb values:
     matches = ReadInData(matchesFileName, False)
     
     # Set up risk profile parameters:
-    profiles = ['Very-Averse', 'Averse', 'Neutral']
+    profiles = ['Very-Averse', 'Averse', 'Less-Averse', 'Neutral']
     usersBalanceA = {}
     usersBalanceB = {}
     startingBal = 100.
@@ -54,7 +54,7 @@ def test80Matches(DB, matchesFileName):
     # Construct varying possible risk profiles:
     betsConsidered = [1,1,1,0,0]
     betasAsFloats = [0.1, 0.2, 0.3]
-    riskProfiles = {'Very-Averse': [0.6, 0.5, 0.4], 'Averse': [0.8, 0.7, 0.6], 'Neutral': [1., 1., 1.]}
+    riskProfiles = {'Very-Averse': [0.6, 0.5, 0.4], 'Averse': [0.75, 0.65, 0.55], 'Less-Averse': [0.9, 0.8, 0.7], 'Neutral': [1., 1., 1.]}
 
     # Find the best bets to place:
     for profile in riskProfiles:
@@ -212,7 +212,7 @@ def test80Matches(DB, matchesFileName):
         color=['blue','green','red'],edgecolor='black',label=['Very-Averse = [{}, {}, {}]'.format(riskProfiles['Very-Averse'][0],
         riskProfiles['Very-Averse'][1],riskProfiles['Very-Averse'][2]),'Averse = [{}, {}, {}]'.format(riskProfiles['Averse'][0],
         riskProfiles['Averse'][1],riskProfiles['Averse'][2]),'Less-Averse = [{}, {}, {}]'.format(riskProfiles['Less-Averse'][0],
-        riskProfiles['Less-Averse'][1],riskProfiles['Less-Averse'][2])],bins = 6)
+        riskProfiles['Less-Averse'][1],riskProfiles['Less-Averse'][2])],bins = 10)
         plt.legend()
         plt.title('Distribution of Amount Bet', fontsize = 14)
         plt.xlabel('Amount Bet (as a proportion of your budget)', fontsize = 11)
@@ -258,9 +258,9 @@ def test80MatchesRS(DB, matchesFileName):
     # 5) Distribution of Minimum Feasible Regrets
 
     # Save figures to:
-    # plotsFolder = 'C:\\Users\\campb\\OneDrive\\Documents\\University_ENGSCI\\4th Year\\ResearchProject\\ModelPlots\\'
-    plotsFolder ='C:/Uni/4thYearProject/repo/BeatTheOdds/ProjectDevelopmentCode/VisualisationOutputs/'
-    saveFigures = True
+    plotsFolder = 'C:\\Users\\campb\\OneDrive\\Documents\\University_ENGSCI\\4th Year\\ResearchProject\\ModelPlots\\'
+    # plotsFolder ='C:/Uni/4thYearProject/repo/BeatTheOdds/ProjectDevelopmentCode/VisualisationOutputs/'
+    saveFigures = False
 
     # Which plots to make:
     plot1 = False
@@ -268,7 +268,7 @@ def test80MatchesRS(DB, matchesFileName):
     plot3 = False
     plot4 = True
     plot5 = False
-    smoothed = True
+    smoothed = False
     
     # Read in the matches, odds, and respective Pa and Pb values:
     matches = ReadInData(matchesFileName, False)
@@ -380,13 +380,14 @@ def test80MatchesRS(DB, matchesFileName):
             if (regret == 'Risk-Neutral'):
                 plt.plot(list(range(0,len(matches)+1)), usersBalanceA[regret], label = 'Risk-Neutral')
             else:
-                plt.plot(list(range(0,len(matches)+1)), usersBalanceA[regret], label = 'Regret = {}'.format(regret))
+                plt.plot(list(range(0,len(matches)+1)), usersBalanceA[regret], label = 'Regret = +{}'.format(regret))
             count += 1
 
         # Set labels:
         plt.title('User\'s Balance \n(Betting budget of ${})'.format(budgetA), fontsize = 14)
         plt.xlabel('Match Number', fontsize = 11)
         plt.ylabel('User\'s Balance', fontsize = 11)
+        plt.grid()
         plt.legend()
         
         # Print final balances:
@@ -1466,7 +1467,7 @@ def main():
     # Test for CVaR Model:
     DB = ReadInGridDB('ModelDistributions2.csv')
     #testRegretConstraints(DB, '2018_19MatchesWithOdds.csv')
-    test80MatchesRS(DB, 'testSetForCalibrationWithROIWithManualyAddedDataWithPValues.csv')
+    test80Matches(DB, 'testSetForCalibrationWithROIWithManualyAddedDataWithPValues.csv')
     #test1MatchRS(DB, '2018_19MatchesWithOdds.csv')
 
 if __name__ == "__main__":
