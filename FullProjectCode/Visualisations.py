@@ -1,5 +1,5 @@
 from re import X
-from amply.amply import TabularRecord
+#from amply.amply import TabularRecord
 from matplotlib import use
 import numpy as np
 import pandas as pd
