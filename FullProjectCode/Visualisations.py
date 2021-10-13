@@ -19,19 +19,20 @@ def test80Matches(DB, matchesFileName):
     # All plots consider 3 standard risk-profiles
 
     # Save figures to:
-    plotsFolder = 'C:\\Users\\campb\\OneDrive\\Documents\\University_ENGSCI\\4th Year\\ResearchProject\\ModelPlots\\'
+    #plotsFolder = 'C:\\Users\\campb\\OneDrive\\Documents\\University_ENGSCI\\4th Year\\ResearchProject\\ModelPlots\\'
+    plotsFolder ='C:/Uni/4thYearProject/repo/BeatTheOdds/ProjectDevelopmentCode/VisualisationOutputs/'
     saveFigures = True
 
     # Which plots to make:
-    plot1 = True
-    plot2 = False
+    plot1 = False
+    plot2 = True
     plot3 = False
     
     # Read in the matches, odds, and respective Pa and Pb values:
     matches = ReadInData(matchesFileName, False)
     
     # Set up risk profile parameters:
-    profiles = ['Very-Averse', 'Averse', 'Less-Averse', 'Neutral']
+    profiles = ['Very-Averse', 'Averse', 'Neutral']
     usersBalanceA = {}
     usersBalanceB = {}
     startingBal = 100.
@@ -53,7 +54,7 @@ def test80Matches(DB, matchesFileName):
     # Construct varying possible risk profiles:
     betsConsidered = [1,1,1,0,0]
     betasAsFloats = [0.1, 0.2, 0.3]
-    riskProfiles = {'Very-Averse': [0.6, 0.5, 0.4], 'Averse': [0.75, 0.65, 0.55], 'Less-Averse': [0.9, 0.8, 0.7], 'Neutral': [1., 1., 1.]}
+    riskProfiles = {'Very-Averse': [0.6, 0.5, 0.4], 'Averse': [0.8, 0.7, 0.6], 'Neutral': [1., 1., 1.]}
 
     # Find the best bets to place:
     for profile in riskProfiles:
@@ -166,11 +167,10 @@ def test80Matches(DB, matchesFileName):
     
     if (plot2):
         # Create distribution plot for ROIs:
-        plt.hist([matchROIs['Very-Averse'],matchROIs['Averse'],matchROIs['Less-Averse'],matchROIs['Neutral']], 
-        color=['blue','green','red','orange'],edgecolor='black',label=['Very-Averse = [{}, {}, {}]'.format(riskProfiles['Very-Averse'][0],
+        plt.hist([matchROIs['Very-Averse'],matchROIs['Averse'],matchROIs['Neutral']], 
+        color=['blue','green','red'],edgecolor='black',label=['Very-Averse = [{}, {}, {}]'.format(riskProfiles['Very-Averse'][0],
         riskProfiles['Very-Averse'][1],riskProfiles['Very-Averse'][2]),'Averse = [{}, {}, {}]'.format(riskProfiles['Averse'][0],
-        riskProfiles['Averse'][1],riskProfiles['Averse'][2]),'Less-Averse = [{}, {}, {}]'.format(riskProfiles['Less-Averse'][0],
-        riskProfiles['Less-Averse'][1],riskProfiles['Less-Averse'][2]),'Neutral  [{}, {}, {}]'.format(riskProfiles['Neutral'][0],
+        riskProfiles['Averse'][1],riskProfiles['Averse'][2]),'Neutral  [{}, {}, {}]'.format(riskProfiles['Neutral'][0],
         riskProfiles['Neutral'][1],riskProfiles['Neutral'][2])],bins = 8)
         plt.legend()
         plt.title('Distribution of ROIs for an Individual Match', fontsize = 14)
@@ -198,9 +198,10 @@ def test80Matches(DB, matchesFileName):
         df["Risk Profile"] = listRPs
         df["Individual Match ROIs"] = listROIs
         
-        sns.displot(df, x = "Individual Match ROIs", hue = "Risk Profile", kind = "kde", fill = True).set(title = 'Smoothed Density Plots\n(Distribution of Match ROIs)')
+        dis1 =sns.displot(df, x = "Individual Match ROIs", hue = "Risk Profile", kind = "kde", fill = True, bw_adjust = 0.5)#.set(title = 'Smoothed Density Plots\n(Distribution of Match ROIs)')
+        dis1.fig.suptitle('Smoothed Density Plots\n(Distribution of Match ROIs)')
         if (saveFigures):
-            plt.savefig(plotsFolder+'Smoohted Density Plot of Match ROIs (Regret)')
+            plt.savefig(plotsFolder+'Smoohted Density Plot of Match ROIs')
             plt.clf()
         else:
             plt.show()
@@ -228,22 +229,24 @@ def test80Matches(DB, matchesFileName):
             plt.show()
 
         # Smoothed density plots:
-        df = pd.DataFrame()
+        '''df = pd.DataFrame()
         listRPs = []
         listAmountBet = []
         for profile in profiles:
-            for ROI in amountBet[profile]:
-                listRPs.append(profile)
-                listAmountBet.append(ROI)   
+            if (profile != 'Risk-Neutral'):    
+                for ROI in amountBet[profile]:
+                    listRPs.append(profile)
+                    listAmountBet.append(ROI)   
         df["Risk Profile"] = listRPs
         df["Amount Bet"] = listAmountBet
         
-        sns.displot(df, x = "Amount Bet", hue = "Risk Profile", kind = "kde", fill = True).set(title = 'Smoothed Density Plots\n(Distribution of Amount Bet)')
+        dis = sns.displot(df, x = "Amount Bet", hue = "Risk Profile", kind = "kde", fill = True)#.set(title = 'Smoothed Density Plots\n(Distribution of Amount Bet)')
+        dis.fig.suptitle('Smoothed Density Plots\n(Distribution of Amount Bet)')
         if (saveFigures):
             plt.savefig(plotsFolder+'Smoohted Density Plot of Amount Bet')
             plt.clf()
         else:
-            plt.show()
+            plt.show()'''
 
 def test80MatchesRS(DB, matchesFileName):
     # Test the ROI as an objective on a full test set of 80 matches using a Risk-Seeking profile
@@ -255,8 +258,9 @@ def test80MatchesRS(DB, matchesFileName):
     # 5) Distribution of Minimum Feasible Regrets
 
     # Save figures to:
-    plotsFolder = 'C:\\Users\\campb\\OneDrive\\Documents\\University_ENGSCI\\4th Year\\ResearchProject\\ModelPlots\\'
-    saveFigures = False
+    #plotsFolder = 'C:\\Users\\campb\\OneDrive\\Documents\\University_ENGSCI\\4th Year\\ResearchProject\\ModelPlots\\'
+    plotsFolder ='C:/Uni/4thYearProject/repo/BeatTheOdds/ProjectDevelopmentCode/VisualisationOutputs/'
+    saveFigures = True
 
     # Which plots to make:
     plot1 = False
@@ -442,12 +446,13 @@ def test80MatchesRS(DB, matchesFileName):
                 if (regret == 'Risk-Neutral'):
                     listRPs.append(regret)
                 else:
-                    listRPs.append('Regret = {}'.format(regret))
+                    listRPs.append('Regret = +{}'.format(regret))
                 listROIs.append(ROI)   
         df["Risk Profile"] = listRPs
         df["Individual Match ROIs"] = listROIs
         
-        sns.displot(df, x = "Individual Match ROIs", hue = "Risk Profile", kind = "kde", fill = True).set(title = 'Smoothed Density Plots\n(Distribution of Match ROIs)')
+        dis = sns.displot(df, x = "Individual Match ROIs", hue = "Risk Profile", kind = "kde", fill = True, bw_adjust =0.5)#.set(title = 'Smoothed Density Plots\n(Distribution of Match ROIs)')
+        dis.fig.suptitle('Smoothed Density Plots\n(Distribution of Match ROIs)')
         if (saveFigures):
             plt.savefig(plotsFolder+'Smoohted Density Plot of Match ROIs (Regret)')
             plt.clf()
@@ -1456,7 +1461,7 @@ def main():
     # Test for CVaR Model:
     DB = ReadInGridDB('ModelDistributions2.csv')
     #testRegretConstraints(DB, '2018_19MatchesWithOdds.csv')
-    test80MatchesRS(DB, 'testSetForCalibrationWithROIWithManualyAddedDataWithPValues.csv')
+    test80Matches(DB, 'testSetForCalibrationWithROIWithManualyAddedDataWithPValues.csv')
     #test1MatchRS(DB, '2018_19MatchesWithOdds.csv')
 
 if __name__ == "__main__":
