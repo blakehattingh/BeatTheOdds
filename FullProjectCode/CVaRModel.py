@@ -288,53 +288,23 @@ def ComputeRegretVector(Zk):
                 # Compute the Regret measure:
                 regretMeasures[outcome] = bestBetValue - 1.
     return regretMeasures
-    
-def RunCVaRModel(betsConsidered,probDist,profile,RHS,betas,oddsMO,oddsMS,oddsNumSets,oddsSS=[],oddsNumGames=[]):
-    # This function sets up the required data and runs the CVaR model, returning a set of bets to make.
+
+def HighestPayingBet(Zk):
+    # This function finds and returns the highest paying bet and the associated odds
     # Inputs:
-    # - betsConsidered: A list of booleans of the bets we want to consider (Outcome, Score, #Sets, SS, #Games)
-    # - probDist: A list of probabilities corresponding to the possible outcomes (currently 2-0, 2-1, 0-2, 1-2)
-    # - profile: The users risk profile ('Risk-Averse', 'Risk-Neutral', 'Risk-Seeking')
-    # - RHS: A list of RHS values from the user about their risk profile
-    # - betas: The beta parameters we are using in the CVaR model for the constraints (Currently 0.2, 0.33, 0.5)
-    # - odds--: The odds for each type of bet as a list e.g. [oddsAWins, oddsBWins]
-
-    # Create odds dictionary:
-    odds = {'Match Outcome': oddsMO, 'Match Score': oddsMS, 'Number of Sets': oddsNumSets,
-    'Set Score': oddsSS, 'Number of Games': oddsNumGames}
-
-    # Create the Zk matrix, the oddCoef vector and the list of available bets:
-    [Zk, oddCoef, bettingOptions] = CreateZMatrix(betsConsidered, odds, probDist)
-
-    # Set up information for the problem:
-    outcomes = ['2-0', '2-1', '0-2', '1-2']
-    Pk = dict(zip(outcomes, probDist))
-
-    # Run the CVaR Model:
-
-    # If using regret measures, ensure the user input is feasible:
-    minRegret = 0.
-    if (profile == 'Risk-Seeking'):
-        # Check the threshold for the regret measure:
-        minRegret = -1 * CVaRModelRSThreshold(betas, bettingOptions, outcomes, Pk, Zk)
-
-        # Compare it to the users input:
-        if (minRegret <= RHS):
-            # Feasible value, continue with model:
-            [Zk, suggestedBets, objVal] = CVaRModelRS(betas, RHS, bettingOptions, outcomes, oddCoef, Pk, Zk)
-        else:
-            # Not feasible, set users value to the threshold:
-            [Zk, suggestedBets, objVal] = CVaRModelRS(betas, minRegret, bettingOptions, outcomes, oddCoef, Pk, Zk)
-
-    # Profile = Risk-Neutral:
-    elif (profile == 'Risk-Neutral'):
-        [Zk, suggestedBets, objVal] = CVaRModelRN(bettingOptions, oddCoef, Zk)
+    # Zk: The payoff matrix
+     
+    maxOdds = 0.
+    for outcome in Zk:
+        for bet in Zk[outcome]:
+            if (Zk[outcome][bet] > maxOdds):
+                maxOdds = Zk[outcome][bet]
+                maxBet = bet
     
-    # Profile = Risk-Averse:
-    elif (profile == 'Risk-Averse'):
-        [Zk, suggestedBets, objVal] = CVaRModelRA(betas, RHS, bettingOptions, outcomes, oddCoef, Pk, Zk)
+    return [maxBet, maxOdds]
 
-    # Extract and store the values of the variables:
+def ExtractBets(suggestedBets):
+    # This function takes in the suggested bets from the optimisation model and converts them to a usable form
     bets = {}
     count = 0
     for bet in suggestedBets:
@@ -353,5 +323,76 @@ def RunCVaRModel(betsConsidered,probDist,profile,RHS,betas,oddsMO,oddsMS,oddsNum
 
         bets[betName] = suggestedBets[count].varValue
         count += 1
+    return bets
 
-    return [Zk, bets, objVal, minRegret]
+def RunCVaRModel(betsConsidered,probDist,profile,RHS,betas,oddsMO,oddsMS,oddsNumSets,oddsSS=[],oddsNumGames=[]):
+    # This function sets up the required data and runs the CVaR model, returning a set of bets to make.
+    # Inputs:
+    # - betsConsidered: A list of booleans of the bets we want to consider (Outcome, Score, #Sets, SS, #Games)
+    # - probDist: A list of probabilities corresponding to the possible outcomes (currently 2-0, 2-1, 0-2, 1-2)
+    # - profile: The users risk profile ('Risk-Averse', 'Risk-Neutral', 'Risk-Seeking')
+    # - RHS: A list of RHS values from the user about their risk profile
+    # - betas: The beta parameters we are using in the CVaR model for the constraints (Currently 0.2, 0.33, 0.5)
+    # - odds--: The odds for each type of bet as a list e.g. [oddsAWins, oddsBWins]
+
+    tol = 1e-6
+    # Create odds dictionary:
+    odds = {'Match Outcome': oddsMO, 'Match Score': oddsMS, 'Number of Sets': oddsNumSets,
+    'Set Score': oddsSS, 'Number of Games': oddsNumGames}
+
+    # Create the Zk matrix, the oddCoef vector and the list of available bets:
+    [Zk, oddCoef, bettingOptions] = CreateZMatrix(betsConsidered, odds, probDist)
+
+    # Set up information for the problem:
+    outcomes = ['2-0', '2-1', '0-2', '1-2']
+    Pk = dict(zip(outcomes, probDist))
+
+    # Run the CVaR Model:
+
+    # If user = 'Risk-Seeking', need to check the minimum threshold and the risk-neutral models actions:
+    if (profile == 'Risk-Seeking'):
+        # Find the highest paying bet:
+        [maxBet, maxOdds] = HighestPayingBet(Zk)
+
+        # Check if the risk-neutral model is already betting on the most "risky" option:
+        [Zk, suggestedBets, objVal] = CVaRModelRN(bettingOptions, oddCoef, Zk)
+        
+        # Iterate through suggested bets to see if all the budget is on the most risky one:
+        bets = ExtractBets(suggestedBets)
+        for bet in bets:
+            if (bets[bet] >= (1. - tol)):
+               suggestedBet = bet
+        
+        # Check if this is the most risky:
+        if (suggestedBet != maxBet):
+            # Need to employ the risk-seekig model:
+
+            # Check the threshold for the regret measure:
+            minRegret = -1 * CVaRModelRSThreshold(betas, bettingOptions, outcomes, Pk, Zk)
+
+            # Compare it to the users input:
+            if (minRegret <= RHS):
+                # Feasible value, continue with model:
+                [Zk, suggestedBets, objVal] = CVaRModelRS(betas, RHS, bettingOptions, outcomes, oddCoef, Pk, Zk)
+            else:
+                # Not feasible, set users value to the threshold:
+                [Zk, suggestedBets, objVal] = CVaRModelRS(betas, minRegret, bettingOptions, outcomes, oddCoef, Pk, Zk)
+            
+            bets = ExtractBets(suggestedBets)
+            return [Zk, bets, objVal, minRegret]
+        else:
+            # Use the same suggestion as the risk-neutral model
+            return [Zk, bets, objVal, 0.]
+
+    # Profile = Risk-Neutral:
+    elif (profile == 'Risk-Neutral'):
+        [Zk, suggestedBets, objVal] = CVaRModelRN(bettingOptions, oddCoef, Zk)
+        bets = ExtractBets(suggestedBets)
+        return [Zk, bets, objVal]
+
+    # Profile = Risk-Averse:
+    elif (profile == 'Risk-Averse'):
+        [Zk, suggestedBets, objVal] = CVaRModelRA(betas, RHS, bettingOptions, outcomes, oddCoef, Pk, Zk)
+        bets = ExtractBets(suggestedBets)
+        return [Zk, bets, objVal]
+

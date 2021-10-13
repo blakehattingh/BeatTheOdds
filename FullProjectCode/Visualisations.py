@@ -3,6 +3,7 @@ from amply.amply import TabularRecord
 from matplotlib import use
 import numpy as np
 import pandas as pd
+import seaborn as sns
 from statistics import mean
 import matplotlib.pyplot as plt
 from InterpolatingDistributions import InterpolateDists
@@ -23,15 +24,15 @@ def test80Matches(DB, matchesFileName):
     saveFigures = True
 
     # Which plots to make:
-    plot1 = False
+    plot1 = True
     plot2 = False
-    plot3 = True
+    plot3 = False
     
     # Read in the matches, odds, and respective Pa and Pb values:
     matches = ReadInData(matchesFileName, False)
     
     # Set up risk profile parameters:
-    profiles = ['Very-Averse', 'Averse', 'Less-Averse']#, 'Neutral']
+    profiles = ['Very-Averse', 'Averse', 'Less-Averse', 'Neutral']
     usersBalanceA = {}
     usersBalanceB = {}
     startingBal = 100.
@@ -53,7 +54,7 @@ def test80Matches(DB, matchesFileName):
     # Construct varying possible risk profiles:
     betsConsidered = [1,1,1,0,0]
     betasAsFloats = [0.1, 0.2, 0.3]
-    riskProfiles = {'Very-Averse': [0.6, 0.5, 0.4], 'Averse': [0.75, 0.65, 0.55], 'Less-Averse': [0.9, 0.8, 0.7]}#, 'Neutral': [1., 1., 1.]}
+    riskProfiles = {'Very-Averse': [0.6, 0.5, 0.4], 'Averse': [0.75, 0.65, 0.55], 'Less-Averse': [0.9, 0.8, 0.7], 'Neutral': [1., 1., 1.]}
 
     # Find the best bets to place:
     for profile in riskProfiles:
@@ -78,7 +79,7 @@ def test80Matches(DB, matchesFileName):
                 outcome = '{}-{}'.format(int(matchScore[0]),int(matchScore[1]))
 
                 # Run CVaR model: (using generic risk profile)
-                [Zk, suggestedBets, objVal, minRegret] = RunCVaRModel(betsConsidered,Dists['Match Score'],CVaRProfile,riskProfiles[profile],
+                [Zk, suggestedBets, objVal] = RunCVaRModel(betsConsidered,Dists['Match Score'],CVaRProfile,riskProfiles[profile],
                 betasAsFloats,[float(match[58]),float(match[59])],[float(match[63]),float(match[62]),float(match[60]),
                 float(match[61])],[float(match[65]),float(match[64])],oddsSS=[],oddsNumGames=[])
 
@@ -124,7 +125,7 @@ def test80Matches(DB, matchesFileName):
             riskProfiles[profile][0],riskProfiles[profile][1],riskProfiles[profile][2]))
         
         # Set labels:
-        plt.title('User\'s Balance over 80 Matches \n (Betting Budget of ${})'.format(budgetA), fontsize = 14)
+        plt.title('User\'s Balance \n (Betting Budget of ${})'.format(budgetA), fontsize = 14)
         plt.xlabel('Match Number', fontsize = 12)
         plt.ylabel('User\'s Balance', fontsize = 12)
         plt.legend()
@@ -147,7 +148,7 @@ def test80Matches(DB, matchesFileName):
             riskProfiles[profile][0],riskProfiles[profile][1],riskProfiles[profile][2]))
         
         # Set labels:
-        plt.title('User\'s Balance over 80 Matches \n (Betting Budget is {}% of the User\'s Balance)'.format(percentOfBal*100),fontsize = 14)
+        plt.title('User\'s Balance \n (Betting Budget is {}% of the User\'s Balance)'.format(percentOfBal*100),fontsize = 14)
         plt.xlabel('Match Number',fontsize = 12)
         plt.ylabel('User\'s Balance',fontsize = 12)
         plt.legend()
@@ -186,6 +187,8 @@ def test80Matches(DB, matchesFileName):
             plt.clf()
         else:
             plt.show()
+
+        # Ty
 
     if (plot3):
         # Amount Bet:
@@ -242,7 +245,7 @@ def test80MatchesRS(DB, matchesFileName):
     betsConsidered = [1,1,1,0,0]
     beta = 0.2
     userInputs = [2, 3, 4, 5]
-    userInputsDynamic = [0.5, 1., 2.]
+    userInputsDynamic = [0.5, 1.]
 
     # Find which profiles we are using:
     profiles = []
@@ -284,21 +287,32 @@ def test80MatchesRS(DB, matchesFileName):
                 matchScore = [float(match[30]), float(match[31])]
                 outcome = '{}-{}'.format(int(matchScore[0]),int(matchScore[1]))
 
-                if (plot1):
-                    # Run CVaR model:
-                    [Zk, suggestedBets, objVal, minRegret] = RunCVaRModel(betsConsidered,Dists['Match Score'],CVaRProfile,float(regret),
-                    beta,[float(match[58]),float(match[59])],[float(match[63]),float(match[62]),float(match[60]),
-                    float(match[61])],[float(match[65]),float(match[64])],oddsSS=[],oddsNumGames=[])
-                elif (plot2):
-                    # Compute the minimum regret:
-                    [Zk, suggestedBets, objVal, minRegret] = RunCVaRModel(betsConsidered,Dists['Match Score'],CVaRProfile,10.,
-                    beta,[float(match[58]),float(match[59])],[float(match[63]),float(match[62]),float(match[60]),
-                    float(match[61])],[float(match[65]),float(match[64])],oddsSS=[],oddsNumGames=[])
+                if (CVaRProfile == 'Risk-Seeking'):
+                    if (plot1):
+                        # Run CVaR model:
+                        [Zk, suggestedBets, objVal, minRegret] = RunCVaRModel(betsConsidered,Dists['Match Score'],CVaRProfile,float(regret),
+                        beta,[float(match[58]),float(match[59])],[float(match[63]),float(match[62]),float(match[60]),
+                        float(match[61])],[float(match[65]),float(match[64])],oddsSS=[],oddsNumGames=[])
+                    elif (plot2):
+                        # Compute the minimum regret:
+                        [Zk, suggestedBets, objVal, minRegret] = RunCVaRModel(betsConsidered,Dists['Match Score'],CVaRProfile,10.,
+                        beta,[float(match[58]),float(match[59])],[float(match[63]),float(match[62]),float(match[60]),
+                        float(match[61])],[float(match[65]),float(match[64])],oddsSS=[],oddsNumGames=[])
 
-                    if (CVaRProfile != 'Risk-Neutral'):
                         # Re-run the model dynamically changing the users input based of the minimum value:
                         dynamicallyChangingRegret = minRegret + float(regret)
-                        [Zk, suggestedBets, objVal, minRegret] = RunCVaRModel(betsConsidered,Dists['Match Score'],CVaRProfile,dynamicallyChangingRegret,
+                        [Zk, suggestedBets, objVal, minRegret2] = RunCVaRModel(betsConsidered,Dists['Match Score'],CVaRProfile,dynamicallyChangingRegret,
+                        beta,[float(match[58]),float(match[59])],[float(match[63]),float(match[62]),float(match[60]),
+                        float(match[61])],[float(match[65]),float(match[64])],oddsSS=[],oddsNumGames=[])
+                else:
+                    if (plot1):
+                        # Run CVaR model:
+                        [Zk, suggestedBets, objVal] = RunCVaRModel(betsConsidered,Dists['Match Score'],CVaRProfile,float(regret),
+                        beta,[float(match[58]),float(match[59])],[float(match[63]),float(match[62]),float(match[60]),
+                        float(match[61])],[float(match[65]),float(match[64])],oddsSS=[],oddsNumGames=[])
+                    elif (plot2):
+                        # Compute the minimum regret:
+                        [Zk, suggestedBets, objVal] = RunCVaRModel(betsConsidered,Dists['Match Score'],CVaRProfile,10.,
                         beta,[float(match[58]),float(match[59])],[float(match[63]),float(match[62]),float(match[60]),
                         float(match[61])],[float(match[65]),float(match[64])],oddsSS=[],oddsNumGames=[])
 
@@ -343,7 +357,7 @@ def test80MatchesRS(DB, matchesFileName):
             print('Lowest Balance for {} Profile: '.format(regret), min(usersBalanceA[regret]))
 
         if (saveFigures):
-            plt.savefig(plotsFolder+'Users Balance (regret) - Over 80 Matches ($10 Budget)')
+            plt.savefig(plotsFolder+'Users Balance (regret, $10 Budget)')
             plt.clf()
         else:
             plt.show()
@@ -355,36 +369,50 @@ def test80MatchesRS(DB, matchesFileName):
         plt.legend()
         plt.title('Distirbution of ROIs across Risk Profiles', fontsize = 14)
         plt.xlabel('Individual Match ROIs',fontsize = 11)
-        plt.ylabel('Frequency over the 80 Matches', fontsize = 11)
+        plt.ylabel('Frequency', fontsize = 11)
 
         # Compute the average ROI for a match:
         for profile in profiles:
             print(mean(matchROIs[profile]))
 
         if (saveFigures):
-            plt.savefig(plotsFolder+'Distribution of Match ROIs (Regret) - over 80 Matches')
+            plt.savefig(plotsFolder+'Distribution of Match ROIs (Regret)')
             plt.clf()
         else:
             plt.show()
 
     if (plot4):
         # Create distribution plot for ROIs:
-        plt.hist([matchROIs['0.5'],matchROIs['1.0'],matchROIs['2.0'],matchROIs['Risk-Neutral']],color=['blue','green','red','orange'],
-        edgecolor='black',label=['0.5','1','2','Neutral'], bins = 5)
+        plt.hist([matchROIs['0.5'],matchROIs['1.0'],matchROIs['Risk-Neutral']],color=['blue','green','red'],
+        edgecolor='black',label=['0.5','1','Neutral'], bins = 5)
         plt.legend()
         plt.title('Distribution of ROIs across Risk Profiles', fontsize = 14)
         plt.xlabel('Individual Match ROIs', fontsize = 11)
-        plt.ylabel('Frequency over the 80 Matches', fontsize = 11)
+        plt.ylabel('Frequency', fontsize = 11)
 
         # Compute the average ROI for a match:
         for profile in profiles:
             print(mean(matchROIs[profile]))
 
         if (saveFigures):
-            plt.savefig(plotsFolder+'Distribution of Match ROIs (Regret) - over 80 Matches')
+            plt.savefig(plotsFolder+'Distribution of Match ROIs (Regret)')
             plt.clf()
         else:
             plt.show()
+
+        # Smoothed density plots:
+        df = pd.DataFrame()
+        listRPs = []
+        listROIs = []
+        for regret in profiles:
+            for ROI in matchROIs[regret]:
+                listRPs.append(regret)
+                listROIs.append(ROI)   
+        df["Risk Profile"] = listRPs
+        df["ROIs"] = listROIs
+        
+        sns.displot(df, x = "ROIs", hue = "Risk Profile", kind = "kde", fill = True)
+        plt.show()
 
     if (plot5):
         # Create distribution plot for the minimum regrets:
@@ -392,10 +420,10 @@ def test80MatchesRS(DB, matchesFileName):
         plt.legend()
         plt.title('Distirbution of the Threshold for the Feasible Regret')
         plt.xlabel('Minimum Feasible Regret')
-        plt.ylabel('Frequency over the 80 Matches')
+        plt.ylabel('Frequency')
 
         if (saveFigures):
-            plt.savefig(plotsFolder+'Distribution of Minimum Regrets - over 80 Matches')
+            plt.savefig(plotsFolder+'Distribution of Minimum Regrets')
             plt.clf()
         else:
             plt.show()
@@ -739,7 +767,7 @@ def test1Match(DB, matchesFileName):
                             alphasToUse.append(riskProfiles[profile][value])
 
                     # Run CVaR model:
-                    [Zk, suggestedBets, objVal, minRegret] = RunCVaRModel(betsConsidered,Dists['Match Score'],CVaRProfile, alphasToUse,
+                    [Zk, suggestedBets, objVal] = RunCVaRModel(betsConsidered,Dists['Match Score'],CVaRProfile, alphasToUse,
                     betasAsFloats,[float(match[18]),float(match[19])],[float(match[20]),float(match[21]),float(match[22]),
                     float(match[23])],[float(match[24]),float(match[25])],oddsSS=[],oddsNumGames=[])
                     
@@ -784,7 +812,7 @@ def test1Match(DB, matchesFileName):
                 alphasToUse[counter] = alpha
 
                 # Run CVaR model:
-                [Zk, suggestedBets, objVal, minRegret] = RunCVaRModel(betsConsidered,Dists['Match Score'],CVaRProfile, alphasToUse,
+                [Zk, suggestedBets, objVal] = RunCVaRModel(betsConsidered,Dists['Match Score'],CVaRProfile, alphasToUse,
                 betasAsFloats,[float(match[18]),float(match[19])],[float(match[20]),float(match[21]),float(match[22]),
                 float(match[23])],[float(match[24]),float(match[25])],oddsSS=[],oddsNumGames=[])
                 
@@ -1009,7 +1037,7 @@ def test1MatchRS(DB, matchesFileName):
 
     # Save figures to:
     plotsFolder = 'C:\\Users\\campb\\OneDrive\\Documents\\University_ENGSCI\\4th Year\\ResearchProject\\ModelPlots\\'
-    saveFigures = False
+    saveFigures = True
 
     # Which plots to make:
     plot1 = True
@@ -1026,7 +1054,7 @@ def test1MatchRS(DB, matchesFileName):
     totalSpent = []
 
     # Read in data and extract ONLY the first match:
-    match = ReadInData(matchesFileName)[0]
+    match = ReadInData(matchesFileName, True)[0]
 
     # Construct varying possible risk profiles:
     betsConsidered = [1,1,1,0,0]
@@ -1047,7 +1075,7 @@ def test1MatchRS(DB, matchesFileName):
     # Iteratre through the different alpha values we can change:
     for regret in userInputs:
         # Run CVaR model:
-        [Zk, suggestedBets, objVal] = RunCVaRModel(betsConsidered,Dists['Match Score'],'Risk-Seeking', regret,
+        [Zk, suggestedBets, objVal, minRegret] = RunCVaRModel(betsConsidered,Dists['Match Score'],'Risk-Seeking', regret,
         beta,[float(match[18]),float(match[19])],[float(match[20]),float(match[21]),float(match[22]),
         float(match[23])],[float(match[24]),float(match[25])],oddsSS=[],oddsNumGames=[])
         
@@ -1389,7 +1417,7 @@ def main():
     DB = ReadInGridDB('ModelDistributions2.csv')
     #testRegretConstraints(DB, '2018_19MatchesWithOdds.csv')
     test80MatchesRS(DB, 'testSetForCalibrationWithROIWithManualyAddedDataWithPValues.csv')
-    #test1Match(DB, '2018_19MatchesWithOdds.csv')
+    #test1MatchRS(DB, '2018_19MatchesWithOdds.csv')
 
 if __name__ == "__main__":
     main()

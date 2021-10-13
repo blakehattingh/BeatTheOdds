@@ -179,7 +179,52 @@ def plotS1InsamplePerformance(saveFig):
     else:
         plt.show()
 
-def plotAlgorithmProgress(fileName, saveFig):
+def plotS2InsamplePerformance(saveFig):
+    # This method plots the in-sample performance of each of the equations. 
+    # It plots the objective values against the calibrated parameters for the 6 best parameters of equation 2.
+    # The data values have been taken from the file 'UPDATED_CalibratedParametersROI_NoProfile'
+    plotsFolder = 'C:\\Users\\campb\\OneDrive\\Documents\\University_ENGSCI\\4th Year\\ResearchProject\\ModelPlots\\'
+
+    # Hard-coded Data:
+    algObjNP = [95.00925926,	87.27777778,	86.25925926,	77.99074074,	77.46296296,	76.64814815]
+    algObjRA = [86.49951528,	79.89140332,	79.0222635,	77.88482915,	69.57145634,	68.36580116]
+
+    algNPParams = ('[2.11,0.24,0.79]','[2.12,0.72,0.71]','[2.11,0.5,0.75]','[2.16,0.24,0.51]',
+                '[2.15,0.49,.0.5]','[2.28,0.82,0.23]')
+    algRAParams = ['[2.11,0.24,0.79]','[2.11,0.67,0.71]','[2.13,0.5,0.74]','[2.22,0.21,0.56]',
+                '[2.22,0.26,.0.31]','[2.12,0.5,0.5]']
+
+    pos  = list(range(6))
+    width = 0.8
+
+    fig, ax = plt.subplots(1, 2,sharey=True, figsize = [10,7])
+    fig.suptitle('Stage 2 In-Sample Performace', fontsize=14)
+    fig.supxlabel('Calibrated Parameters', fontsize = 12)
+    fig.supylabel('Objective Function - Average ROI', fontsize = 12)
+
+    plt.subplots_adjust(bottom=0.224)
+    ax[0].bar(pos,algObjNP,width,alpha=0.5, color ='mediumseagreen')
+    ax[0].set_ylim(50, 100)
+    ax[0].set_xticks(range(6))
+    ax[0].tick_params(labelrotation=70)
+    ax[0].set_xticklabels(algNPParams)
+    ax[0].set_title('Risk-Neutral Profile', fontsize=12)
+    #ax[0].set_ylabel('Objective Function Value', fontsize=11)
+
+    ax[1].bar(pos,algObjRA,width,alpha=0.5, color ='royalblue')
+    ax[1].set_xticks(range(6))
+    ax[1].tick_params(labelrotation=70)
+    ax[1].set_xticklabels(algRAParams)
+    ax[1].set_title('Risk-Averse Profile', fontsize=12)
+    #ax[1].set_xlabel('Calibrated Parameters', fontsize=11)
+
+    if (saveFig):
+        plt.savefig(plotsFolder+'Calibration Stage 2 - InSample Performance')
+        plt.clf()
+    else:
+        plt.show()
+
+def plotAlgorithmProgress(fileName, stage, saveFig):
     plotsFolder = 'C:\\Users\\campb\\OneDrive\\Documents\\University_ENGSCI\\4th Year\\ResearchProject\\ModelPlots\\'
     currentBestValues = []
     currentValues = []
@@ -187,14 +232,17 @@ def plotAlgorithmProgress(fileName, saveFig):
     with open(fileName) as csv_file:
             csv_reader = csv.reader(csv_file, delimiter=',')
             line_count = 0 
-            skipLines = [0,1,2,3,4,5,6,7,8,9]
+            if (stage == 1):
+                skipLines = [0,1,2,3,4,5,6,7,8,9]
+            else:
+                skipLines = [-1]
             for row in csv_reader:
                 if line_count in skipLines:
                     line_count += 1
-                elif(line_count == 10):
+                elif(line_count == skipLines[-1]+1):
                     currentBestValues = row
                     line_count += 1
-                elif(line_count == 11):
+                elif(line_count == skipLines[-1]+2):
                     currentValues = row
                     line_count+=1
             csv_file.close()
@@ -206,22 +254,29 @@ def plotAlgorithmProgress(fileName, saveFig):
 
     # Plot the values:
     iterations = list(range(1,len(currentBestValues)+1))
-    plt.plot(iterations, currentBestValues , color = 'red', linestyle = '--', label = "Best Objective Value")
+    if (stage == 1):
+        plt.plot(iterations, currentBestValues , color = 'red', linestyle = '--', label = "Incumbent Solution Objective Value")
+    else:
+        plt.plot(iterations, currentBestValues , color = 'red', linestyle = '--', label = "Incumbent Solution ROI")
     plt.plot(iterations, currentValues, color = 'royalblue', label = "Current Objective Value")
     
     # Set up the labels:
-    plt.title('Search Algorithm Progress', fontsize = 14)
+    plt.title('Search Algorithm Progress Stage {}'.format(stage), fontsize = 14)
     plt.xlabel('Iteration Number', fontsize = 11)
-    plt.ylabel('Objective Function Value', fontsize = 11)
+    if (stage == 1):
+        plt.ylabel('Objective Function Value', fontsize = 11)
+    else:
+        plt.ylabel('Average ROI', fontsize = 11)
+    
     plt.legend()
 
     if (saveFig):
-        plt.savefig(plotsFolder+'Calibration Stage 1 - Algorthim Progress')
+        plt.savefig(plotsFolder+'Calibration Stage {} - Algorthim Progress'.format(stage))
         plt.clf()
     else:
         plt.show()
 
-def plotS2OutOfSamplePerformance(saveFig):
+def plotS1OutOfSamplePerformance(saveFig):
     # This method plots the out-of-sample performance of each of the equations. 
     # It plots the objective values against the calibrated parameters for the 6 best parameters of each equation.
     # The data values have been taken from the file 'ObjectiveValyesForCalibratedParametersRound2.csv'
@@ -276,15 +331,78 @@ def plotS2OutOfSamplePerformance(saveFig):
     else:
         plt.show()
 
-def main():
-    # Plot 1 - Search algorithm progress:
-    plotAlgorithmProgress('C:\\Users\\campb\\OneDrive\\Documents\\University_ENGSCI\\4th Year\\ResearchProject\\beliefprop\\ProjectDevelopmentCode\\CSVFiles\\CalibratedPlottingDataRound2.csv', True)
-    
-    # Plot 2 - In-Sample Performance:
-    plotS1InsamplePerformance(True)
+def plotS2OutOfSamplePerformance(saveFig):
+    # This method plots the out-of-sample performance for equaiton 2.
+    # It plots the objective values against the calibrated parameters for the 6 best parameters.
+    # The data values have been taken from the file 'UPDATED_TestingPlottingDataROI.csv'
 
-    # Plot 3 - Out-of-Sample Performance:
-    plotS2OutOfSamplePerformance(True)
+    plotsFolder = 'C:\\Users\\campb\\OneDrive\\Documents\\University_ENGSCI\\4th Year\\ResearchProject\\ModelPlots\\'
+
+    # Hard-coded Data:
+    algObjRN = [60.861644399235544,52.72732357842366,56.42198067409336,51.13159783081186,59.9582574050292,50.23879035923853]
+    algObjRA = [60.90600926509207,51.24063782226366,58.731301541762846,56.24993069376189,49.611432302429996,57.84421296281829]
+
+    algRNParams = ('(2.11, 0.24, 0.79)','(2.12, 0.72, 0.71)','(2.11, 0.5, 0.75)',
+                    '(2.16, 0.24, 0.51)','(2.15, 0.49, 0.5)','(2.28, 0.82, 0.23)')
+    algRAParams = ['(2.11, 0.24, 0.79)','(2.11, 0.67, 0.71)','(2.13, 0.5, 0.74)',
+                '(2.22, 0.21, 0.56)','(2.22, 0.26, 0.31)','(2.12, 0.5, 0.5)']
+
+
+    pos  = list(range(6))
+    width = 0.8
+
+    fig, ax = plt.subplots(1, 2,sharey=True, figsize = [8, 6])
+    fig.suptitle('Stage 2 Out-Of-Sample Performance', fontsize=14)
+    fig.supxlabel('Calibrated Parameters', fontsize = 12)
+    fig.supylabel('Objective Function - Average ROI', fontsize = 12)
+    plt.subplots_adjust(bottom=0.224)
+
+    ax[0].bar(pos,algObjRN,width,alpha=0.5, color ='mediumseagreen')
+    ax[0].set_ylim(40, 65)
+    ax[0].set_xticks(range(6))
+    ax[0].tick_params(labelrotation=60)
+    ax[0].set_xticklabels(algRNParams)
+    ax[0].set_title('Trained with Risk-Neutral Profile', fontsize=12)
+
+    ax[1].bar(pos,algObjRA,width,alpha=0.5, color ='royalblue')
+    ax[1].set_xticks(range(6))
+    ax[1].tick_params(labelrotation=60)
+    ax[1].set_xticklabels(algRAParams)
+    ax[1].set_title('Trained with Risk-Averse Profile', fontsize=12)
+
+    if (saveFig):
+        plt.savefig(plotsFolder+'Calibration Stage 2 - OutOfSample Performances')
+        plt.clf()
+    else:
+        plt.show()
+
+def main():
+    plot1 = False
+    plot2 = False
+    plot3 = True
+    saveFigs = True
+
+    if (plot1):
+        # Plot 1 - Search algorithm progress:
+        # Stage 1:
+        plotAlgorithmProgress('C:\\Users\\campb\\OneDrive\\Documents\\University_ENGSCI\\4th Year\\ResearchProject\\beliefprop\\ProjectDevelopmentCode\\CSVFiles\\CalibratedPlottingDataRound2.csv', 1, saveFigs)
+        # Stage 2:
+        plotAlgorithmProgress('C:\\Users\\campb\\OneDrive\\Documents\\University_ENGSCI\\4th Year\\ResearchProject\\beliefprop\\ProjectDevelopmentCode\\CSVFiles\\UPDATED_CalibratedPlottingDataROI_NoProfile.csv', 2, saveFigs)
+
+    if (plot2):
+        # Plot 2 - In-Sample Performance:
+        # Stage 1:
+        plotS1InsamplePerformance(saveFigs)
+        # Stage 2:
+        plotS2InsamplePerformance(saveFigs)
+
+    if (plot3):
+        # Plot 3 - Out-of-Sample Performance:
+        # Stage 1:
+        #plotS1OutOfSamplePerformance(saveFigs)
+        # Stage 2:
+        plotS2OutOfSamplePerformance(saveFigs)
+
     
 if __name__ == "__main__":
     main()
