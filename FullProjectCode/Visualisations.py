@@ -242,11 +242,15 @@ def test80Matches(DB, matchesFileName):
 
     if (plot3):
         # Amount Bet:
-        plt.hist([amountBet['Very-Averse'],amountBet['Averse'],amountBet['Less-Averse']], 
-        color=['blue','green','red'],edgecolor='black',label=['Very-Averse = [{}, {}, {}]'.format(riskProfiles['Very-Averse'][0],
+        plt.hist([amountBet['Very-Averse'],amountBet['Averse']], 
+        color=['blue','green'],edgecolor='black',label=['Very-Averse = [{}, {}, {}]'.format(riskProfiles['Very-Averse'][0],
         riskProfiles['Very-Averse'][1],riskProfiles['Very-Averse'][2]),'Averse = [{}, {}, {}]'.format(riskProfiles['Averse'][0],
+<<<<<<< HEAD
         riskProfiles['Averse'][1],riskProfiles['Averse'][2]),'Less-Averse = [{}, {}, {}]'.format(riskProfiles['Less-Averse'][0],
         riskProfiles['Less-Averse'][1],riskProfiles['Less-Averse'][2])],bins = 10)
+=======
+        riskProfiles['Averse'][1],riskProfiles['Averse'][2])],bins = 10)
+>>>>>>> c8abc5dfb5ac9765d08072559e46dd14c15c7766
         plt.legend()
         plt.title('Distribution of Amount Bet', fontsize = 14)
         plt.xlabel('Amount Bet (as a proportion of your budget)', fontsize = 11)
@@ -263,7 +267,7 @@ def test80Matches(DB, matchesFileName):
             plt.show()
 
         # Smoothed density plots:
-        '''df = pd.DataFrame()
+        df = pd.DataFrame()
         listRPs = []
         listAmountBet = []
         for profile in profiles:
@@ -272,15 +276,15 @@ def test80Matches(DB, matchesFileName):
                     listRPs.append(profile)
                     listAmountBet.append(ROI)   
         df["Risk Profile"] = listRPs
-        df["Amount Bet"] = listAmountBet
+        df["Amount Bet (as a proportion of users budget)"] = listAmountBet
         
-        dis = sns.displot(df, x = "Amount Bet", hue = "Risk Profile", kind = "kde", fill = True)#.set(title = 'Smoothed Density Plots\n(Distribution of Amount Bet)')
-        dis.fig.suptitle('Smoothed Density Plots\n(Distribution of Amount Bet)')
+        dis = sns.displot(df, x = "Amount Bet (as a proportion of users budget)", hue = "Risk Profile",stat="density", common_norm = False)#.set(title = 'Smoothed Density Plots\n(Distribution of Amount Bet)')
+        dis.fig.suptitle('Distribution of Amount Bet')
         if (saveFigures):
             plt.savefig(plotsFolder+'Smoohted Density Plot of Amount Bet')
             plt.clf()
         else:
-            plt.show()'''
+            plt.show()
 
 def test80MatchesRS(DB, matchesFileName):
     # Test the ROI as an objective on a full test set of 80 matches using a Risk-Seeking profile
