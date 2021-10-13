@@ -21,7 +21,7 @@ def test80Matches(DB, matchesFileName):
     # Save figures to:
     #plotsFolder = 'C:\\Users\\campb\\OneDrive\\Documents\\University_ENGSCI\\4th Year\\ResearchProject\\ModelPlots\\'
     plotsFolder ='C:/Uni/4thYearProject/repo/BeatTheOdds/ProjectDevelopmentCode/VisualisationOutputs/'
-    saveFigures = False
+    saveFigures = True
 
     # Which plots to make:
     plot1 = False
@@ -34,7 +34,7 @@ def test80Matches(DB, matchesFileName):
     
     # Set up risk profile parameters:
     #profiles = ['Very-Averse', 'Averse', 'Less-Averse', 'Neutral']
-    profiles = ['Averse', 'Neutral', 'Seeking']
+    profiles = ['Averse','Seeking','Neutral']
     usersBalanceA = {}
     usersBalanceB = {}
     startingBal = 100.
@@ -245,12 +245,8 @@ def test80Matches(DB, matchesFileName):
         plt.hist([amountBet['Very-Averse'],amountBet['Averse']], 
         color=['blue','green'],edgecolor='black',label=['Very-Averse = [{}, {}, {}]'.format(riskProfiles['Very-Averse'][0],
         riskProfiles['Very-Averse'][1],riskProfiles['Very-Averse'][2]),'Averse = [{}, {}, {}]'.format(riskProfiles['Averse'][0],
-<<<<<<< HEAD
         riskProfiles['Averse'][1],riskProfiles['Averse'][2]),'Less-Averse = [{}, {}, {}]'.format(riskProfiles['Less-Averse'][0],
         riskProfiles['Less-Averse'][1],riskProfiles['Less-Averse'][2])],bins = 10)
-=======
-        riskProfiles['Averse'][1],riskProfiles['Averse'][2])],bins = 10)
->>>>>>> c8abc5dfb5ac9765d08072559e46dd14c15c7766
         plt.legend()
         plt.title('Distribution of Amount Bet', fontsize = 14)
         plt.xlabel('Amount Bet (as a proportion of your budget)', fontsize = 11)
