@@ -194,8 +194,8 @@ def ExtractSetScores(setScoresStirng):
 
 def ReadInData(fileName, header):
     # Get location of file:
-    fileName = os.path.join('C:\\Uni\\4thYearProject\\repo\\BeatTheOdds\\FullProjectCode\\CSVFiles', fileName)
-    #fileName = os.path.join('C:\\Users\\campb\\OneDrive\\Documents\\University_ENGSCI\\4th Year\\ResearchProject\\beliefprop\\FullProjectCode\\CSVFiles', fileName)
+    #fileName = os.path.join('C:\\Uni\\4thYearProject\\repo\\BeatTheOdds\\FullProjectCode\\CSVFiles', fileName)
+    fileName = os.path.join('C:\\Users\\campb\\OneDrive\\Documents\\University_ENGSCI\\4th Year\\ResearchProject\\beliefprop\\FullProjectCode\\CSVFiles', fileName)
 
     # Read in CSV file:
     testData = []

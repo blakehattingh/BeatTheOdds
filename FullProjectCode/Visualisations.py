@@ -258,7 +258,7 @@ def test80MatchesRS(DB, matchesFileName):
     # 5) Distribution of Minimum Feasible Regrets
 
     # Save figures to:
-    #plotsFolder = 'C:\\Users\\campb\\OneDrive\\Documents\\University_ENGSCI\\4th Year\\ResearchProject\\ModelPlots\\'
+    # plotsFolder = 'C:\\Users\\campb\\OneDrive\\Documents\\University_ENGSCI\\4th Year\\ResearchProject\\ModelPlots\\'
     plotsFolder ='C:/Uni/4thYearProject/repo/BeatTheOdds/ProjectDevelopmentCode/VisualisationOutputs/'
     saveFigures = True
 
@@ -268,6 +268,7 @@ def test80MatchesRS(DB, matchesFileName):
     plot3 = False
     plot4 = True
     plot5 = False
+    smoothed = True
     
     # Read in the matches, odds, and respective Pa and Pb values:
     matches = ReadInData(matchesFileName, False)
@@ -438,26 +439,27 @@ def test80MatchesRS(DB, matchesFileName):
             plt.show()
 
         # Smoothed density plots:
-        df = pd.DataFrame()
-        listRPs = []
-        listROIs = []
-        for regret in profiles:
-            for ROI in matchROIs[regret]:
-                if (regret == 'Risk-Neutral'):
-                    listRPs.append(regret)
-                else:
-                    listRPs.append('Regret = +{}'.format(regret))
-                listROIs.append(ROI)   
-        df["Risk Profile"] = listRPs
-        df["Individual Match ROIs"] = listROIs
-        
-        dis = sns.displot(df, x = "Individual Match ROIs", hue = "Risk Profile", kind = "kde", fill = True, bw_adjust =0.5)#.set(title = 'Smoothed Density Plots\n(Distribution of Match ROIs)')
-        dis.fig.suptitle('Smoothed Density Plots\n(Distribution of Match ROIs)')
-        if (saveFigures):
-            plt.savefig(plotsFolder+'Smoohted Density Plot of Match ROIs (Regret)')
-            plt.clf()
-        else:
-            plt.show()
+        if (smoothed):
+            df = pd.DataFrame()
+            listRPs = []
+            listROIs = []
+            for regret in profiles:
+                for ROI in matchROIs[regret]:
+                    if (regret == 'Risk-Neutral'):
+                        listRPs.append(regret)
+                    else:
+                        listRPs.append('Regret = +{}'.format(regret))
+                    listROIs.append(ROI)   
+            df["Risk Profile"] = listRPs
+            df["Individual Match ROIs"] = listROIs
+            
+            dis = sns.displot(df, x = "Individual Match ROIs", hue = "Risk Profile", kind = "kde", fill = True, bw_adjust =0.5)#.set(title = 'Smoothed Density Plots\n(Distribution of Match ROIs)')
+            dis.fig.suptitle('Smoothed Density Plots\n(Distribution of Match ROIs)')
+            if (saveFigures):
+                plt.savefig(plotsFolder+'Smoohted Density Plot of Match ROIs (Regret)')
+                plt.clf()
+            else:
+                plt.show()
 
     if (plot5):
         # Create distribution plot for the minimum regrets:
@@ -1085,7 +1087,7 @@ def test1MatchRS(DB, matchesFileName):
     saveFigures = True
 
     # Which plots to make:
-    plot1 = True
+    plot1 = False
     plot2 = True
 
     # Set up required data storing structures:
@@ -1107,7 +1109,7 @@ def test1MatchRS(DB, matchesFileName):
     N = 50
     
     # Compute the threshold for minimum amount of regret:
-    threshold = 2.526
+    threshold = 2.526 + 0.2
     userInputs = np.linspace(threshold, 4., N)
 
     # Compute the interpolated distributions:
@@ -1134,18 +1136,21 @@ def test1MatchRS(DB, matchesFileName):
         [ROI, spent, returns] = ObjectiveMetricROI(outcome, Zk, suggestedBets)
 
         # Append it to the ROIS dictionary for this profile:
-        ROIs.append(ROI)
+        ROIs.append(round(100 * objVal, 2))
         totalSpent.append(round(spent,3))
     
     if (plot1):
         # Plot the ROI as the user input changes:
         plt.plot(userInputs, ROIs)
-        plt.title('ROI over a Single Match for a Risk-Seeking Profile')
-        plt.xlabel('Minimum Amount of Regret the User is willing to Experience')
-        plt.ylabel('ROI achieved')
+        plt.axvline(x=2.526, color = 'red', linestyle = '--')
+        plt.title('Expected ROI for a Risk-Seeking Profile')
+        plt.xlabel('User\'s Regret Level ($\u03B1_{0.2}$)')
+        plt.ylabel('Expected ROI')
+        plt.legend(labels = ['Expected ROI', 'Minimum Amount of Regret Achievable'])
+        plt.grid()
 
         if (saveFigures):
-            plt.savefig(plotsFolder+'ROI Regret Plot')
+            plt.savefig(plotsFolder+'Expected ROI Regret Plot (Single match)')
             plt.clf()
         else:
             plt.show()
@@ -1176,11 +1181,11 @@ def test1MatchRS(DB, matchesFileName):
 
         # Plot the total amount spent too:
         plt.plot(userInputs, totalSpent)
-        labels.append('Total Amount Spent')
+        labels.append('Total Amount Bet')
 
         # Set up the labels:
         plt.title('Portfolio Analysis for a Risk-Seeking Profile')
-        plt.xlabel('Minimum Amount of Regret the User is willing to Experience')
+        plt.xlabel('User\'s Regret Level ($\u03B1_{0.2}$)')
         plt.ylabel('Proportion of Budget Bet')
         plt.legend(labels = labels)
 
@@ -1461,7 +1466,7 @@ def main():
     # Test for CVaR Model:
     DB = ReadInGridDB('ModelDistributions2.csv')
     #testRegretConstraints(DB, '2018_19MatchesWithOdds.csv')
-    test80Matches(DB, 'testSetForCalibrationWithROIWithManualyAddedDataWithPValues.csv')
+    test80MatchesRS(DB, 'testSetForCalibrationWithROIWithManualyAddedDataWithPValues.csv')
     #test1MatchRS(DB, '2018_19MatchesWithOdds.csv')
 
 if __name__ == "__main__":

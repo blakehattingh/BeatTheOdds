@@ -369,14 +369,15 @@ def RunCVaRModel(betsConsidered,probDist,profile,RHS,betas,oddsMO,oddsMS,oddsNum
 
             # Check the threshold for the regret measure:
             minRegret = -1 * CVaRModelRSThreshold(betas, bettingOptions, outcomes, Pk, Zk)
+            minThreshold = minRegret + 0.2
 
             # Compare it to the users input:
-            if (minRegret <= RHS):
+            if (minThreshold <= RHS):
                 # Feasible value, continue with model:
                 [Zk, suggestedBets, objVal] = CVaRModelRS(betas, RHS, bettingOptions, outcomes, oddCoef, Pk, Zk)
             else:
                 # Not feasible, set users value to the threshold:
-                [Zk, suggestedBets, objVal] = CVaRModelRS(betas, minRegret, bettingOptions, outcomes, oddCoef, Pk, Zk)
+                [Zk, suggestedBets, objVal] = CVaRModelRS(betas, minThreshold, bettingOptions, outcomes, oddCoef, Pk, Zk)
             
             bets = ExtractBets(suggestedBets)
             return [Zk, bets, objVal, minRegret]
