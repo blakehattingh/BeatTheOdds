@@ -24,17 +24,17 @@ def test80Matches(DB, matchesFileName):
     saveFigures = False
 
     # Which plots to make:
-    plot1 = False
-    plot2 = True
+    plot1 = True
+    plot2 = False
     plot3 = False
-    smoothed = True
+    smoothed = False
     
     # Read in the matches, odds, and respective Pa and Pb values:
     matches = ReadInData(matchesFileName, False)
     
     # Set up risk profile parameters:
-    #profiles = ['Very-Averse', 'Averse', 'Less-Averse', 'Neutral']
-    profiles = ['Averse', 'Neutral', 'Seeking']
+    profiles = ['Very-Averse', 'Averse', 'Neutral']
+    #profiles = ['Averse', 'Neutral', 'Seeking']
     usersBalanceA = {}
     usersBalanceB = {}
     startingBal = 100.
@@ -57,19 +57,19 @@ def test80Matches(DB, matchesFileName):
     betsConsidered = [1,1,1,0,0]
     betasRA = [0.1, 0.2, 0.3]
     betasRS = 0.2
-    #riskProfiles = {'Very-Averse': [0.6, 0.5, 0.4], 'Averse': [0.75, 0.65, 0.55], 'Less-Averse': [0.9, 0.8, 0.7], 'Neutral': [1., 1., 1.]}
-    riskProfiles = {'Averse': [0.6, 0.5, 0.4], 'Neutral': [1., 1., 1.], 'Seeking': 0.5}
+    riskProfiles = {'Very-Averse': [0.6, 0.5, 0.4], 'Averse': [0.8, 0.7, 0.6], 'Neutral': [1., 1., 1.]}
+    #riskProfiles = {'Averse': [0.8, 0.7, 0.6], 'Neutral': [1., 1., 1.], 'Seeking': 0.5}
 
     # Find the best bets to place:
     for profile in riskProfiles:
         if (profile == 'Neutral'):
             CVaRProfile = 'Risk-Neutral'
         else:
-            #CVaRProfile = 'Risk-Averse'
-            if (profile == 'Averse'):
+            CVaRProfile = 'Risk-Averse'
+            '''if (profile == 'Averse'):
                 CVaRProfile = 'Risk-Averse'
             else:
-                CVaRProfile = 'Risk-Seeking'
+                CVaRProfile = 'Risk-Seeking'''
 
         # Set up starting balance:
         newBalA = startingBal
@@ -143,9 +143,9 @@ def test80Matches(DB, matchesFileName):
     if (plot1):
         # Show how the users budget changes across the 80 matches, for 3 generic profiles:
         for profile in riskProfiles:
-            #plt.plot(list(range(0,len(matches)+1)), usersBalanceA[profile], label = '{} = [{}, {}, {}]'.format(profile,
+            plt.plot(list(range(0,len(matches)+1)), usersBalanceA[profile], label = '{}'.format(profile))
             #riskProfiles[profile][0],riskProfiles[profile][1],riskProfiles[profile][2]))
-            plt.plot(list(range(0,len(matches)+1)), usersBalanceA[profile], label = profile)
+            #plt.plot(list(range(0,len(matches)+1)), usersBalanceA[profile], label = profile)
         # Set labels:
         plt.title('User\'s Balance \n (Betting Budget of ${})'.format(budgetA), fontsize = 14)
         plt.xlabel('Match Number', fontsize = 12)
@@ -154,9 +154,9 @@ def test80Matches(DB, matchesFileName):
         plt.grid()
         
         # Print final balances:
-        for profile in riskProfiles:
+        '''for profile in riskProfiles:
             print('Final Balance for {} Profile: '.format(profile), usersBalanceA[profile][-1])
-            print('Lowest Balance for {} Profile: '.format(profile), min(usersBalanceA[profile]))
+            print('Lowest Balance for {} Profile: '.format(profile), min(usersBalanceA[profile]))'''
 
         if (saveFigures):
             plt.savefig(plotsFolder+'Users Balance using $10 Budget (RA Profiles)')
@@ -169,9 +169,9 @@ def test80Matches(DB, matchesFileName):
         colours = ['tab:blue', 'tab:green', 'tab:red']
         count = 0
         for profile in riskProfiles:
-            #plt.plot(list(range(0,len(matches)+1)), usersBalanceB[profile], label = '{} = [{}, {}, {}]'.format(profile,
-            #riskProfiles[profile][0],riskProfiles[profile][1],riskProfiles[profile][2]))
-            plt.plot(list(range(0,len(matches)+1)), usersBalanceB[profile], color = colours[count], label = profile)
+            plt.plot(list(range(0,len(matches)+1)), usersBalanceB[profile], label = '{} = [{}, {}, {}]'.format(profile,
+            riskProfiles[profile][0],riskProfiles[profile][1],riskProfiles[profile][2]))
+            #plt.plot(list(range(0,len(matches)+1)), usersBalanceB[profile], color = colours[count], label = profile)
             count += 1
 
         # Set labels:
@@ -245,12 +245,8 @@ def test80Matches(DB, matchesFileName):
         plt.hist([amountBet['Very-Averse'],amountBet['Averse']], 
         color=['blue','green'],edgecolor='black',label=['Very-Averse = [{}, {}, {}]'.format(riskProfiles['Very-Averse'][0],
         riskProfiles['Very-Averse'][1],riskProfiles['Very-Averse'][2]),'Averse = [{}, {}, {}]'.format(riskProfiles['Averse'][0],
-<<<<<<< HEAD
         riskProfiles['Averse'][1],riskProfiles['Averse'][2]),'Less-Averse = [{}, {}, {}]'.format(riskProfiles['Less-Averse'][0],
         riskProfiles['Less-Averse'][1],riskProfiles['Less-Averse'][2])],bins = 10)
-=======
-        riskProfiles['Averse'][1],riskProfiles['Averse'][2])],bins = 10)
->>>>>>> c8abc5dfb5ac9765d08072559e46dd14c15c7766
         plt.legend()
         plt.title('Distribution of Amount Bet', fontsize = 14)
         plt.xlabel('Amount Bet (as a proportion of your budget)', fontsize = 11)
