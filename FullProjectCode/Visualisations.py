@@ -21,7 +21,7 @@ def test80Matches(DB, matchesFileName):
     # Save figures to:
     #plotsFolder = 'C:\\Users\\campb\\OneDrive\\Documents\\University_ENGSCI\\4th Year\\ResearchProject\\ModelPlots\\'
     plotsFolder ='C:/Uni/4thYearProject/repo/BeatTheOdds/ProjectDevelopmentCode/VisualisationOutputs/'
-    saveFigures = False
+    saveFigures = True
 
     # Which plots to make:
     plot1 = True
