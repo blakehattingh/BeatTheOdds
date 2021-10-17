@@ -304,7 +304,7 @@ def main():
 
             elif (eq == 3):
                 # Get the starting points from the calibrated parameters for eq 2:
-                startingPoints = getCalibratedParamsFromCSV(eq,fromEquation,thetas, fileName)
+                startingPoints = getCalibratedParamsFromCSV(eq,fromEquation,thetas, location)
                 [bestSol,allSolsObjs] = CalibrateHyperparameters(trainingDataFN, obj, eq, startingPoints, riskProfile, betas)
                 bestSolObjs = sorted(allSolsObjs,key = lambda x: x[1])[:6]
                 buildCalibratedParamsDB(location, bestSolObjs, eq)
