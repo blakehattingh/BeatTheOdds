@@ -1,32 +1,6 @@
 from pulp import *
 import numpy as np
 
-def CVaRModel(Pk, odds, betsConsidered, profile, alphas, betas):
-    # Inputs:
-    # - Pk: The probability of outcome 'k' occuring
-    # - odds: a dictionary of odds with ALL bet types as keys
-    #   - if not considered, then the values will be []
-    #   - if there is a missing odd for a specific bet, this should be set to zero, e.g. no odds for 2-6 so set to 0
-    # - betsConsidered: a list of booleans corresponding to the betting options we are interested in
-    # - profile: The users risk profile, either "Risk-Averse, Risk-Neutral or Risk-Seeking"
-    #   - This affects the number of alpha and beta values that should be inputted
-    # - alphas and betas: parameters corresponding to the users risk profile 
-
-    # Profile = Risk-Neutral:
-    if (profile == 'Risk-Neutral'):
-        return CVaRModelRN(bettingOptions, oddCoef, Zk)
-    
-    # Profile = Risk-Averse:
-    elif (profile == 'Risk-Averse'):
-        return CVaRModelRA(betas, alphas, bettingOptions, Outcomes, oddCoef, Pk, Zk)
-
-    # Profile = Risk-Seeking:
-    elif (profile == 'Risk-Seeking'):
-        return CVaRModelRS(betas, alphas, bettingOptions, Outcomes, oddCoef, Pk, Zk)
-        #return CVaRModelRSThreshold(betas, bettingOptions, Outcomes, Pk, Zk)
-    else:
-        print('Not a suitable risk profile entered')
-
 def CVaRModelRN(bettingOptions, oddCoef, Zk):
     # Create the Linear Problem:
     Problem = LpProblem("CVaR_Model", LpMaximize)
@@ -88,22 +62,6 @@ def CVaRModelRA(betas, alphas, bettingOptions, Outcomes, oddCoef, Pk, Zk):
     # Solve Model:
     Problem.solve(PULP_CBC_CMD(msg=0))
     
-    '''for var in Problem.variables():
-        if ('Bet' in var.name):
-            print(var.name, "=", var.varValue)
-
-    # Compute LHS of Regret Constraints:
-    for k in Pk.keys():
-        print(sum(Bets[bet].varValue * (Zk[k][bet] - 1.) for bet in Bets.keys()))
-    
-    # Compute Regret Metric:
-    for b in betas:
-        LHS2 = 0.
-        for k in Pk.keys():
-            LHS2 += Pk[k] * (sum(Bets[bet].varValue * Zk[k][bet] - Bets[bet].varValue for bet in Bets.keys()))
-            LHS2 += - (1. / b) * (Pk[k] * ((1. - b) * wkMatrix[b][k].varValue + b * vkMatrix[b][k].varValue))
-        print(LHS2)'''
-    
     # Return Zk matrix and the suggested bets:
     return [Zk, Problem.variables()[0:len(Bets)], value(Problem.objective)]
 
@@ -143,22 +101,6 @@ def CVaRModelRS(beta, alpha, bettingOptions, Outcomes, oddCoef, Pk, Zk):
 
     # Solve Model:
     Problem.solve(PULP_CBC_CMD(msg=0))
-
-    '''for var in Problem.variables():
-        if ('Bet' in var.name):
-            print(var.name, "=", var.varValue)
-
-    # Compute LHS of Regret Constraints:
-    for k in Pk.keys():
-        print(sum(Bets[bet].varValue * (Zk[k][bet] - 1.) for bet in Bets.keys()) - regretMeasures[k])
-    
-    # Compute Regret Metric:
-    LHS2 = 0.
-    for k in Pk.keys():
-        LHS2 += Pk[k] * ((1. - beta) * wkMatrix[k].varValue + beta * vkMatrix[k].varValue)
-    LHS2 = LHS2 / beta
-    print(lpSum(Pk[k] * (sum(Bets[bet].varValue * Zk[k][bet] - Bets[bet].varValue for bet in Bets.keys()) - regretMeasures[k]) for k in Outcomes))
-    print((lpSum(Pk[k] * (sum(Bets[bet].varValue * Zk[k][bet] - Bets[bet].varValue for bet in Bets.keys()) - regretMeasures[k]) for k in Outcomes) - LHS2))'''
 
     # Return Zk matrix and the suggested bets:
     return [Zk, Problem.variables()[0:len(Bets)],value(Problem.objective)]
@@ -332,8 +274,12 @@ def RunCVaRModel(betsConsidered,probDist,profile,RHS,betas,oddsMO,oddsMS,oddsNum
     # - probDist: A list of probabilities corresponding to the possible outcomes (currently 2-0, 2-1, 0-2, 1-2)
     # - profile: The users risk profile ('Risk-Averse', 'Risk-Neutral', 'Risk-Seeking')
     # - RHS: A list of RHS values from the user about their risk profile
-    # - betas: The beta parameters we are using in the CVaR model for the constraints (Currently 0.2, 0.33, 0.5)
+    # - betas: The beta parameters we are using in the CVaR model for the constraints (Currently 0.1, 0.2, 0.3)
     # - odds--: The odds for each type of bet as a list e.g. [oddsAWins, oddsBWins]
+
+    # Returns:
+    # - Payoff matrix (Zk), suggested bets (bets) and the objective value of the model (expected payoff)
+    # - If user is "risk-seeking", the minimum amount of regret feasible is also returned
 
     tol = 1e-6
     # Create odds dictionary:

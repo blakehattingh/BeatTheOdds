@@ -1,17 +1,15 @@
 import numpy as np
 from RunningTheMarkovModel import RunMarkovModel
-from MarkovModelNetwork import TennisSetNetworkEfficient, TennisMatchNetwork1Efficient, TennisMatchNetworkMostEfficient
+from MarkovModelNetwork import TennisSetNetworkEfficient
 from BeliefPropogationAlgorithm import beliefpropagation
-from OtherMarkovModelNetworks import TennisMatchNetwork2Efficient
+from OtherMarkovModelNetworks import TennisMatchNetwork1, TennisMatchNetwork2
 
 # This script is a test suite for all the unit tests for functions contributing to our Markov Model.
 
 # Functions to test:
-# 1) TennisSetNetwork (Done)
-# 2) TennisMatchNetwork1 (Not Complete)
-# 3) TennisMatchNetwork2 (Not Complete)
-# 4) RunMarkovModel (Not Complete)
-# 5) FirstImplementation (Not Complete)
+# 1) TennisSetNetwork
+# 2) TennisMatchNetwork1 
+# 3) TennisMatchNetwork2
 
 # Testing TennisSetNetwork:
 # 1Set) Tests if the 'Set' node has the correct distributions for a given sequence of game outcomes.
@@ -24,58 +22,46 @@ from OtherMarkovModelNetworks import TennisMatchNetwork2Efficient
             
 # Testing TennisMatchNetwork1:
 # a. and and b. for 3 and 5 sets respectively.
-# 3SetUp) Tests the general Network set up.
-# 3Match) Tests if the 'Match' node has the correct distributions for a given sequence of set outcomes.
-# 3MatchScore) Tests if the 'MatchScore' node has the correct distributions for a given sequence of set outcomes.
-# 3TotalNumGames) Tests if the 'TotalNumGames' node has the correct distributions for a given sequence of NumSets and Number of games.
-# 3AllSetScores) Tests if the 'AllSetScores' node has the correct distributions for a given sequence of set scores.
+# 2SetUp) Tests the general Network set up.
+# 2Match) Tests if the 'Match' node has the correct distributions for a given sequence of set outcomes.
+# 2MatchScore) Tests if the 'MatchScore' node has the correct distributions for a given sequence of set outcomes.
+# 2TotalNumGames) Tests if the 'TotalNumGames' node has the correct distributions for a given sequence of NumSets and Number of games.
+# 2AllSetScores) Tests if the 'AllSetScores' node has the correct distributions for a given sequence of set scores.
 
 # Testing TennisMatchNetwork2:
 # a. and and b. for 3 and 5 sets respectively.
-# 4Network) Tests the general network set up.
-# 4Sets) Tests the 'Set' nodes have the correct distributions for a given sequence of game outcomes.
-# 4Match) Tests if the 'Match' node has the correct distributions for a given sequence of set outcomes.
-# 4NumSets) Tests if the 'NumSets' node has the correct distributions for a given sequence of set outcomes.
-# 4TotalNumGames) Tests if the 'TotalNumGames' node has the correct distributions for a given sequence of NumSets and Number of games.
-# 4AllSetScores) Tests if the 'AllSetScores' node has the correct distributions for a given sequence of set scores.
-
-# Testing RunMarkovModel:
-# 5a) Tests if the first implementation returns uniform distributions when P1S == P2S
-# 5b) Tests if the Second Implementation returns uniform distributions when P1S == P2S
-# 5c) Tests if the first implementation returns qualitatively conrrect distributions when P2S >> P1S
-# 5d) Tests if the second implementation returns qualitatively conrrect distributions when P2S >> P1S
+# 3Network) Tests the general network set up.
+# 3Sets) Tests the 'Set' nodes have the correct distributions for a given sequence of game outcomes.
+# 3Match) Tests if the 'Match' node has the correct distributions for a given sequence of set outcomes.
+# 3NumSets) Tests if the 'NumSets' node has the correct distributions for a given sequence of set outcomes.
+# 3TotalNumGames) Tests if the 'TotalNumGames' node has the correct distributions for a given sequence of NumSets and Number of games.
+# 3AllSetScores) Tests if the 'AllSetScores' node has the correct distributions for a given sequence of set scores.
 
 def TestSuite():
-    Test1 = True
+    Test1 = False
     Test2 = False
-    Test3 = False
-    Test4 = False
+    Test3 = True
 
     if Test1:
-        # UnitTest1Set()
-        # UnitTest1NumGames()
+        # UnitTest1Set() - Not relevant anymore with efficiencies added
+        # UnitTest1NumGames() - Not relevant with efficiencies added
         UnitTest1SetScores()
         UnitTest1SetUp()
         UnitTest1Network()
         UnitTest1SetScoreAdv()
-        # UnitTest1SetEvents()
-    if Test2: 
-        #UnitTest2Set()
-        #UnitTest2SetScores()
-        #UnitTest2NumGames()
-        x = 10
+        UnitTest1SetEvents()
+    if Test2:
+        UnitTest2Network()
+        UnitTest2Match()
+        UnitTest2NumSets()
+        UnitTest2TotalNumGames()
+        UnitTest2AllSetScores()
     if Test3:
         UnitTest3Network()
+        UnitTest3Sets()
         UnitTest3Match()
-        UnitTest3NumSets()
+        UnitTest3MatchScore()
         UnitTest3TotalNumGames()
-        UnitTest3AllSetScores()
-    if Test4:
-        UnitTest4Network()
-        UnitTest4Sets()
-        UnitTest4Match()
-        UnitTest4MatchScore()
-        UnitTest4TotalNumGames()
 
 def UnitTest1():
     # Run our model using the first implementation:
@@ -105,7 +91,7 @@ def UnitTest1():
 
 def UnitTest1Set():
     # Set up a "Set Network":
-    [nodes, dist, parents, outcomes, info] = TennisSetNetworkEfficient(0.8, 0.6, 0.85, 0.15)
+    [nodes, dist, parents, outcomes, info] = TennisSetNetworkEfficient(0.8, 0.6, InitServerDist = [0.85, 0.15])
     
     # Check several different scorelines get the correct set winner:
     if (dist['Set'][1,1,1,1,1,2,2,2,2,2,2,2,2] != [0., 1.]):
@@ -238,7 +224,7 @@ def UnitTest1SetEvents():
     # Need to modify the network to allow events to be fixed
     x = 69
 
-def UnitTest3Network():
+def UnitTest2Network():
     SetDists = [np.array([0.51471958, 0.48528042]), np.array([0.51495612, 0.48504388]), np.array([0.51473445, 0.48526555]),
     np.array([0.54, 0.46]), np.array([0.58, 0.42])]
     SetScoreDists = [np.array([0.01576853, 0.04723345, 0.08253247, 0.10987546, 0.12342136,
@@ -257,8 +243,8 @@ def UnitTest3Network():
         0.12304573, 0.12304516])]
 
     # Set up a "Match Network" using first approach:
-    [nodes3, dist3, parents3, outcomes3, info3] = TennisMatchNetwork1Efficient(SetDists, SetScoreDists, NumGamesDists, 3)
-    [nodes5, dist5, parents5, outcomes5, info5] = TennisMatchNetwork1Efficient(SetDists, SetScoreDists, NumGamesDists, 5)
+    [nodes3, dist3, parents3, outcomes3, info3] = TennisMatchNetwork1(SetDists, SetScoreDists, NumGamesDists, 3)
+    [nodes5, dist5, parents5, outcomes5, info5] = TennisMatchNetwork1(SetDists, SetScoreDists, NumGamesDists, 5)
 
     # Check number of nodes and parent nodes: (3 sets)
     if (len(nodes3) != 3 * 3 + 4):
@@ -280,7 +266,7 @@ def UnitTest3Network():
     else:
         print('3b. Network Test Passed')
 
-def UnitTest3Match():
+def UnitTest2Match():
     SetDists = [np.array([0.51471958, 0.48528042]), np.array([0.51495612, 0.48504388]), np.array([0.51473445, 0.48526555]),
     np.array([0.54, 0.46]), np.array([0.58, 0.42])]
     SetScoreDists = [np.array([0.01576853, 0.04723345, 0.08253247, 0.10987546, 0.12342136,
@@ -299,8 +285,8 @@ def UnitTest3Match():
         0.12304573, 0.12304516])]
 
     # Set up a 'Match Network' using approach 1:
-    [nodes3, dist3, parents3, outcomes3, info3] = TennisMatchNetwork1Efficient(SetDists, SetScoreDists, NumGamesDists, 3)
-    [nodes5, dist5, parents5, outcomes5, info5] = TennisMatchNetwork1Efficient(SetDists, SetScoreDists, NumGamesDists, 5)
+    [nodes3, dist3, parents3, outcomes3, info3] = TennisMatchNetwork1(SetDists, SetScoreDists, NumGamesDists, 3)
+    [nodes5, dist5, parents5, outcomes5, info5] = TennisMatchNetwork1(SetDists, SetScoreDists, NumGamesDists, 5)
 
     # Test the Match outcome distribution (3 sets):
     if (dist3['Match'][2, 2, 2] != [0., 1.]):
@@ -322,7 +308,7 @@ def UnitTest3Match():
     else:
         print('3b. Match Test Passed')
 
-def UnitTest3MatchScore():
+def UnitTest2MatchScore():
     SetScoreDists = [np.array([0.01576853, 0.04723345, 0.08253247, 0.10987546, 0.12342136,
         0.06171053, 0.06842541, 0.01548256, 0.04651851, 0.08153156,
         0.10887454, 0.12267068, 0.0613352 , 0.05461975]), np.array([0.01500446, 0.05239947, 0.07579284, 0.12454442, 0.10996195,
@@ -333,8 +319,8 @@ def UnitTest3MatchScore():
         np.array([0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0., 0., 0.1, 0.1, 0., 0.])]
 
     # Set up a 'Match Network' using approach 1:
-    [nodes5, dist5, parents5, outcomes5, info5] = TennisMatchNetwork1Efficient(SetScoreDists, 5)
-    [nodes3, dist3, parents3, outcomes3, info3] = TennisMatchNetwork1Efficient(SetScoreDists, 3)
+    [nodes5, dist5, parents5, outcomes5, info5] = TennisMatchNetwork1(SetScoreDists, 5)
+    [nodes3, dist3, parents3, outcomes3, info3] = TennisMatchNetwork1(SetScoreDists, 3)
 
     # Test the Match Score distribution: (3 sets)
     if (dist3['MatchScore'][2, 2, 2] != [0., 0., 1., 0.]):
@@ -364,7 +350,7 @@ def UnitTest3MatchScore():
     else:
         print('3b. Match Score Test Passed')
 
-def UnitTest3NumSets():
+def UnitTest2NumSets():
     SetDists = [np.array([0.51471958, 0.48528042]), np.array([0.51495612, 0.48504388]), np.array([0.51473445, 0.48526555]),
     np.array([0.54, 0.46]), np.array([0.58, 0.42])]
     SetScoreDists = [np.array([0.01576853, 0.04723345, 0.08253247, 0.10987546, 0.12342136,
@@ -383,8 +369,8 @@ def UnitTest3NumSets():
         0.12304573, 0.12304516])]
 
     # Set up a 'Match Network' using approach 1:
-    [nodes5, dist5, parents5, outcomes5, info5] = TennisMatchNetwork1Efficient(SetDists, SetScoreDists, NumGamesDists, 5)
-    [nodes3, dist3, parents3, outcomes3, info3] = TennisMatchNetwork1Efficient(SetDists, SetScoreDists, NumGamesDists, 3)
+    [nodes5, dist5, parents5, outcomes5, info5] = TennisMatchNetwork1(SetDists, SetScoreDists, NumGamesDists, 5)
+    [nodes3, dist3, parents3, outcomes3, info3] = TennisMatchNetwork1(SetDists, SetScoreDists, NumGamesDists, 3)
 
     # Test the Number of Sets distribution: (3 sets)
     if (dist3['NumSets'][2, 2, 2] != [1., 0.]):
@@ -414,7 +400,7 @@ def UnitTest3NumSets():
     else:
         print('3b. Number of Sets Test Passed')
 
-def UnitTest3TotalNumGames():
+def UnitTest2TotalNumGames():
     SetDists = [np.array([0.51471958, 0.48528042]), np.array([0.51495612, 0.48504388]), np.array([0.51473445, 0.48526555]),
     np.array([0.54, 0.46]), np.array([0.58, 0.42])]
     SetScoreDists = [np.array([0.01576853, 0.04723345, 0.08253247, 0.10987546, 0.12342136,
@@ -433,8 +419,8 @@ def UnitTest3TotalNumGames():
         0.12304573, 0.12304516])]
 
     # Set up a 'Match Network' using approach 1:
-    [nodes5, dist5, parents5, outcomes5, info5] = TennisMatchNetwork1Efficient(SetDists, SetScoreDists, NumGamesDists, 5)
-    [nodes3, dist3, parents3, outcomes3, info3] = TennisMatchNetwork1Efficient(SetDists, SetScoreDists, NumGamesDists, 3)
+    [nodes5, dist5, parents5, outcomes5, info5] = TennisMatchNetwork1(SetDists, SetScoreDists, NumGamesDists, 5)
+    [nodes3, dist3, parents3, outcomes3, info3] = TennisMatchNetwork1(SetDists, SetScoreDists, NumGamesDists, 3)
 
     # Scenarios:
     Distribution3Sets = np.zeros(28, dtype = float)
@@ -532,7 +518,7 @@ def UnitTest3TotalNumGames():
     else:
         print('3b. Total Number of Games Test Passed')
 
-def UnitTest3AllSetScores():
+def UnitTest2AllSetScores():
     SetDists = [np.array([0.51471958, 0.48528042]), np.array([0.51495612, 0.48504388]), np.array([0.51473445, 0.48526555]),
     np.array([0.54, 0.46]), np.array([0.58, 0.42])]
     SetScoreDists = [np.array([0.01576853, 0.04723345, 0.08253247, 0.10987546, 0.12342136,
@@ -551,8 +537,8 @@ def UnitTest3AllSetScores():
         0.12304573, 0.12304516])]
 
     # Set up a 'Match Network' using approach 1:
-    [nodes5, dist5, parents5, outcomes5, info5] = TennisMatchNetwork1Efficient(SetDists, SetScoreDists, NumGamesDists, 5)
-    [nodes3, dist3, parents3, outcomes3, info3] = TennisMatchNetwork1Efficient(SetDists, SetScoreDists, NumGamesDists, 3)
+    [nodes5, dist5, parents5, outcomes5, info5] = TennisMatchNetwork1(SetDists, SetScoreDists, NumGamesDists, 5)
+    [nodes3, dist3, parents3, outcomes3, info3] = TennisMatchNetwork1(SetDists, SetScoreDists, NumGamesDists, 3)
 
     # Scenarios:
     Distribution = np.zeros(14, dtype = float)
@@ -655,10 +641,10 @@ def UnitTest3AllSetScores():
     else:
         print('3b. All Set Scores Test Passed')
 
-def UnitTest4Network():
+def UnitTest3Network():
     # Set up a "Match Network" using the second approach:
-    [nodes3, dist3, parents3, outcomes3, info3] = TennisMatchNetwork2Efficient(0.9, 0.7, 3)
-    [nodes5, dist5, parents5, outcomes5, info5] = TennisMatchNetwork2Efficient(0.9, 0.7, 5)
+    [nodes3, dist3, parents3, outcomes3, info3] = TennisMatchNetwork2(0.9, 0.7, 3)
+    [nodes5, dist5, parents5, outcomes5, info5] = TennisMatchNetwork2(0.9, 0.7, 5)
     
     # Check number of nodes and parent nodes: (3 sets)
     if (len(nodes3) != 18 * 3 + 4):
@@ -680,10 +666,10 @@ def UnitTest4Network():
     else:
         print('4b. Network Test Passed')
 
-def UnitTest4Sets():
+def UnitTest3Sets():
     # Set up a "Match Network" using the second approach:
-    [nodes3, dist3, parents3, outcomes3, info3] = TennisMatchNetwork2Efficient(0.9, 0.7, 3)
-    [nodes5, dist5, parents5, outcomes5, info5] = TennisMatchNetwork2Efficient(0.9, 0.7, 5)
+    [nodes3, dist3, parents3, outcomes3, info3] = TennisMatchNetwork2(0.9, 0.7, 3)
+    [nodes5, dist5, parents5, outcomes5, info5] = TennisMatchNetwork2(0.9, 0.7, 5)
 
     # Check different game outcomes to see if the correct winner is assigned:
     if (dist3['Set1'][1,1,1,1,1,2,2,2,2,2,2,2,1] != [0., 1.]):
@@ -714,9 +700,9 @@ def UnitTest4Sets():
     else:
         print('4b. Sets Test Passed')
 
-def UnitTest4Match():
+def UnitTest3Match():
     # Set up a "Match Network" using the second approach:
-    [nodes, dist, parents, outcomes, info] = TennisMatchNetwork2Efficient(0.9, 0.7, 3)
+    [nodes, dist, parents, outcomes, info] = TennisMatchNetwork2(0.9, 0.7, 3)
     
     # Check several different scorelines get the correct set winner when 3 sets are played:
     if (dist['Match'][1,1,1] != [1.,0.]): 
@@ -733,7 +719,7 @@ def UnitTest4Match():
         print('4a. Match Test Passed')
 
     # Check scoreline for 5 set matches:
-    [nodes, dist, parents, outcomes, info] = TennisMatchNetwork2Efficient(0.5, 0.7, 5)
+    [nodes, dist, parents, outcomes, info] = TennisMatchNetwork2(0.5, 0.7, 5)
     if (dist['Match'][1,1,1,1,1] != [1.,0.]): 
         print('4b. Match Test Failed a')
     elif (dist['Match'][2,1,1,1,1] != [1.,0.]): 
@@ -747,9 +733,9 @@ def UnitTest4Match():
     else:
         print('4b. Match Test Passed')
 
-def UnitTest4MatchScore():
+def UnitTest3MatchScore():
     # Set up a "Match Network" using the second approach:
-    [nodes, dist, parents, outcomes, info] = TennisMatchNetwork2Efficient(0.9, 0.7, 3)
+    [nodes, dist, parents, outcomes, info] = TennisMatchNetwork2(0.9, 0.7, 3)
     
     # Check several different scorelines get the correct set winner when 3 sets are played:
     if (dist['MatchScore'][1,1,1] != [1.,0.,0.,0.]): # 2 sets
@@ -766,7 +752,7 @@ def UnitTest4MatchScore():
         print('4a. Match Score Test Passed')
 
     # Check scoreline for 5 set matches:
-    [nodes, dist, parents, outcomes, info] = TennisMatchNetwork2Efficient(0.5, 0.7, 5)
+    [nodes, dist, parents, outcomes, info] = TennisMatchNetwork2(0.5, 0.7, 5)
     if (dist['MatchScore'][1,1,1,1,1] != [1.,0.,0.,0.,0.,0.]): # 3 sets
         print('4b. Match Score Test Failed a')
     elif (dist['MatchScore'][2,1,1,1,1] != [0.,1.,0.,0.,0.,0.]): # 4 sets
@@ -780,9 +766,9 @@ def UnitTest4MatchScore():
     else:
         print('4b. Match Score Test Passed')
 
-def UnitTest4TotalNumGames():
+def UnitTest3TotalNumGames():
     # Set up a "Match Network" using the second approach:
-    [nodes, dist, parents, outcomes, info] = TennisMatchNetwork2Efficient(0.9, 0.7, 3)
+    [nodes, dist, parents, outcomes, info] = TennisMatchNetwork2(0.9, 0.7, 3)
     
     # Check several different scorelines get the correct set winner when 3 sets are played:
     if (dist['TotalNumGames'][1,7,8,9][3] != 1. or dist['TotalNumGames'][1,7,8,9][12] != 0.): # Total games = 15 
@@ -801,7 +787,7 @@ def UnitTest4TotalNumGames():
         print('4a. Total Number of Games Test Passed')
 
     # Check scoreline for 5 set TotalNumGameses:
-    [nodes, dist, parents, outcomes, info] = TennisMatchNetwork2Efficient(0.5, 0.7, 5)
+    [nodes, dist, parents, outcomes, info] = TennisMatchNetwork2(0.5, 0.7, 5)
     if (dist['TotalNumGames'][1,7,8,9,10,6][6] != 1. or dist['TotalNumGames'][1,7,8,9,10,6][16] != 0.): # Total games = 24 
         print('4b. Total Number of Games Test Failed a')
     elif (dist['TotalNumGames'][2,9,9,9,6,12][15] != 1. or dist['TotalNumGames'][2,9,9,9,6,12][27] != 0.): # Total games = 33

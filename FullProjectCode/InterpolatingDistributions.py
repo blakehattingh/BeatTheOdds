@@ -124,7 +124,8 @@ def ComputeWeighting(Pa, Pb, Spacing = 0.02):
     return [alpha, beta]
 
 def InterpolateDists(Pa, Pb, DB, pBoundaryL = 0.4, pBoundaryH = 0.8, Spacing = 0.02):
-    # Takes in a set of P values and returns the interpolated distributions for them
+    # Takes in a set of P values and returns the interpolated distributions for them.
+    # It also has added functional now to estimate points that lie outside the grid.
     # Grid:
     # A ----E- B
     # |     x  |

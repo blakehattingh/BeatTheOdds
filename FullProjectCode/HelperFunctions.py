@@ -15,6 +15,7 @@ def try_parsing_date(text):
             pass
     raise ValueError('no valid date format found')
 
+# Markov Simulation Functions:
 def MarkovChainPoint(p):
     prob = np.random.rand()
     if prob <= p:
@@ -231,6 +232,7 @@ def MarkovChainMatch(pi, pj, FirstServer, FirstToSets, FirstToTB):
     # Return the winner and Set Scores
     return (Winner, SetScores)
 
+# O'Malley's Equations:
 def Game(P):
     # Single Service Game:
     Game = pow(P,4) * (15 - 4*P - ((10 * pow(P,2)) / (1 - 2 * P * (1 - P))))
@@ -275,6 +277,7 @@ def Matrices():
     [25,1,4,4,1,1],[100,2,3,3,2,1],[100,3,2,2,3,1],[25,4,1,1,4,1],[1,5,0,0,5,1]]
     return A, B
 
+# Other helpful functions:
 def nth_index(iterable, value, n):
     # Find the nth position of a value in an array:
     matches = (idx for idx, val in enumerate(iterable) if val == value)

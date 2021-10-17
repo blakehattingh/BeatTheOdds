@@ -3,9 +3,9 @@ import random
 import pandas as pd
 import numpy as np
 
-#INPUTS: matchDetails = Keys P1FirstInitial, P1LastName, Date (%Y-%m-%d). age = int in years
-#OUTPUTS: matches between P1 & P2, P1 and common opponents, P2 and common opponents, common opponents IDs
 def getSPWData(matchDetails, startOfDataCollection):
+    # INPUTS: matchDetails = Keys P1FirstInitial, P1LastName, Date (%Y-%m-%d). age = int in years
+    # OUTPUTS: matches between P1 & P2, P1 and common opponents, P2 and common opponents, common opponents IDs
     conn = psy.connect('dbname=tcb user=postgres password=12qwaszx host=localhost')
     cursor = conn.cursor()
     #p1ID,p2ID = getIds(matchDetails, cursor)
@@ -15,10 +15,6 @@ def getSPWData(matchDetails, startOfDataCollection):
     p1vCO = getPlayerVsCO(startOfDataCollection,cursor,p1ID,p2ID,matchDetails[3])
     p2vCO = getPlayerVsCO(startOfDataCollection,cursor,p2ID,p1ID,matchDetails[3])
     COIds = getCOs(p1vCO,p1ID,p2ID)
-    #print(len(p1vP2))
-    #print(len(p1vCO))
-    #print(len(p2vCO))
-    #print(len(COIds))
     return p1vP2,p1vCO,p2vCO,COIds
 
 def getIds(matchDetails, cursor):
@@ -121,7 +117,6 @@ def getCOs(p1vCO,p1ID,p2ID):
             commonOpsIDs.append(match[18])
     return commonOpsIDs
 
-#years = list of years as integers eg. (2012,2014)
 def getTestMatchData(years):
     conn = psy.connect('dbname=tcb user=postgres password=12qwaszx host=localhost')
     cursor = conn.cursor()
@@ -150,9 +145,6 @@ def getTestMatchData(years):
     for i in range(len(years)):
         matches = sampledMatchesByYearClay[i] + sampledMatchesByYearHard[i] + sampledMatchesByYearGrass[i]
         sampledMatchesByYears.append(matches)
-    #print(sampledMatchesByYears)
-    #print(len(sampledMatchesByYears))
-    #print(len(sampledMatchesByYears[0]))
     return sampledMatchesByYears
 
 def getSpecificMatches(matchIds):

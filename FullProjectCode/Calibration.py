@@ -12,7 +12,7 @@ BESTCURRENTSOL = 0.
 LISTOFBESTOBJS = []
 
 def ObjectiveFunction(parameters, testDataFN, obj, equation, riskProfile, alphas, betas):
-    # This function computes the objective function (overall ROI / Match Stats) for eqautions 1 & 2 and a 
+    # This function computes the objective function (average ROI / Match Stats) for eqautions 1 & 2 and a 
     # set of given hyperparameters.
     # Inputs:
     # - paramaeters: A set of parameters to use
@@ -29,9 +29,6 @@ def ObjectiveFunction(parameters, testDataFN, obj, equation, riskProfile, alphas
         value = (1 * objMetric['Equation {}'.format(equation)]['Match Outcome'] + 3 * objMetric['Equation {}'.
         format(equation)]['Match Score']) / objMetric['Equation {}'.format(equation)]['Matches Predicted']
     elif (obj == 'ROI'):
-        # Compute the overall ROI:
-        # value = ((objMetric['Equation {}'.format(equation)]['Returns'] - objMetric['Equation {}'.format(equation)]
-        # 'Betted']) / objMetric['Equation {}'.format(equation)]['Betted']) * 100.
         # Compute the average ROI:
         value = sum(objMetric['Equation {}'.format(equation)]['ROI']) / objMetric['Equation {}'.format(equation)]['Matches Predicted']
         
@@ -55,7 +52,7 @@ def ObjectiveFunction(parameters, testDataFN, obj, equation, riskProfile, alphas
     return -1 * value
 
 def ObjectiveFunction3(parameters, testDataFN, obj, riskProfile = [], betas = []):
-    # This function computes the objective function (overall ROI / Match Stats) for eqautions 1 & 2 and a 
+    # This function computes the objective function (average ROI / Match Stats) for eqautions 1 & 2 and a 
     # set of given hyperparameters.
     # Inputs:
     # - paramaeters: A set of parameters to use
@@ -73,7 +70,8 @@ def ObjectiveFunction3(parameters, testDataFN, obj, riskProfile = [], betas = []
     elif (obj == 'ROI'):
         # Compute the overall ROI:
         value = ((objMetric['Equation 3']['Returns'] - objMetric['Equation 3']['Betted']) / objMetric['Equation 3']['Betted']) * 100.
-        
+        # value = sum(objMetric['Equation {}'.format(equation)]['ROI']) / objMetric['Equation {}'.format(equation)]['Matches Predicted']
+
     # Print the parameters used and the objective value:
     print("parameters : ")
     print( parameters)
@@ -256,31 +254,40 @@ def TestEquations(testDataFN, calibratedParms, obj, equation, riskProfile = [], 
     return objValues
 
 def main():
-    # Set up file names:
-    person = 'Blake'
+    # This function runs the 2nd stage of the calibration process in the research.
+    # It performs 2 rounds of calibration, the first uses a "risk-neutral" profile (RN) and the second uses a "risk-averse" one (RA)
+    # Each set of calibrated parameters are tested on an unseen test set, using a "risk-averse" profile
+
+    # Set up dataset file names:
+    trainingDataFN = 'trainingSetSplitCalibrationForROI.csv'
+    testDataFN = 'testSetSplitCalibrationForROI.csv'
+
+    # Set up files to store calibrated parameters in:
+    fileNameA = 'CalibratedParametersForROI_RNProfile.csv'
+    fileNameB = 'CalibratedParametersForROI_RAProfile.csv'
+
+    # Set up files to store plotting data in:
+    fileName1A = 'CalibratedPlottingDataForROI_RNProfile.csv'
+    fileName1B = 'CalibratedPlottingDataForROI_RAProfile.csv'
     
-    if (person == 'Blake'):
-        trainingDataFN = 'trainingSetSplitCalibrationForROI.csv'
-        testDataFN = 'testSetSplitCalibrationForROI.csv'
-        fileName = 'C:\\Uni\\4thYearProject\\repo\\BeatTheOdds\\FullProjectCode\\CSVFiles\\UPDATED_CalibratedParametersROI_WithProfile.csv'
-        fileName2 = 'C:\\Uni\\4thYearProject\\repo\\BeatTheOdds\\FullProjectCode\\CSVFiles\\UPDATED_CalibratedPlottingDataROI_WithProfile.csv'
-        fileName3 = 'C:\\Uni\\4thYearProject\\repo\\BeatTheOdds\\FullProjectCode\\CSVFiles\\UPDATED_TestingPlottingDataROI_WithProfile.csv'
-        #fileNameFinalCal = 'C:\\Uni\\4thYearProject\\repo\\BeatTheOdds\\CSVFiles\\FinalCalibratedParametersAllEquations.csv'
-        #fileNameFinalCal = 'C:\\Uni\\4thYearProject\\repo\\BeatTheOdds\\CSVFiles\\CalibratedParametersROI.csv'
-        fileNameFinalCal = 'C:\\Uni\\4thYearProject\\repo\\BeatTheOdds\\FullProjectCode\\CSVFiles\\UPDATED_CalibratedParametersROI_WithProfile.csv'
-    elif (person == 'Campbell'):
-        # Get location of file:
-        THIS_FOLDER = os.path.abspath('CSVFiles')
-        fileName = os.path.join(THIS_FOLDER, 'CalibratedParametersAllEquations.csv')
-        fileName2 = os.path.join(THIS_FOLDER, 'CalibratedPlottingDataEq3.csv')
-        fileName3 = os.path.join(THIS_FOLDER, 'ObjectiveValuesForCalibratedParameters.csv')
+    # Set up files to store out-of-sample performance measures for the calibrated parameters:
+    fileName2A = 'TestingPerformancesForROI_RNProfile.csv'
+    fileName2B = 'TestingPerformancesForROI_RAProfile.csv'
+
+    # Get location of needed files:
+    THIS_FOLDER = os.path.abspath('CSVFiles')
+    location = os.path.join(THIS_FOLDER, fileNameA)
+    location1 = os.path.join(THIS_FOLDER, fileName1A)
+    location2 = os.path.join(THIS_FOLDER, fileName2A)
 
     # What are we doing? (Calibrated or testing? Match Stats or ROI? What equation?)
     purpose = 'Testing'
     obj = 'ROI'
     equation = [2]
     fromEquation = 2
-    riskProfile = 'Risk-Averse'
+
+    # Set up risk profile to use:
+    riskProfile = 'Risk-Neutral'
     alphas = [0.9,0.8,0.7]
     betas = [0.1, 0.2, 0.3]
     thetas = [0.25,0.5,0.75]
@@ -292,16 +299,16 @@ def main():
                 startingPoints = getCalibratedParamsFromCSV(eq, eq)
                 [bestSol,allSolsObjs] = CalibrateHyperparameters(trainingDataFN, obj, eq,startingPoints, riskProfile, alphas, betas)
                 bestSolObjs = sorted(allSolsObjs,key = lambda x: x[1])[:6]
-                buildCalibratedParamsDB(fileName, bestSolObjs, eq)
-                storePlottingDataCalibration(fileName2, eq)
+                buildCalibratedParamsDB(location, bestSolObjs, eq)
+                storePlottingDataCalibration(location1, eq)
+
             elif (eq == 3):
                 # Get the starting points from the calibrated parameters for eq 2:
                 startingPoints = getCalibratedParamsFromCSV(eq,fromEquation,thetas, fileName)
-                [bestSol,allSolsObjs] = CalibrateHyperparameters(trainingDataFN, obj, eq, startingPoints, 
-                riskProfile, betas)
+                [bestSol,allSolsObjs] = CalibrateHyperparameters(trainingDataFN, obj, eq, startingPoints, riskProfile, betas)
                 bestSolObjs = sorted(allSolsObjs,key = lambda x: x[1])[:6]
-                buildCalibratedParamsDB(fileName, bestSolObjs, eq)
-                storePlottingDataCalibration(fileName2, eq)
+                buildCalibratedParamsDB(location, bestSolObjs, eq)
+                storePlottingDataCalibration(location1, eq)
 
         # Print the best set of calibrated parameters and their respective objective values:
         print(bestSol)
@@ -310,12 +317,12 @@ def main():
     elif (purpose == 'Testing'):
         for eq in equation:
             # Read in the calibrated parameters to test:
-            calibratedParams = getCalibratedParamsFromCSV(eq,eq,fileName=fileNameFinalCal)
+            calibratedParams = getCalibratedParamsFromCSV(eq,eq,fileName=fileNameA)
             # Test the equation:
             objectiveValues = TestEquations(testDataFN, calibratedParams , obj, eq, riskProfile,alphas, betas)
 
             # Store the values for each set of calibrated parameters for plotting:
-            storePlottingDataTesting(fileName3, objectiveValues, eq)
+            storePlottingDataTesting(location2, objectiveValues, eq)
 
 if __name__ == "__main__":
     main()

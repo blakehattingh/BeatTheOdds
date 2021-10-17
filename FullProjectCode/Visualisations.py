@@ -19,14 +19,14 @@ def test80Matches(DB, matchesFileName):
     # All plots consider 3 standard risk-profiles
 
     # Save figures to:
-    #plotsFolder = 'C:\\Users\\campb\\OneDrive\\Documents\\University_ENGSCI\\4th Year\\ResearchProject\\ModelPlots\\'
-    plotsFolder ='C:/Uni/4thYearProject/repo/BeatTheOdds/ProjectDevelopmentCode/VisualisationOutputs/'
-    saveFigures = True
+    plotsFolder = 'C:\\Users\\campb\\OneDrive\\Documents\\University_ENGSCI\\4th Year\\ResearchProject\\ModelPlots\\'
+    #plotsFolder ='C:/Uni/4thYearProject/repo/BeatTheOdds/ProjectDevelopmentCode/VisualisationOutputs/'
+    saveFigures = False
 
     # Which plots to make:
     plot1 = True
-    plot2 = False
-    plot3 = False
+    plot2 = True
+    plot3 = True
     smoothed = False
     
     # Read in the matches, odds, and respective Pa and Pb values:
@@ -154,9 +154,9 @@ def test80Matches(DB, matchesFileName):
         plt.grid()
         
         # Print final balances:
-        '''for profile in riskProfiles:
+        for profile in riskProfiles:
             print('Final Balance for {} Profile: '.format(profile), usersBalanceA[profile][-1])
-            print('Lowest Balance for {} Profile: '.format(profile), min(usersBalanceA[profile]))'''
+            print('Lowest Balance for {} Profile: '.format(profile), min(usersBalanceA[profile]))
 
         if (saveFigures):
             plt.savefig(plotsFolder+'Users Balance using $10 Budget (RA Profiles)')
@@ -169,8 +169,8 @@ def test80Matches(DB, matchesFileName):
         colours = ['tab:blue', 'tab:green', 'tab:red']
         count = 0
         for profile in riskProfiles:
-            plt.plot(list(range(0,len(matches)+1)), usersBalanceB[profile], label = '{} = [{}, {}, {}]'.format(profile,
-            riskProfiles[profile][0],riskProfiles[profile][1],riskProfiles[profile][2]))
+            plt.plot(list(range(0,len(matches)+1)), usersBalanceB[profile], label = '{}'.format(profile))
+            #riskProfiles[profile][0],riskProfiles[profile][1],riskProfiles[profile][2]))
             #plt.plot(list(range(0,len(matches)+1)), usersBalanceB[profile], color = colours[count], label = profile)
             count += 1
 
@@ -195,15 +195,15 @@ def test80Matches(DB, matchesFileName):
     
     if (plot2):
         # Create distribution plot for ROIs:
-        '''plt.hist([matchROIs['Very-Averse'],matchROIs['Averse'],matchROIs['Neutral']], 
+        plt.hist([matchROIs['Very-Averse'],matchROIs['Averse'],matchROIs['Neutral']], 
         color=['blue','green','red'],edgecolor='black',label=['Very-Averse = [{}, {}, {}]'.format(riskProfiles['Very-Averse'][0],
         riskProfiles['Very-Averse'][1],riskProfiles['Very-Averse'][2]),'Averse = [{}, {}, {}]'.format(riskProfiles['Averse'][0],
         riskProfiles['Averse'][1],riskProfiles['Averse'][2]),'Neutral  [{}, {}, {}]'.format(riskProfiles['Neutral'][0],
-        riskProfiles['Neutral'][1],riskProfiles['Neutral'][2])],bins = 8)'''
-        plt.hist([matchROIs['Averse'],matchROIs['Neutral'],matchROIs['Seeking']], 
+        riskProfiles['Neutral'][1],riskProfiles['Neutral'][2])],bins = 8)
+        '''plt.hist([matchROIs['Averse'],matchROIs['Neutral'],matchROIs['Seeking']], 
         color=['blue','green','red'],edgecolor='black',label=['Averse = [{}, {}, {}]'.format(riskProfiles['Averse'][0],
         riskProfiles['Averse'][1],riskProfiles['Averse'][2]),'Neutral  [{}, {}, {}]'.format(riskProfiles['Neutral'][0],
-        riskProfiles['Neutral'][1],riskProfiles['Neutral'][2]),'Seeking = +{}'.format(riskProfiles['Seeking'])],bins = 8)
+        riskProfiles['Neutral'][1],riskProfiles['Neutral'][2]),'Seeking = +{}'.format(riskProfiles['Seeking'])],bins = 8)'''
 
         plt.legend()
         plt.title('Distribution of ROIs for an Individual Match', fontsize = 14)
@@ -245,8 +245,7 @@ def test80Matches(DB, matchesFileName):
         plt.hist([amountBet['Very-Averse'],amountBet['Averse']], 
         color=['blue','green'],edgecolor='black',label=['Very-Averse = [{}, {}, {}]'.format(riskProfiles['Very-Averse'][0],
         riskProfiles['Very-Averse'][1],riskProfiles['Very-Averse'][2]),'Averse = [{}, {}, {}]'.format(riskProfiles['Averse'][0],
-        riskProfiles['Averse'][1],riskProfiles['Averse'][2]),'Less-Averse = [{}, {}, {}]'.format(riskProfiles['Less-Averse'][0],
-        riskProfiles['Less-Averse'][1],riskProfiles['Less-Averse'][2])],bins = 10)
+        riskProfiles['Averse'][1],riskProfiles['Averse'][2])],bins = 10)
         plt.legend()
         plt.title('Distribution of Amount Bet', fontsize = 14)
         plt.xlabel('Amount Bet (as a proportion of your budget)', fontsize = 11)
@@ -263,24 +262,25 @@ def test80Matches(DB, matchesFileName):
             plt.show()
 
         # Smoothed density plots:
-        df = pd.DataFrame()
-        listRPs = []
-        listAmountBet = []
-        for profile in profiles:
-            if (profile != 'Risk-Neutral'):    
-                for ROI in amountBet[profile]:
-                    listRPs.append(profile)
-                    listAmountBet.append(ROI)   
-        df["Risk Profile"] = listRPs
-        df["Amount Bet (as a proportion of users budget)"] = listAmountBet
-        
-        dis = sns.displot(df, x = "Amount Bet (as a proportion of users budget)", hue = "Risk Profile",stat="density", common_norm = False)#.set(title = 'Smoothed Density Plots\n(Distribution of Amount Bet)')
-        dis.fig.suptitle('Distribution of Amount Bet')
-        if (saveFigures):
-            plt.savefig(plotsFolder+'Smoohted Density Plot of Amount Bet')
-            plt.clf()
-        else:
-            plt.show()
+        if (smoothed):
+            df = pd.DataFrame()
+            listRPs = []
+            listAmountBet = []
+            for profile in profiles:
+                if (profile != 'Risk-Neutral'):    
+                    for ROI in amountBet[profile]:
+                        listRPs.append(profile)
+                        listAmountBet.append(ROI)   
+            df["Risk Profile"] = listRPs
+            df["Amount Bet (as a proportion of users budget)"] = listAmountBet
+            
+            dis = sns.displot(df, x = "Amount Bet (as a proportion of users budget)", hue = "Risk Profile",stat="density", common_norm = False)#.set(title = 'Smoothed Density Plots\n(Distribution of Amount Bet)')
+            dis.fig.suptitle('Distribution of Amount Bet')
+            if (saveFigures):
+                plt.savefig(plotsFolder+'Smoohted Density Plot of Amount Bet')
+                plt.clf()
+            else:
+                plt.show()
 
 def test80MatchesRS(DB, matchesFileName):
     # Test the ROI as an objective on a full test set of 80 matches using a Risk-Seeking profile
@@ -1230,232 +1230,6 @@ def test1MatchRS(DB, matchesFileName):
         else:
             plt.show()
 
-def testNewCVaRConstraints25Matches(DB, matchesFileName):
-    # Playing around with the risk profile parameters to understand the new constraints.
-    
-    # Save figures to:
-    plotsFolder = 'C:\\Users\\campb\\OneDrive\\Documents\\University_ENGSCI\\4th Year\\ResearchProject\\ModelPlots\\'
-    saveFigures = False
-
-    # Set up initial risk profile:
-    riskProfile = [5., 3., 2.]
-    betasAsFloats = [0.2, 0.33, 0.5]
-    riskMetrics = []
-    avRiskProfiles = {}
-    avRiskProfiles['Risk-Averse'] = [7.47, 4.48, 5.23]
-    avRiskProfiles['Risk-Neutral'] = [28., 18.2, 8.07]
-    avRiskProfiles['Risk-Seeking'] = [64.29, 35.14, 10.93]
-
-    # Set up structures to store info:
-    overallROI = []
-    amountBet = 0.
-    amountReturned = 0.
-    betsConsidered = [1,1,1,0,0]
-    N = 100
-    alphaIncs = [(95. - 5.) / N, (57. - 3.) / N, (18. - 2.) / N]
-
-    # Read in data:
-    matches = ReadInData(matchesFileName)
-
-    # Run the model, incrementally making the risk profile more open to risk:
-    for i in range(N):
-        # Compute new risk Profile:
-        risk = 0.
-        for j in range(len(riskProfile)):
-            riskProfile[j] += alphaIncs[j]
-
-            # Compute the Risk metric:
-            risk += betasAsFloats[j] * riskProfile[j]
-        riskMetrics.append(risk)
-
-        # Reset metrics:
-        amountBet = 0.
-        amountReturned = 0.
-
-        # Look at all 25 matches:
-        for match in matches:
-            # Compute the interpolated distributions:
-            Dists = InterpolateDists(float(match[26]), float(match[27]), DB)
-
-            # Extract the required match details:
-            winner = 1
-            matchScore = [float(match[10]), float(match[11])]
-            setScores = ExtractSetScores(match[8])
-            outcome = '{}-{}'.format(int(matchScore[0]),int(matchScore[1]))
-
-            # Run the CVaR Model with this profile
-            [Zk, suggestedBets] = RunCVaRModel(betsConsidered,Dists['Match Score'],riskProfile,
-            betasAsFloats,[float(match[18]),float(match[19])],[float(match[20]),float(match[21]),float(match[22]),
-            float(match[23])],[float(match[24]),float(match[25])],oddsSS=[],oddsNumGames=[])
-
-            # "place" these bets and the computed the ROI:
-            [ROI, spent, returns] = ObjectiveMetricROI(outcome, Zk, suggestedBets)
-            
-            # Append to the dictionary storing the amount Bet:
-            amountBet += spent
-            amountReturned += returns
-        
-        # Compute the OverallROI for this specific risk profile:
-        overallROI.append(((amountReturned - amountBet) / amountBet) * 100.)
-
-    # Plot the overallROI against the Risk Metric:
-    plt.plot(riskMetrics, overallROI)
-
-    # Set up labels and titles:
-    plt.xlabel('Risk Metric of the Profile Used')
-    plt.ylabel('Overall ROI over 25 Matches')
-
-    if (saveFigures):
-        plt.savefig(plotsFolder+'Overall ROI vs Risk Metric (All 25 Matches, 3rd Constraints)')
-        plt.clf()
-    else:
-        plt.show()
-
-    # Look at all 25 matches for the average risk profile:
-    amountBet = {}
-    payOff = {}
-    for avProfile in avRiskProfiles:
-        amountBet[avProfile] = []
-        payOff[avProfile] = []
-        for match in matches:
-            # Compute the interpolated distributions:
-            Dists = InterpolateDists(float(match[26]), float(match[27]), DB)
-
-            # Extract the required match details:
-            winner = 1
-            matchScore = [float(match[10]), float(match[11])]
-            setScores = ExtractSetScores(match[8])
-            outcome = '{}-{}'.format(int(matchScore[0]),int(matchScore[1]))
-
-            # Run the CVaR Model with this profile
-            [Zk, suggestedBets] = RunCVaRModel(betsConsidered,Dists['Match Score'],avRiskProfiles[avProfile],
-            betasAsFloats,[float(match[18]),float(match[19])],[float(match[20]),float(match[21]),float(match[22]),
-            float(match[23])],[float(match[24]),float(match[25])],oddsSS=[],oddsNumGames=[])
-
-            # "place" these bets and the computed the ROI:
-            [ROI, spent, returns] = ObjectiveMetricROI(outcome, Zk, suggestedBets)
-            
-            # Append to the dictionary storing the amount Bet:
-            amountBet[avProfile].append(spent)
-            payOff[avProfile].append(ROI)
-    
-    # Plot the distribution of payoffs and amount Bet:
-    plt.hist([amountBet['Risk-Averse'],amountBet['Risk-Neutral'],amountBet['Risk-Seeking']], 
-    color=['blue','green','red'],edgecolor='black',label=['Risk-Averse','Risk-Neutral','Risk-Seeking'],bins = 4)
-    plt.legend()
-    plt.xlabel('Amount Bet (as a proportion of your budget)')
-    plt.ylabel('Frequency over the 25 Matches')
-    if (saveFigures):
-        plt.savefig(plotsFolder+'Distribution of Amount Bet 2 - All Profiles over 25 Matches')
-        plt.clf()
-    else:
-        plt.show()
-
-    # PayOffs:
-    plt.hist([payOff['Risk-Averse'],payOff['Risk-Neutral'],payOff['Risk-Seeking']], 
-    color=['blue','green','red'],edgecolor='black',label=['Risk-Averse','Risk-Neutral','Risk-Seeking'],bins = 4)
-    plt.legend()
-    plt.xlabel('Payoff (irrespective of the amount Bet)')
-    plt.ylabel('Frequency over the 25 Matches')
-    if (saveFigures):
-        plt.savefig(plotsFolder+'Distribution of PayOffs 2 - All Profiles over 25 Matches')
-        plt.clf()
-    else:
-        plt.show()
-    
-def testNewCVaRConstraints1Match(DB, matchesFileName):
-    # Playing around with the risk profile parameters to understand the new constraints.
-    
-    # Save figures to:
-    plotsFolder = 'C:\\Users\\campb\\OneDrive\\Documents\\University_ENGSCI\\4th Year\\ResearchProject\\ModelPlots\\'
-    saveFigures = False
-
-    # Set up initial risk profile:
-    riskProfile = [5.]#, 3., 2.]
-    betasAsFloats = [0.2]#, 0.33, 0.5]
-    riskMetrics = []
-
-    # Set up structures to store info:
-    betsMade = {}
-    bets = {}
-    betsToPlot = {}
-    amountBet = []
-    betsConsidered = [1,1,1,0,0]
-    N = 100
-    alphaIncs = [(18. - 2.) / N]#, (57. - 3.) / N, (18. - 2.) / N]
-
-    # Read in data:
-    match = ReadInData(matchesFileName)[0]
-
-    # Compute the interpolated distributions:
-    Dists = InterpolateDists(float(match[26]), float(match[27]), DB)
-
-    # Extract the required match details:
-    winner = 1
-    matchScore = [float(match[10]), float(match[11])]
-    setScores = ExtractSetScores(match[8])
-    outcome = '{}-{}'.format(int(matchScore[0]),int(matchScore[1]))
-
-    # Run the model, incrementally making the risk profile more open to risk:
-    for i in range(N):
-        # Compute new risk Profile:
-        risk = 0.
-        for j in range(len(riskProfile)):
-            riskProfile[j] += alphaIncs[j]
-
-            # Compute the Risk metric:
-            risk += betasAsFloats[j] * riskProfile[j]
-        riskMetrics.append(risk)
-
-        # Run the CVaR Model with this profile
-        [Zk, suggestedBets] = RunCVaRModel(betsConsidered,Dists['Match Score'],riskProfile,
-        betasAsFloats,[float(match[18]),float(match[19])],[float(match[20]),float(match[21]),float(match[22]),
-        float(match[23])],[float(match[24]),float(match[25])],oddsSS=[],oddsNumGames=[])
-
-        # Store the bets placed:
-        betsMade[risk] = suggestedBets
-
-        # "place" these bets and the computed the ROI:
-        [ROI, spent, returns] = ObjectiveMetricROI(outcome, Zk, suggestedBets)
-        
-        # Append to the dictionary storing the amount Bet:
-        amountBet.append(spent)    
-
-    # Keep track of the betting options that were considered by each profile for this match:
-    tol = 1e-06
-    for bet in suggestedBets:
-        # Initially Set to zero:
-        bets[bet] = 0.
-        for profile in betsMade:
-            # Sum up the amount Bet on this specific bet over the changing alpha values:
-            bets[bet] += betsMade[profile][bet]
-
-    # Check which ones were actually considered:
-    for bet in bets:
-        if (bets[bet] > tol):
-            # Record these values for plotting:
-            betsToPlot[bet] = []
-            for profile in betsMade:
-                betsToPlot[bet].append(betsMade[profile][bet])
-
-    # Plot the amount Bet on the various bets against the risk metric:
-    for bet in betsToPlot:
-        plt.plot(riskMetrics, betsToPlot[bet], label = bet)
-
-    # Also plot the amount Bet overall:
-    plt.plot(riskMetrics, amountBet, label = 'Total Amount Bet')
-
-    # Set up labels and titles:
-    plt.xlabel('Risk Metric of the Profile Used')
-    plt.ylabel('Amount Bet')
-    plt.legend()
-
-    if (saveFigures):
-        plt.savefig(plotsFolder+'Overall ROI vs Risk Metric (All 25 Matches, 3rd Constraints)')
-        plt.clf()
-    else:
-        plt.show()
-
 def testRegretConstraints(DB, matchesFileName):
     # Test the Regret Measure constraints in the CVaR model.
 
@@ -1490,19 +1264,91 @@ def testRegretConstraints(DB, matchesFileName):
     print(suggestedBets)
     print(spent)
     print(returns)
-  
-def main():
-    #outcome = '2-0'
-    #zk = {'2-0':{'bet 1':2.2,'bet 2': 0.,'bet 3': 1.6,'bet 4': 0.}, '2-1':{'bet 1':2.2,'bet 2': 0.,'bet 3': 0.,'bet 4': 1.8},
-    #'0-2':{'bet 1':0.,'bet 2':1.8,'bet 3': 1.6,'bet 4': 0.},'1-2':{'bet 1':0.,'bet 2':1.8,'bet 3':0.,'bet 4':1.8}}
-    #bets = {'bet 1':2.5,'bet 2': 3.2,'bet 3': 0.,'bet 4': 1.2} 
-    #print(ObjectiveMetricROI(outcome, zk, bets))
+
+def testPredictiveModel(DB, matchesFileName):
+    # This function computes the predictive accuracies of the model and compares them to the bookmakers predictions
+    scores = [[2,0],[2,1],[0,2],[1,2]]
+
+    # Read in data:
+    matches = ReadInData(matchesFileName, False)
+
+    # Prediction accuracies:
+    performance = {'Match Outcome': [0, 0], 'Match Score': [0, 0], 'Number of Sets': [0, 0], 'Matches Prediction': 0}
+    for match in matches:
+        # Check if we can predict on the game:
+        if (match[68] != '4'):
+            # Compute the interpolated distributions:
+            Dists = InterpolateDists(float(match[66]), float(match[67]), DB)
+
+            # Extract the predictions based off the distributions:
+            # Match Outcome:
+            if (sum(Dists['Match Score'][0:2]) >= 0.5):
+                predictionMO = 1
+            else:
+                predictionMO = 2
+            # Match Score:
+            predictionMS = scores[Dists['Match Score'].tolist().index(max(Dists['Match Score']))]
+            # Number of Sets:
+            if ((Dists['Match Score'][0] + Dists['Match Score'][2]) >= 0.5):
+                predictionNumSets = 2
+            else:
+                predictionNumSets = 3
+            
+            # Extract the predictions based off bookmaker's odds:
+            # Match outcome:
+            if (float(match[58]) <= float(match[59])):
+                bookmakerMO = 1
+            else:
+                bookmakerMO = 2
+            # Match Score:
+            MSodds = [float(match[63]),float(match[62]),float(match[60]),float(match[61])]
+            bookmakerMS = scores[MSodds.index(min(MSodds))]
+            # Number of Sets:
+            if (float(match[65]) <= float(match[64])):
+                bookmakerNumSets = 2
+            else:
+                bookmakerNumSets = 3
+
+            # Extract the required match details:
+            matchScore = [float(match[30]), float(match[31])]
+            numSets = sum(matchScore)
+            matchOutcome = 1
+
+            # See who predicited it correct:
+            # Match Outcome:
+            if (predictionMO == 1):
+                performance['Match Outcome'][0] += 1
+            if (bookmakerMO == 1):
+                performance['Match Outcome'][1] += 1
+            # Match Score:
+            if (predictionMS == matchScore):
+                performance['Match Score'][0] += 1
+            if (bookmakerMS == matchScore):
+                performance['Match Score'][1] += 1
+            # Number of Sets:
+            if (predictionNumSets == numSets):
+                performance['Number of Sets'][0] += 1
+            if (bookmakerNumSets == numSets):
+                performance['Number of Sets'][1] += 1
+            performance['Matches Prediction'] += 1
+            print(predictionNumSets)
+            print(bookmakerNumSets)
+            print(numSets)
+            print(performance['Number of Sets'])
     
+    print(performance)
+
+def main():
+    # This file allows you test, evaluate and plot various features of the optimisation model.
+
     # Test for CVaR Model:
     DB = ReadInGridDB('ModelDistributions2.csv')
-    #testRegretConstraints(DB, '2018_19MatchesWithOdds.csv')
-    test80Matches(DB, 'testSetForCalibrationWithROIWithManualyAddedDataWithPValues.csv')
-    #test1MatchRS(DB, '2018_19MatchesWithOdds.csv')
+    testSet = 'testSetWithOddsAndPValues.csv'
+    
+    # Run various tests:
+    test80Matches(DB, testSet)
+    test1MatchRS(DB, testSet)
+    testPredictiveModel(DB, testSet)
 
 if __name__ == "__main__":
     main()

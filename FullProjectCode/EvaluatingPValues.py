@@ -84,16 +84,16 @@ def EvalEquations(testDataFN, obj, equations, age, surface, weighting, riskProfi
     # This function takes a test or training set of matches, an equation(s) to use and it evaluates the specified 
     # objective metric across the inputted data set.
     # Inputs:
-    # - testDataFN = A csv filename for the test/training set of matches
-    # - obj = the objective metric to use (either 'Match Stats' or 'ROI')
-    # - equations = a list of integer(s) corresponding to the equations to use
-    # - age, surface, weighting, theta are hyperparameters for the equations
-    # - riskProfiles = the risk profile used for the CVaR model
-    # - alphas = a list of RHS values for the profile getting used
-    # - betas = a list of beta values to use in the CVaR model
+    # - testDataFN: A csv filename for the test/training set of matches
+    # - obj: the objective metric to use (either 'Match Stats' or 'ROI')
+    # - equations: a list of integer(s) corresponding to the equations to use
+    # - age, surface, weighting, theta: hyperparameters for the equations
+    # - riskProfile: the risk profile used for the CVaR model
+    # - alphas: a list of RHS values for the profile getting used
+    # - betas: a list of beta values to use in the CVaR model
 
     # Returns:
-    # - The objective metric for the equations given on the data inputted
+    # - The objective metric for the equations given over the data inputted
 
     # Read in the model distributions:
     DB = ReadInGridDB('ModelDistributions2.csv')
@@ -194,12 +194,12 @@ def ExtractSetScores(setScoresStirng):
 
 def ReadInData(fileName, header):
     # Get location of file:
-    fileName = os.path.join('C:\\Uni\\4thYearProject\\repo\\BeatTheOdds\\FullProjectCode\\CSVFiles', fileName)
-    #fileName = os.path.join('C:\\Users\\campb\\OneDrive\\Documents\\University_ENGSCI\\4th Year\\ResearchProject\\beliefprop\\FullProjectCode\\CSVFiles', fileName)
+    THIS_FOLDER = os.path.abspath('CSVFiles')
+    location = os.path.join(THIS_FOLDER, fileName)
 
     # Read in CSV file:
     testData = []
-    with open(fileName) as csv_file:
+    with open(location) as csv_file:
         csv_reader = csv.reader(csv_file, delimiter=',')
         line_count = 0
         for row in csv_reader:

@@ -503,7 +503,7 @@ def TennisMatchNetwork1(SetDists, SetScoreDists, NumGamesDists, FirstToSets):
     # Set up initial information:
     info={}
     for i in nodes:
-        info[i] = choose(outcomes[i], "NotSure")
+        info[i] = choose(outcomes[i], [])
     
     return(nodes, dist, parents, outcomes, info)
 
@@ -1830,7 +1830,7 @@ def TennisMatchNetwork2(P1S, P2S, FirstToSets):
     # Set up initial information:
     info={}
     for i in nodes:
-        info[i] = choose(outcomes[i], "NotSure")
+        info[i] = choose(outcomes[i], [])
     
     return(nodes, dist, parents, outcomes, info)
 
@@ -2617,7 +2617,7 @@ def TennisMatchNetwork2NoLinks(P1S, P2S, ConditionalEvents = {}):
             info[i] = choose(outcomes[i], [])
     return(nodes, dist, parents, outcomes, info)
 
-def TennisMatchNetwork2(P1S, P2S, P1TB, P2TB, FirstToSets, Mode):
+
     # Specify the names of the nodes in the Bayesian network
     if (FirstToSets == 3):
         if (Mode == 'Simple'):

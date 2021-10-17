@@ -183,11 +183,11 @@ def ValidatingStepSize(DB,StepSize):
 
 def ReadInGridDB(FileName):
     # Get location of file:
-    #FileName = os.path.join('FullProjectCode\\CSVFiles', FileName)
-    FileName = os.path.join('C:\\Uni\\4thYearProject\\repo\\BeatTheOdds\\FullProjectCode\\CSVFiles', FileName)
+    location = os.path.join('\\CSVFiles', FileName)
+
     # Read in the model distributions database: 
     DB = {} 
-    x = pd.read_csv(FileName, header = None)
+    x = pd.read_csv(location, header = None)
     for row in range(len(x)):
         Pa = round(eval(x[0][row])[0],2)
         Pb = round(eval(x[0][row])[1],2)

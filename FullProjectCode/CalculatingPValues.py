@@ -2,16 +2,16 @@ import numpy as np
 
 def CalcPEquation(equation,surface,weighting,MatchData,PrevMatches,PrevMatchesCommA,PrevMatchesCommB,CommonOpps,theta=0.5):
     # This function takes in a match, extracts who is playing, when the match is/was played, and what surface it is/was played on
-    # It then computes the P values for both players using method 1 (FOR NOW, can integrate it to use a specified method)
+    # It then computes the P values for both players using a specified equation.
     # Inputs:
-    # - equation = What equation we will use to compute P
-    # - weighting = A parameter corresponding to the weighting between spw(A,B) and spw(A,C)
-    # - surface = A hyperparameter corresponding to the weighting on matches played on the same surface
-    # - theta = The additional weighting parameter for equation 3
-    # - MatchData = Data on a single match to be predicted on
-    # - PrevMatches = The previous matches between the players playing in the match
-    # - PrevMatchesCommA / B = The matches between player A / B and the common opponents
-    # - CommonOpps = A list of common opponent IDs
+    # - equation: What equation we will use to compute P
+    # - weighting: A parameter corresponding to the weighting between spw(A,B) and spw(A,C)
+    # - surface: A hyperparameter corresponding to the weighting on matches played on the same surface
+    # - theta: The additional weighting parameter for equation 3 (optional)
+    # - MatchData: Data on a single match to be predicted on
+    # - PrevMatches: The previous matches between the players playing in the match
+    # - PrevMatchesCommA / B: The matches between player A / B and the common opponents
+    # - CommonOpps: A list of common opponent IDs
 
     # Returns:
     # - Pa and Pb
@@ -22,7 +22,6 @@ def CalcPEquation(equation,surface,weighting,MatchData,PrevMatches,PrevMatchesCo
     PlayerA = int(MatchData[8])
     PlayerB = int(MatchData[18])
    
-
     # See how many matches have been played between A and B:
     numMatches = len(PrevMatches)
 
@@ -30,20 +29,13 @@ def CalcPEquation(equation,surface,weighting,MatchData,PrevMatches,PrevMatchesCo
     if (numMatches == 0):
         if (len(CommonOpps) == 0):
             # We have no data to use to compute P, thus do NOT compute it:
-            #print('No historical data for these players')
             return [0.5,0.5,False]
         else:
-            # Pass a warning message:
-            #print('First match between these 2 players')
-
             # Compute SPW(A,C) and SPW(B,C):
             [spwAC, rpwAC] = ComputeSPWCommon(PlayerA, PrevMatchesCommA, CommonOpps, surface, surfaceOfMatch) 
             [spwBC, rpwBC] = ComputeSPWCommon(PlayerB, PrevMatchesCommB, CommonOpps, surface, surfaceOfMatch)
-            #print('spwAC:', spwAC, 'rpwAC:', rpwAC)
-            #print('spwBC:', spwBC, 'rpwBC:', rpwBC)
 
             # Compute PaS and PbS:
-            #print('Only using SPC to compute P')
             PaS = spwAC
             PbS = spwBC
 
@@ -65,15 +57,13 @@ def CalcPEquation(equation,surface,weighting,MatchData,PrevMatches,PrevMatchesCo
         if (len(CommonOpps) == 0):
             # No common opponents, but they have played before: (rare occurence)
             # Compute SPW(A,B) and SPW(B, A):
-            [spwAB, spwBA] = ComputeSPW(PlayerA, PlayerB, PrevMatches, surface, surfaceOfMatch)
-            #print('spwAB:', spwAB, 'spwBA:', spwBA)
+            [spwAB, spwBA] = ComputeSPW(PlayerA, PrevMatches, surface, surfaceOfMatch)
 
             # Compute RPW(A,B) and RPW(B,A)
             rpwAB = 1. - spwBA
             rpwBA = 1. - spwAB       
 
             # Compute PaS and PbS:
-            #print('Only using SPW to compute P')
             PaS = spwAB
             PbS = spwBA
 
@@ -93,8 +83,7 @@ def CalcPEquation(equation,surface,weighting,MatchData,PrevMatches,PrevMatchesCo
                 Pb = PbS * (1. - theta) + theta * (1. - PaR)
         else:
             # Compute SPW(A,B) and SPW(B, A):
-            [spwAB, spwBA] = ComputeSPW(PlayerA, PlayerB, PrevMatches, surface, surfaceOfMatch)
-            #print('spwAB:', spwAB, 'spwBA:', spwBA)
+            [spwAB, spwBA] = ComputeSPW(PlayerA, PrevMatches, surface, surfaceOfMatch)
 
             # Compute RPW(A,B) and RPW(B,A)
             rpwAB = 1. - spwBA
@@ -103,8 +92,6 @@ def CalcPEquation(equation,surface,weighting,MatchData,PrevMatches,PrevMatchesCo
             # Compute SPW(A,C) and SPW(B,C):
             [spwAC, rpwAC] = ComputeSPWCommon(PlayerA, PrevMatchesCommA, CommonOpps, surface, surfaceOfMatch) 
             [spwBC, rpwBC] = ComputeSPWCommon(PlayerB, PrevMatchesCommB, CommonOpps, surface, surfaceOfMatch)
-            #print('spwAC:', spwAC, 'rpwAC:', rpwAC)
-            #print('spwBC:', spwBC, 'rpwBC:', rpwBC)
 
             # Compute PaS and PbS:
             PaS = (1  - weighting) * spwAB + weighting * spwAC
@@ -123,17 +110,20 @@ def CalcPEquation(equation,surface,weighting,MatchData,PrevMatches,PrevMatchesCo
                 Pb = PbS / (PbS + PaR)
             else:
                 Pa = PaS * (1. - theta) + theta * (1. - PbR)
-                Pb = PbS * (1. - theta) + theta * (1. - PaR)        
-        
-    #print('Pa:', Pa, 'Pb:', Pb)
+                Pb = PbS * (1. - theta) + theta * (1. - PaR)              
     return [Pa, Pb, True]
 
-def ComputeSPW(PlayerA, PlayerB, PrevMatches, surface, surfaceOfMatch):
+def ComputeSPW(PlayerA, PrevMatches, surface, surfaceOfMatch):
+    # This function computes the proportion of service points won by each player against the other player historically
+    # It applies the surface weighting parameter during this calculation.
     # Inputs:
-    # - surface = A hyperparameter corresponding to the weighting on matches played on the same surface
-    # - PlayerA & PlayerB = IDs of both players of interest 
-    # - PrevMatches = A list of tuples of all previous matches between player A and player B
-    # - surfaceOfMatch = The surface that the match will be played on (as an abbrev, e.g. C = Clay)
+    # - surface: A hyperparameter corresponding to the weighting on matches played on the same surface
+    # - PlayerA: ID of the first player of interest (the 2nd players ID is not needed) 
+    # - PrevMatches: A list of tuples of all previous matches between player A and player B
+    # - surfaceOfMatch: The surface that the match will be played on (as an abbrev, e.g. C = Clay)
+
+    # Returns:
+    # - SPW(A,B) and SPW(B, A)
 
     # Sum up the service points played for each player:
     PlayerAServePointsSurface = 0
@@ -177,7 +167,6 @@ def ComputeSPW(PlayerA, PlayerB, PrevMatches, surface, surfaceOfMatch):
                     PlayerBServePointsNS += PrevMatches[match][42]
                     PlayerBServePointsWonNS += (PrevMatches[match][44] + PrevMatches[match][45])
     
-    #print('Number of Previous Matches: ', len(PrevMatches))
     # Check if any matches were analysed:
     if (surfaceMatchesCount > 0):
         # Compute the proportion of service points won on the surface:
@@ -203,9 +192,11 @@ def ComputeSPW(PlayerA, PlayerB, PrevMatches, surface, surfaceOfMatch):
 
     return PlayerAServiceProp, PlayerBServiceProp
 
-def ComputeSPWCommon(PlayerA, PrevMatchesCommOpps, CommonOpps, surface, surfaceOfMatch):    
+def ComputeSPWCommon(PlayerA, PrevMatchesCommOpps, CommonOpps, surface, surfaceOfMatch): 
+    # This function computes the proportion of service points won by a player against each common opponent, historically
+    # It applies the surface weighting parameter during this calculation.
     # Inputs:
-    # - PlayerA = ID of both player A
+    # - PlayerA = ID of Player of interest
     # - PrevMatchesCommOpps = A list of tuples of all previous matches between player A the common opponents
     # - CommonOpps = A list of the IDs of all common opponents
     # - surface = A hyperparameter corresponding to the weighting on matches played on the same surface
