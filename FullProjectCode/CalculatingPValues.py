@@ -1,6 +1,130 @@
 import numpy as np
 
-def CalcPEquation(equation,surface,weighting,MatchData,PrevMatches,PrevMatchesCommA,PrevMatchesCommB,CommonOpps,theta=0.5):
+def CalcPEquation(matchDetails,equation,calibratedParams,PrevMatches,PrevMatchesCommA,PrevMatchesCommB,CommonOpps):
+    # This function computes the respective P values for two opponents playing on a specified surface.
+
+    # Inputs:
+    # - matchDetails: A list of required match details (P1ID, P2ID, Surface being Played on)
+    # - equation: What equation we will use to compute P
+    # - calibratedParams: A list of hyperparameters to use to compute P (Age, Surface, Weightin, Theta if needed)
+    # - PrevMatches = The previous matches between the players playing in the match
+    # - PrevMatchesCommA / B = The matches between player A / B and the common opponents
+    # - CommonOpps = A list of common opponent IDs
+
+    # Returns:
+    # - Pa and Pb
+    # - Return Message: An integer relating to one of the following:
+    #   - 1: Confident in Estimates
+    #   - 2: Estimated P Values ONLY use Common Opponent(s) data
+    #   - 3: Estimated P Values ONLY use Historic data between the two
+    #   - 4: No Historic data between the two players therefore, NOT comfortable using the estimates to bet
+
+    # Extract required info:
+    PlayerA = int(matchDetails[0])
+    PlayerB = int(matchDetails[1])
+    surfaceOfMatch = matchDetails[2]
+
+    # Extract calibrated parameters:
+    age = calibratedParams[0]
+    surface = calibratedParams[1]
+    weighting = calibratedParams[2]
+    if (equation == 3):
+        theta = calibratedParams[3]
+   
+    # See how many matches have been played between A and B:
+    numMatches = len(PrevMatches)
+
+    # Check if we have sufficient historical data to make predictions:
+    if (numMatches == 0):
+        if (len(CommonOpps) == 0):
+            # We have no data to use to compute P, thus do NOT compute it:
+            return [0.5,0.5,4]
+        else:
+            # Compute SPW(A,C) and SPW(B,C):
+            [spwAC, rpwAC] = ComputeSPWCommon(PlayerA, PrevMatchesCommA, CommonOpps, surface, surfaceOfMatch) 
+            [spwBC, rpwBC] = ComputeSPWCommon(PlayerB, PrevMatchesCommB, CommonOpps, surface, surfaceOfMatch)
+
+            # Compute PaS and PbS:
+            PaS = spwAC
+            PbS = spwBC
+
+            # Compute PaR and PbR:
+            PaR = rpwAC
+            PbR = rpwBC
+
+            # Compute P using the equation specified:
+            if (equation == 1):
+                Pa = PaS
+                Pb = PbS
+            elif (equation == 2):
+                Pa = PaS / (PaS + PbR)
+                Pb = PbS / (PbS + PaR)
+            else:
+                Pa = PaS * (1. - theta) + theta * (1. - PbR)
+                Pb = PbS * (1. - theta) + theta * (1. - PaR)
+            return [Pa, Pb, 2]
+    else:
+        if (len(CommonOpps) == 0):
+            # No common opponents, but they have played before: (rare occurence)
+            [spwAB, spwBA] = ComputeSPW(PlayerA, PrevMatches, surface, surfaceOfMatch)
+
+            # Compute RPW(A,B) and RPW(B,A)
+            rpwAB = 1. - spwBA
+            rpwBA = 1. - spwAB       
+
+            # Compute PaS and PbS:
+            PaS = spwAB
+            PbS = spwBA
+
+            # Compute PaR and PbR:
+            PaR = rpwAB
+            PbR = rpwBA
+
+            # Compute P using the equation specified:
+            if (equation == 1):
+                Pa = PaS
+                Pb = PbS
+            elif (equation == 2):
+                Pa = PaS / (PaS + PbR)
+                Pb = PbS / (PbS + PaR)
+            else:
+                Pa = PaS * (1. - theta) + theta * (1. - PbR)
+                Pb = PbS * (1. - theta) + theta * (1. - PaR)
+            return [Pa, Pb, 3]
+        else:
+            # Compute SPW(A,B) and SPW(B, A):
+            [spwAB, spwBA] = ComputeSPW(PlayerA, PrevMatches, surface, surfaceOfMatch)
+
+            # Compute RPW(A,B) and RPW(B,A)
+            rpwAB = 1. - spwBA
+            rpwBA = 1. - spwAB
+
+            # Compute SPW(A,C) and SPW(B,C):
+            [spwAC, rpwAC] = ComputeSPWCommon(PlayerA, PrevMatchesCommA, CommonOpps, surface, surfaceOfMatch) 
+            [spwBC, rpwBC] = ComputeSPWCommon(PlayerB, PrevMatchesCommB, CommonOpps, surface, surfaceOfMatch)
+
+            # Compute PaS and PbS:
+            PaS = (1  - weighting) * spwAB + weighting * spwAC
+            PbS = (1  - weighting) * spwBA + weighting * spwBC
+
+            # Compute PaR and PbR:
+            PaR = (1  - weighting) * rpwAB + weighting * rpwAC
+            PbR = (1  - weighting) * rpwBA + weighting * rpwBC
+
+            # Compute P using the equation specified:
+            if (equation == 1):
+                Pa = PaS
+                Pb = PbS
+            elif (equation == 2):
+                Pa = PaS / (PaS + PbR)
+                Pb = PbS / (PbS + PaR)
+            else:
+                Pa = PaS * (1. - theta) + theta * (1. - PbR)
+                Pb = PbS * (1. - theta) + theta * (1. - PaR)        
+        
+            return [Pa, Pb, 1]
+            
+def CalcPEquation2(equation,surface,weighting,MatchData,PrevMatches,PrevMatchesCommA,PrevMatchesCommB,CommonOpps,theta=0.5):
     # This function takes in a match, extracts who is playing, when the match is/was played, and what surface it is/was played on
     # It then computes the P values for both players using a specified equation.
     # Inputs:
@@ -140,6 +264,16 @@ def ComputeSPW(PlayerA, PrevMatches, surface, surfaceOfMatch):
     surfaceMatchesCount = 0
 
     for match in range(len(PrevMatches)):
+        PrevMatches[match][8] = float(PrevMatches[match][8])
+        PrevMatches[match][18] = float(PrevMatches[match][18])
+        PrevMatches[match][42] = float(PrevMatches[match][42])
+        PrevMatches[match][44] = float(PrevMatches[match][44])
+        PrevMatches[match][45] = float(PrevMatches[match][45])
+        PrevMatches[match][51] = float(PrevMatches[match][51])
+        PrevMatches[match][52] = float(PrevMatches[match][52])
+        PrevMatches[match][53] = float(PrevMatches[match][53])
+        PrevMatches[match][54] = float(PrevMatches[match][54])
+        
         # Ensure the match has statistics:
         if (PrevMatches[match][42] != None):
             if (PrevMatches[match][4] == surfaceOfMatch):
@@ -217,6 +351,16 @@ def ComputeSPWCommon(PlayerA, PrevMatchesCommOpps, CommonOpps, surface, surfaceO
     nonSurfaceMatchesCount = np.zeros(len(CommonOpps), dtype = float)
 
     for match in range(len(PrevMatchesCommOpps)):
+        PrevMatchesCommOpps[match][8] = float(PrevMatchesCommOpps[match][8])
+        PrevMatchesCommOpps[match][18] = float(PrevMatchesCommOpps[match][18])
+        PrevMatchesCommOpps[match][42] = float(PrevMatchesCommOpps[match][42])
+        PrevMatchesCommOpps[match][44] = float(PrevMatchesCommOpps[match][44])
+        PrevMatchesCommOpps[match][45] = float(PrevMatchesCommOpps[match][45])
+        PrevMatchesCommOpps[match][51] = float(PrevMatchesCommOpps[match][51])
+        PrevMatchesCommOpps[match][52] = float(PrevMatchesCommOpps[match][52])
+        PrevMatchesCommOpps[match][53] = float(PrevMatchesCommOpps[match][53])
+        PrevMatchesCommOpps[match][54] = float(PrevMatchesCommOpps[match][54])
+        
         # Make sure the match has statistics:
         if (PrevMatchesCommOpps[match][42] != None):
             if (surfaceOfMatch == PrevMatchesCommOpps[match][4]):

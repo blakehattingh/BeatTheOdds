@@ -3,7 +3,7 @@ import csv
 from datetime import timedelta
 from time import strptime
 from ModelDistributionsDB import ReadInGridDB
-from CalculatingPValues import CalcPEquation
+from CalculatingPValues import CalcPEquation, CalcPEquation2
 from DataExtractionFromDB import getSPWData
 from InterpolatingDistributions import InterpolateDists
 from CVaRModel import RunCVaRModel
@@ -127,7 +127,7 @@ def EvalEquations(testDataFN, obj, equations, age, surface, weighting, riskProfi
         # Compute the P values using the equations specified:
         for eq in equations:
             # Compute the P values for the two players:
-            [Pa,Pb,predict] = CalcPEquation(eq, surface, weighting, match, p1vP2, p1vCO, p2vCO, COIds, theta)
+            [Pa,Pb,predict] = CalcPEquation2(eq, surface, weighting, match, p1vP2, p1vCO, p2vCO, COIds, theta)
 
             # Look to make predictions using these P values:
             if (predict):
@@ -194,7 +194,7 @@ def ExtractSetScores(setScoresStirng):
 
 def ReadInData(fileName, header):
     # Get location of file:
-    THIS_FOLDER = os.path.abspath('CSVFiles')
+    THIS_FOLDER = os.path.abspath('FullProjectCode\\CSVFiles')
     location = os.path.join(THIS_FOLDER, fileName)
 
     # Read in CSV file:
@@ -214,3 +214,29 @@ def ReadInData(fileName, header):
                 line_count += 1
     
     return testData
+
+def main():
+    # This function tests the computing the P equations.
+    
+    # Read in files:
+    p1vsP2 = ReadInData('IsnerVsTsitsipas.csv', header=True)
+    p1VsCOs = ReadInData('IsnerVsCOs.csv',header=True)
+    p2VsCOs = ReadInData('TsitsipasVsCos.csv',header=True)
+    commOppsIDs = ReadInData('listOfCommonOpponentIDs.csv',header=False)
+
+    commOppsIDs = commOppsIDs[0]
+    commOppsIDs[0] = 5528
+    for i in range(len(commOppsIDs)):
+        commOppsIDs[i] = int(commOppsIDs[i])
+
+    matchDetails = [4544, 26577, 'C']
+    equation = 1
+    calibratedParams = [8, 0.2, 0.2]
+
+    # Calculate P:
+    [Pa, Pb, Bet] = CalcPEquation(matchDetails,equation,calibratedParams,p1vsP2,p1VsCOs,p2VsCOs,commOppsIDs)
+    print(Pa)
+    print(Pb)
+
+if __name__ == "__main__":
+    main()

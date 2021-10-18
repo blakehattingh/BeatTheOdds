@@ -267,7 +267,7 @@ def ExtractBets(suggestedBets):
         count += 1
     return bets
 
-def RunCVaRModel(betsConsidered,probDist,profile,RHS,betas,oddsMO,oddsMS,oddsNumSets,oddsSS=[],oddsNumGames=[]):
+def RunCVaRModel(betsConsidered,probDist,profile,RHS,betas,odds):
     # This function sets up the required data and runs the CVaR model, returning a set of bets to make.
     # Inputs:
     # - betsConsidered: A list of booleans of the bets we want to consider (Outcome, Score, #Sets, SS, #Games)
@@ -275,16 +275,13 @@ def RunCVaRModel(betsConsidered,probDist,profile,RHS,betas,oddsMO,oddsMS,oddsNum
     # - profile: The users risk profile ('Risk-Averse', 'Risk-Neutral', 'Risk-Seeking')
     # - RHS: A list of RHS values from the user about their risk profile
     # - betas: The beta parameters we are using in the CVaR model for the constraints (Currently 0.1, 0.2, 0.3)
-    # - odds--: The odds for each type of bet as a list e.g. [oddsAWins, oddsBWins]
+    # - odds: The odds for each type of bet as in a dictionary
 
     # Returns:
     # - Payoff matrix (Zk), suggested bets (bets) and the objective value of the model (expected payoff)
     # - If user is "risk-seeking", the minimum amount of regret feasible is also returned
 
     tol = 1e-6
-    # Create odds dictionary:
-    odds = {'Match Outcome': oddsMO, 'Match Score': oddsMS, 'Number of Sets': oddsNumSets,
-    'Set Score': oddsSS, 'Number of Games': oddsNumGames}
 
     # Create the Zk matrix, the oddCoef vector and the list of available bets:
     [Zk, oddCoef, bettingOptions] = CreateZMatrix(betsConsidered, odds, probDist)
