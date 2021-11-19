@@ -6,7 +6,7 @@ import numpy as np
 #INPUTS: matchDetails = Keys P1FirstInitial, P1LastName, Date (%Y-%m-%d). age = int in years
 #OUTPUTS: matches between P1 & P2, P1 and common opponents, P2 and common opponents, common opponents IDs
 def getSPWData(p1ID, p2ID, date, startOfDataCollection):
-    conn = psy.connect('dbname=tcb user=postgres password=12qwaszx host=localhost')
+    conn = psy.connect(dbname='tcb', user='postgres', password='12qwaszx', host='125.237.145.15', port='5432')
     cursor = conn.cursor()
     p1vP2 = getP1vP2(startOfDataCollection,cursor,p1ID,p2ID,date)
     p1vCO = getPlayerVsCO(startOfDataCollection,cursor,p1ID,p2ID,date)
@@ -28,7 +28,7 @@ def getIds(matchDetails, cursor):
     return p1ID,p2ID
 
 def getIdForName(firstName, lastName):
-    conn = psy.connect('dbname=tcb user=postgres password=12qwaszx host=localhost')
+    conn = psy.connect(dbname='tcb', user='postgres', password='12qwaszx', host='125.237.145.15', port='5432')
     cursor = conn.cursor()
     query = "SELECT player_id FROM tcb.player WHERE UPPER(first_name) LIKE UPPER('"+firstName+"%') AND UPPER(last_name) = UPPER('"+lastName+"')"
     cursor.execute(query)
@@ -116,7 +116,7 @@ def getCOs(p1vCO,p1ID,p2ID):
 
 #years = list of years as integers eg. (2012,2014)
 def getTestMatchData(years):
-    conn = psy.connect('dbname=tcb user=postgres password=12qwaszx host=localhost')
+    conn = psy.connect(dbname='tcb', user='postgres', password='12qwaszx', host='125.237.145.15', port='5432')
     cursor = conn.cursor()
     clayMatchesByYears = []
     hardMatchesByYears = []
@@ -150,7 +150,7 @@ def getTestMatchData(years):
 
 def getSpecificMatches(matchIds):
     matches = []
-    conn = psy.connect('dbname=tcb user=postgres password=12qwaszx host=localhost')
+    conn = psy.connect(dbname='tcb', user='postgres', password='12qwaszx', host='125.237.145.15', port='5432')
     cursor = conn.cursor()
     for matchId in matchIds:
         getMatchByIdQuery = f""" select * from tcb.match m join tcb.match_stats s on m.match_id = s.match_id where m.match_id = {matchId}"""
@@ -160,7 +160,7 @@ def getSpecificMatches(matchIds):
 
 def getCallibrationSet(startYear, endYear):
     endYear = endYear+1
-    conn = psy.connect('dbname=tcb user=postgres password=12qwaszx host=localhost')
+    conn = psy.connect(dbname='tcb', user='postgres', password='12qwaszx', host='125.237.145.15', port='5432')
     cursor = conn.cursor()
     matchesBetweenYears = []
     query = f"""select * from tcb.match m join tcb.match_stats s on 
@@ -199,7 +199,7 @@ def getRandomSamples(matchesByYears, numMatches):
               
 def getPotentialMatches(afterDate, beforeDate):
     # This function gets all matches between the two dates specified.
-    conn = psy.connect('dbname=tcb user=postgres password=12qwaszx host=localhost')
+    conn = psy.connect(dbname='tcb', user='postgres', password='12qwaszx', host='125.237.145.15', port='5432')
     cursor = conn.cursor()
     potentialMatches = []
 

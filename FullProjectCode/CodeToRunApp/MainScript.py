@@ -60,11 +60,11 @@ def ComputeBets(matchDetails, riskProfile, riskParameters, betas, budget, oddsMO
         print('There is a limited amount of historical data for this match-up and hence the estimated probabilities for the match events have a wider confidence level than usual')
 
     # Read in the model distributions DB:
-    #matchScoreDB = ReadInGridDB('ModelDistributions2.csv')
-    matchScoreDB = ReadInGridDB('C:/Uni/4thYearProject/repo/BeatTheOdds/FullProjectCode/CodeToRunApp/ModelDistributions2.csv')
+    matchScoreDB = ReadInGridDB('FullProjectCode\\CodeToRunApp\\ModelDistributions2.csv')
+    #matchScoreDB = ReadInGridDB('C:/Uni/4thYearProject/repo/BeatTheOdds/FullProjectCode/CodeToRunApp/ModelDistributions2.csv')
 
-    #allDistsDB = ReadInGridDB('ModelDistributions.csv')
-    allDistsDB = ReadInGridDB('C:/Uni/4thYearProject/repo/BeatTheOdds/FullProjectCode/CodeToRunApp/ModelDistributions2.csv')
+    allDistsDB = ReadInGridDB('FullProjectCode\\CodeToRunApp\\ModelDistributions.csv')
+    #allDistsDB = ReadInGridDB('C:/Uni/4thYearProject/repo/BeatTheOdds/FullProjectCode/CodeToRunApp/ModelDistributions2.csv')
 
     # Interploate Distributions: (those needed for analysis and the other ones to display to the user)
     matchScoreDist = InterpolateDists(Pa, Pb, matchScoreDB)
@@ -138,8 +138,11 @@ def addPValuesToCsv(fileToRead,fileToWrite):
     matchDetails = []
     rawMatchDetails =[]
     dates = []
-    fileNameRead = os.path.join('C:/Uni/4thYearProject/repo/BeatTheOdds/FullProjectCode/CSVFiles', fileToRead)
-    fileNameWrite = os.path.join('C:/Uni/4thYearProject/repo/BeatTheOdds/FullProjectCode/CSVFiles', fileToWrite)
+    #fileNameRead = os.path.join('C:/Uni/4thYearProject/repo/BeatTheOdds/FullProjectCode/CSVFiles', fileToRead)
+    #fileNameWrite = os.path.join('C:/Uni/4thYearProject/repo/BeatTheOdds/FullProjectCode/CSVFiles', fileToWrite)
+    THIS_FOLDER = os.path.abspath('FullProjectCode\\CSVFiles')
+    fileNameRead = os.path.join(THIS_FOLDER, fileToRead)
+    fileNameWrite = os.path.join(THIS_FOLDER, fileToWrite)
     calibratedParameters = [2.222, 0.244, 0.233] # Age, Surface, Weighting
     with open(fileNameRead) as csv_file:
         csv_reader = csv.reader(csv_file, delimiter=',')
@@ -182,9 +185,9 @@ def addPValuesToCsv(fileToRead,fileToWrite):
 
 def main():
     # Run Compete Bets:
-    #ComputeBets([50810,27834,'H'], 'Risk-Averse',[0.9,0.8,0.8], [0.2,1./3,0.5],100, [1.53,2.5], [2.25,4.0,5.5,4.0], [2.31,1.6])
-    fileNameRead ='testSetForCalibrationWithROIWithManualyAddedData.csv'
-    fileNameWrite ='testSetForCalibrationWithROIWithManualyAddedDataWithPValues.csv'
-    addPValuesToCsv(fileNameRead,fileNameWrite)
+    ComputeBets([50810,27834,'H'], 'Risk-Averse',[0.9,0.8,0.8], [0.2,1./3,0.5],100, [1.53,2.5], [2.25,4.0,5.5,4.0], [2.31,1.6])
+    #fileNameRead ='testSetForCalibrationWithROI.csv'
+    #fileNameWrite ='testSetForCalibrationWithROIWithManualyAddedDataWithPValues.csv'
+    #addPValuesToCsv(fileNameRead,fileNameWrite)
 if __name__ == "__main__":
     main()
