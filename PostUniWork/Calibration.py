@@ -41,8 +41,8 @@ def Calibration(fileName):
 
 def main():
     fileName1 = 'RandomSampleHardTraining.csv'
-    fileName2 = 'RandomSampleHardTraining.csv'
-    fileName3 = 'RandomSampleHardTraining.csv'
+    fileName2 = 'RandomSampleClayTraining.csv'
+    fileName3 = 'RandomSampleGrassTraining.csv'
 
     # Run the calibration:
     [matchOutcome, matchScore, numSets, matchesPredicted, ageParams, surfaceParams, weightingParams] = Calibration(fileName1)
